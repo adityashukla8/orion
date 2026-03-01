@@ -215,32 +215,7 @@
       top: 22%; right: -6px;
     }
 
-    /* Connected: blobs slowly swirl */
-    #orion-orb.connected {
-      box-shadow:
-        0 0 0 1px rgba(120, 180, 255, 0.45),
-        0 0 28px rgba(100, 165, 255, 0.42),
-        0 6px 22px rgba(80, 140, 230, 0.2),
-        inset 0 0 12px rgba(255, 255, 255, 0.1);
-    }
-
-    #orion-orb.connected .orb-blob.b1 { animation: swirl-a 5.5s ease-in-out infinite; }
-    #orion-orb.connected .orb-blob.b2 { animation: swirl-b 6.5s ease-in-out infinite; }
-    #orion-orb.connected .orb-blob.b3 { animation: swirl-c 7.5s ease-in-out infinite; }
-
-    /* Speaking: faster swirl + bright pulse */
-    #orion-orb.speaking {
-      box-shadow:
-        0 0 0 2px rgba(100, 175, 255, 0.55),
-        0 0 44px rgba(80, 160, 255, 0.62),
-        0 6px 22px rgba(60, 130, 220, 0.3),
-        inset 0 0 10px rgba(255, 255, 255, 0.08);
-    }
-
-    #orion-orb.speaking .orb-blob.b1 { animation: swirl-a 1.6s ease-in-out infinite; }
-    #orion-orb.speaking .orb-blob.b2 { animation: swirl-b 2.0s ease-in-out infinite; }
-    #orion-orb.speaking .orb-blob.b3 { animation: swirl-c 2.4s ease-in-out infinite; }
-
+    /* ── Orb keyframes ─────────────────────────────────── */
     @keyframes swirl-a {
       0%   { transform: translate(0px, 0px); }
       25%  { transform: translate(16px, 10px); }
@@ -248,7 +223,6 @@
       75%  { transform: translate(-6px, 9px); }
       100% { transform: translate(0px, 0px); }
     }
-
     @keyframes swirl-b {
       0%   { transform: translate(0px, 0px); }
       25%  { transform: translate(-13px, -16px); }
@@ -256,14 +230,111 @@
       75%  { transform: translate(8px, -12px); }
       100% { transform: translate(0px, 0px); }
     }
-
     @keyframes swirl-c {
       0%   { transform: translate(0px, 0px); }
       33%  { transform: translate(-13px, 9px); }
       66%  { transform: translate(-6px, -13px); }
       100% { transform: translate(0px, 0px); }
     }
+    /* Connecting: orb fades in/out gently */
+    @keyframes orb-connecting {
+      0%,100% { opacity: 0.55; box-shadow: 0 0 0 1px rgba(148,163,184,0.3), 0 6px 16px rgba(148,163,184,0.12); }
+      50%     { opacity: 1;    box-shadow: 0 0 0 1px rgba(148,163,184,0.55), 0 6px 26px rgba(148,163,184,0.28); }
+    }
+    /* Listening: expanding ring emanates from orb */
+    @keyframes orb-listen-ring {
+      0%   { box-shadow: 0 0 0 0px rgba(34,197,94,0.7),  0 0 22px rgba(34,197,94,0.38); }
+      65%  { box-shadow: 0 0 0 10px rgba(34,197,94,0),   0 0 34px rgba(34,197,94,0.58); }
+      100% { box-shadow: 0 0 0 0px rgba(34,197,94,0.7),  0 0 22px rgba(34,197,94,0.38); }
+    }
+    /* Interrupted: amber double-flash then settles */
+    @keyframes orb-interrupted {
+      0%,100% { box-shadow: 0 0 0 1px rgba(245,158,11,0.45), 0 0 20px rgba(245,158,11,0.32); }
+      30%,70% { box-shadow: 0 0 0 3px rgba(245,158,11,0.9),  0 0 46px rgba(245,158,11,0.75); }
+      50%     { box-shadow: 0 0 0 1px rgba(245,158,11,0.25), 0 0  8px rgba(245,158,11,0.12); }
+    }
 
+    /* ── State: inactive (default) — blobs dim, no movement ── */
+    .orb-blob.b1 { opacity: 0.35; }
+    .orb-blob.b2 { opacity: 0.28; }
+    .orb-blob.b3 { opacity: 0.22; }
+
+    /* ── State: connecting — slow breathe ── */
+    #orion-orb.orb-connecting { animation: orb-connecting 1.7s ease-in-out infinite; }
+    #orion-orb.orb-connecting .orb-blob.b1 { opacity: 0.5; }
+    #orion-orb.orb-connecting .orb-blob.b2 { opacity: 0.4; }
+    #orion-orb.orb-connecting .orb-blob.b3 { opacity: 0.35; }
+
+    /* ── State: active — soft blue glow, slow swirl ── */
+    #orion-orb.orb-active {
+      box-shadow:
+        0 0 0 1px rgba(100, 160, 255, 0.45),
+        0 0 26px rgba(80, 140, 255, 0.38),
+        0 6px 22px rgba(60, 120, 220, 0.18),
+        inset 0 0 12px rgba(255, 255, 255, 0.1);
+    }
+    #orion-orb.orb-active .orb-blob.b1 { opacity: 1; animation: swirl-a 5.5s ease-in-out infinite; }
+    #orion-orb.orb-active .orb-blob.b2 { opacity: 1; animation: swirl-b 6.5s ease-in-out infinite; }
+    #orion-orb.orb-active .orb-blob.b3 { opacity: 1; animation: swirl-c 7.5s ease-in-out infinite; }
+
+    /* ── State: listening — green ring pulse, surgeon speaking ── */
+    #orion-orb.orb-listening { animation: orb-listen-ring 1.05s ease-out infinite; }
+    #orion-orb.orb-listening .orb-blob.b1 {
+      opacity: 1;
+      background: radial-gradient(circle, rgba(34,197,94,0.88) 0%, rgba(22,163,74,0.44) 50%, transparent 72%);
+      animation: swirl-a 2.4s ease-in-out infinite;
+    }
+    #orion-orb.orb-listening .orb-blob.b2 {
+      opacity: 1;
+      background: radial-gradient(circle, rgba(74,222,128,0.80) 0%, rgba(34,197,94,0.38) 50%, transparent 72%);
+      animation: swirl-b 2.8s ease-in-out infinite;
+    }
+    #orion-orb.orb-listening .orb-blob.b3 {
+      opacity: 1;
+      background: radial-gradient(circle, rgba(134,239,172,0.72) 0%, rgba(74,222,128,0.32) 50%, transparent 72%);
+      animation: swirl-c 3.2s ease-in-out infinite;
+    }
+
+    /* ── State: speaking — bright cyan, fast swirl ── */
+    #orion-orb.orb-speaking {
+      box-shadow:
+        0 0 0 2px rgba(56,189,248,0.62),
+        0 0 48px rgba(14,165,233,0.68),
+        0 6px 22px rgba(2,132,199,0.3),
+        inset 0 0 10px rgba(255,255,255,0.08);
+    }
+    #orion-orb.orb-speaking .orb-blob.b1 {
+      opacity: 1;
+      background: radial-gradient(circle, rgba(56,189,248,0.9) 0%, rgba(14,165,233,0.46) 50%, transparent 72%);
+      animation: swirl-a 1.6s ease-in-out infinite;
+    }
+    #orion-orb.orb-speaking .orb-blob.b2 {
+      opacity: 1;
+      background: radial-gradient(circle, rgba(125,211,252,0.84) 0%, rgba(56,189,248,0.40) 50%, transparent 72%);
+      animation: swirl-b 2.0s ease-in-out infinite;
+    }
+    #orion-orb.orb-speaking .orb-blob.b3 {
+      opacity: 1;
+      background: radial-gradient(circle, rgba(186,230,253,0.76) 0%, rgba(125,211,252,0.34) 50%, transparent 72%);
+      animation: swirl-c 2.4s ease-in-out infinite;
+    }
+
+    /* ── State: interrupted — amber flash × 3 ── */
+    #orion-orb.orb-interrupted { animation: orb-interrupted 0.5s ease-in-out 3; }
+    #orion-orb.orb-interrupted .orb-blob.b1 {
+      opacity: 1;
+      background: radial-gradient(circle, rgba(251,146,60,0.90) 0%, rgba(234,88,12,0.46) 50%, transparent 72%);
+    }
+    #orion-orb.orb-interrupted .orb-blob.b2 {
+      opacity: 1;
+      background: radial-gradient(circle, rgba(253,186,116,0.84) 0%, rgba(251,146,60,0.40) 50%, transparent 72%);
+    }
+    #orion-orb.orb-interrupted .orb-blob.b3 {
+      opacity: 1;
+      background: radial-gradient(circle, rgba(254,215,170,0.76) 0%, rgba(253,186,116,0.34) 50%, transparent 72%);
+    }
+
+    /* ── Status label colours per state ── */
     #orion-status-label {
       font-size: 9px;
       font-weight: 600;
@@ -272,8 +343,11 @@
       color: #9aa3b5;
       text-align: center;
     }
-
-    #orion-status-label.active { color: #3a82d4; }
+    #orion-status-label.lbl-connecting  { color: #94a3b8; }
+    #orion-status-label.lbl-active      { color: #3b82f6; }
+    #orion-status-label.lbl-listening   { color: #16a34a; }
+    #orion-status-label.lbl-speaking    { color: #0284c7; }
+    #orion-status-label.lbl-interrupted { color: #d97706; }
 
     /* ── Card 2: Agent activity ── */
     #routing-card {

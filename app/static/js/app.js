@@ -182,6 +182,7 @@ function handleServerEvent(jsonString) {
   // previous ORION bubble so the next agent response starts a fresh one.
   const inputText = event.inputTranscription?.text ?? event.input_transcription?.text;
   if (inputText) {
+    setStatus('listening');
     currentOrionEntry = null;   // surgeon is speaking → seal previous ORION bubble
     _upsertTranscript('surgeon', inputText);
   }
@@ -238,7 +239,7 @@ function handleServerEvent(jsonString) {
   if (event.interrupted && audioPlayerNode) {
     audioPlayerNode.port.postMessage({ command: 'endOfAudio' });
     currentOrionEntry = null;
-    if (ws && ws.readyState === WebSocket.OPEN) setStatus('active');
+    if (ws && ws.readyState === WebSocket.OPEN) setStatus('interrupted');
   }
 
   // Turn complete — multi-agent flow fires turnComplete after each sub-agent.
@@ -351,18 +352,38 @@ window.ORION_relayoutModals = relayoutModals;
 function setStatus(state) {
   orionOrb.className = '';
   orionStatusLabel.className = '';
-  if (state === 'connecting') {
-    orionStatusLabel.textContent = 'Connecting…';
-  } else if (state === 'active') {
-    orionOrb.classList.add('connected');
-    orionStatusLabel.textContent = 'ORION active';
-    orionStatusLabel.classList.add('active');
-  } else if (state === 'speaking') {
-    orionOrb.classList.add('speaking');
-    orionStatusLabel.textContent = 'Speaking';
-    orionStatusLabel.classList.add('active');
-  } else {
-    orionStatusLabel.textContent = 'ORION offline';
+  switch (state) {
+    case 'connecting':
+      orionOrb.classList.add('orb-connecting');
+      orionStatusLabel.textContent = 'Connecting…';
+      orionStatusLabel.classList.add('lbl-connecting');
+      break;
+    case 'active':
+      orionOrb.classList.add('orb-active');
+      orionStatusLabel.textContent = 'Active';
+      orionStatusLabel.classList.add('lbl-active');
+      break;
+    case 'listening':
+      orionOrb.classList.add('orb-listening');
+      orionStatusLabel.textContent = 'Listening…';
+      orionStatusLabel.classList.add('lbl-listening');
+      break;
+    case 'speaking':
+      orionOrb.classList.add('orb-speaking');
+      orionStatusLabel.textContent = 'Speaking';
+      orionStatusLabel.classList.add('lbl-speaking');
+      break;
+    case 'interrupted':
+      orionOrb.classList.add('orb-interrupted');
+      orionStatusLabel.textContent = 'Interrupted';
+      orionStatusLabel.classList.add('lbl-interrupted');
+      // Animation runs 3× (1.5s total) then auto-reverts to active
+      setTimeout(() => {
+        if (ws && ws.readyState === WebSocket.OPEN) setStatus('active');
+      }, 1600);
+      break;
+    default: // inactive / offline
+      orionStatusLabel.textContent = 'ORION offline';
   }
 }
 
