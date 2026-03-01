@@ -303,24 +303,20 @@ def toggle_structure(structure: str, visible: bool) -> dict:
     structure in the 3D model. The structure names must exactly match the mesh
     names in the loaded GLB file.
 
-    Available structures (update these after loading the model and logging
-    mesh names with model.traverse() in Three.js):
-      parenchyma — lung parenchyma (main lung tissue)
-      tumor      — primary tumor mass
-      vessels    — pulmonary vessels (arteries and veins)
-      bronchi    — bronchial tree
-      ribs       — rib cage
-      pleura     — pleural surface
+    Available structures (GLB mesh names from LIDC-IDRI-0001 segmentation):
+      lung_right — right lung parenchyma (patient-right)
+      lung_left  — left lung parenchyma (patient-left)
+      bronchus   — main carina / bronchi region
+      tumor      — right-lower-lobe nodule (~8mm)
 
     visible=True  — show the structure (surgeon says: show, display, make visible)
     visible=False — hide the structure (surgeon says: hide, remove, turn off)
 
     Examples:
-      "hide the ribs" → structure='ribs', visible=False
-      "show me the vessels" → structure='vessels', visible=True
-      "turn off the pleura" → structure='pleura', visible=False
-      "show the tumor" → structure='tumor', visible=True
-      "hide the bronchi" → structure='bronchi', visible=False
+      "hide the right lung"  → structure='lung_right', visible=False
+      "show me the tumor"    → structure='tumor', visible=True
+      "hide the bronchus"    → structure='bronchus', visible=False
+      "show the left lung"   → structure='lung_left', visible=True
     """
     structure = structure.lower().strip()
 
