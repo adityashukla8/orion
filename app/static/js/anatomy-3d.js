@@ -106,6 +106,17 @@ const Anatomy3D = (() => {
         model.position.sub(centre);
         model.scale.setScalar(2 / maxDim);
 
+        // Fix materials: DoubleSide prevents back-face culling from axis remap,
+        // opaque rendering avoids depth-sort issues with transparent meshes.
+        model.traverse((child) => {
+          if (child.isMesh && child.material) {
+            child.material.side        = THREE.DoubleSide;
+            child.material.transparent = false;
+            child.material.depthWrite  = true;
+            child.material.needsUpdate = true;
+          }
+        });
+
         // Build structure map and log mesh names for tools.py calibration
         console.log('[Anatomy3D] Loaded model. Mesh names:');
         model.traverse((child) => {
@@ -115,7 +126,7 @@ const Anatomy3D = (() => {
             console.log('  mesh:', child.name, '→ key:', lowerName);
           }
         });
-        console.log('[Anatomy3D] Update toggle_structure docstring in tools.py with these names.');
+        console.log('[Anatomy3D] structures:', Object.keys(structures));
       },
       undefined,  // progress callback (not needed)
       (err) => {
@@ -183,7 +194,12 @@ const Anatomy3D = (() => {
   }
 
   function _show() {
-    if (modal) { modal.classList.add('visible'); window.ORION_relayoutModals?.(); }
+    if (modal) {
+      modal.classList.add('visible');
+      window.ORION_relayoutModals?.();
+      // Re-sync renderer size after modal is repositioned by relayout
+      requestAnimationFrame(_resizeRenderer);
+    }
   }
 
 
