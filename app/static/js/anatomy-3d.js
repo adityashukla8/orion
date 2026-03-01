@@ -81,54 +81,77 @@ const Anatomy3D = (() => {
 
   function _resizeRenderer() {
     if (!renderer || !canvas) return;
-    const w = canvas.offsetWidth  || canvas.parentElement.offsetWidth;
-    const h = canvas.offsetHeight || canvas.parentElement.offsetHeight;
+    const w = canvas.offsetWidth  || canvas.parentElement.offsetWidth  || 400;
+    const h = canvas.offsetHeight || canvas.parentElement.offsetHeight || 300;
+    console.log('[Anatomy3D] resize → canvas', w, '×', h);
     renderer.setSize(w, h, false);
     if (camera) {
-      camera.aspect = w / h;
+      camera.aspect = w / (h || 1);
       camera.updateProjectionMatrix();
     }
   }
 
   function _loadModel(url) {
+    console.log('[Anatomy3D] fetching:', url);
     const loader = new THREE.GLTFLoader();
     loader.load(
       url,
       (gltf) => {
+        console.log('[Anatomy3D] GLB loaded. Scene children:', gltf.scene.children.length);
         model = gltf.scene;
         scene.add(model);
 
-        // Centre and scale the model
-        const box = new THREE.Box3().setFromObject(model);
-        const centre = box.getCenter(new THREE.Vector3());
-        const size   = box.getSize(new THREE.Vector3());
-        const maxDim = Math.max(size.x, size.y, size.z);
-        model.position.sub(centre);
+        // Step 1: measure raw bounding box (vertices in mm)
+        const rawBox  = new THREE.Box3().setFromObject(model);
+        const rawSize = rawBox.getSize(new THREE.Vector3());
+        const maxDim  = Math.max(rawSize.x, rawSize.y, rawSize.z);
+        console.log('[Anatomy3D] raw bbox size:', rawSize, 'maxDim:', maxDim.toFixed(1), 'mm');
+
+        // Step 2: scale to 2 Three.js units FIRST
         model.scale.setScalar(2 / maxDim);
 
-        // Fix materials: DoubleSide prevents back-face culling from axis remap,
-        // opaque rendering avoids depth-sort issues with transparent meshes.
+        // Step 3: recompute bbox in scaled space, then centre
+        const scaledBox    = new THREE.Box3().setFromObject(model);
+        const scaledCentre = scaledBox.getCenter(new THREE.Vector3());
+        model.position.sub(scaledCentre);
+        console.log('[Anatomy3D] scaled centre (should be ~0):', scaledCentre);
+
+        // Step 4: auto-position camera so model fills ~60% of view
+        const scaledSize   = scaledBox.getSize(new THREE.Vector3());
+        const scaledMaxDim = Math.max(scaledSize.x, scaledSize.y, scaledSize.z);
+        const camDist = scaledMaxDim / (2 * Math.tan(THREE.MathUtils.degToRad(22.5)));
+        camera.position.set(0, 0, camDist * 1.4);
+        camera.near  = camDist * 0.01;
+        camera.far   = camDist * 10;
+        camera.lookAt(new THREE.Vector3(0, 0, 0));
+        camera.updateProjectionMatrix();
+        console.log('[Anatomy3D] camDist:', camDist.toFixed(2), ' near/far:', camera.near.toFixed(3), camera.far.toFixed(1));
+
+        // Step 5: fix materials — DoubleSide prevents back-face culling from
+        // axis remap; opaque avoids transparent-mesh depth-sort blanks.
+        let meshCount = 0;
         model.traverse((child) => {
           if (child.isMesh && child.material) {
             child.material.side        = THREE.DoubleSide;
             child.material.transparent = false;
             child.material.depthWrite  = true;
             child.material.needsUpdate = true;
+            meshCount++;
           }
         });
+        console.log('[Anatomy3D] patched', meshCount, 'materials');
 
-        // Build structure map and log mesh names for tools.py calibration
-        console.log('[Anatomy3D] Loaded model. Mesh names:');
+        // Step 6: build structure map
         model.traverse((child) => {
           if (child.isMesh) {
-            const lowerName = child.name.toLowerCase();
-            structures[lowerName] = child;
-            console.log('  mesh:', child.name, '→ key:', lowerName);
+            const key = child.name.toLowerCase();
+            structures[key] = child;
+            console.log('  mesh name:', JSON.stringify(child.name), '→ key:', JSON.stringify(key));
           }
         });
-        console.log('[Anatomy3D] structures:', Object.keys(structures));
+        console.log('[Anatomy3D] structures ready:', Object.keys(structures));
       },
-      undefined,  // progress callback (not needed)
+      undefined,
       (err) => {
         console.error('[Anatomy3D] Failed to load model:', err);
       }
