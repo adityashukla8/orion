@@ -30,6 +30,7 @@ from .tools import (
     toggle_structure,
     reset_3d_view,
     hide_all_overlays,
+    get_surgical_phase,
 )
 
 # The native audio model for real-time voice I/O via runner.run_live().
@@ -167,6 +168,42 @@ ar_agent = LlmAgent(
 
 
 # ---------------------------------------------------------------------------
+# PC_Agent — Procedural Context
+# ---------------------------------------------------------------------------
+
+pc_agent = LlmAgent(
+    name='PC_Agent',
+    model=_sub_model,
+    description=(
+        'Handles all requests about the current surgical phase, contextual '
+        'anatomical checklists, what structures to watch for, or phase '
+        'transitions. Route here when the surgeon asks "what phase are we in", '
+        '"what should I watch out for", "what\'s next", "show me the checklist", '
+        'or states a phase change ("we\'re starting the vascular work", '
+        '"entering the fissure"). Do NOT route here for CT scan, 3D model, '
+        'or clinical data requests.'
+    ),
+    instruction=(
+        'You are the Procedural Context specialist for ORION. You analyze the '
+        'live surgical video (which you can see via the real-time video feed) '
+        'and provide phase-specific anatomical checklists.\n\n'
+        'RULES:\n'
+        '- Respond in under 15 words.\n'
+        '- Always call get_surgical_phase — pass the phase name you detect '
+        'from the video or that the surgeon explicitly states.\n'
+        '- If you cannot determine the phase from the video, ask the surgeon '
+        'which phase they are in rather than guessing.\n\n'
+        'PHASE NAMES (pass exactly as shown):\n'
+        '  port_placement, inspection, fissure_development, vascular_dissection,\n'
+        '  bronchial_dissection, specimen_extraction, lymph_node_dissection, closure\n\n'
+        'TOOL USE:\n'
+        '  get_surgical_phase(phase) → displays phase checklist tile on screen\n'
+    ),
+    tools=[get_surgical_phase],
+)
+
+
+# ---------------------------------------------------------------------------
 # ORION_Orchestrator — root agent (exported as root_agent)
 # ---------------------------------------------------------------------------
 
@@ -203,6 +240,10 @@ root_agent = LlmAgent(
         '  - 3D model rotation: posterior, anterior, superior, lateral view\n'
         '  - Structure visibility: hide ribs, show vessels, toggle tumor\n'
         '  - Model control: reset 3D view, restore structures\n\n'
+        'Route to PC_Agent for:\n'
+        '  - Surgical phase questions: "what phase are we in", "what\'s next"\n'
+        '  - Contextual checklists: "show me the checklist", "what should I watch for"\n'
+        '  - Phase transitions: "we\'re starting the vascular work", "entering the fissure"\n\n'
         'Handle directly with hide_all_overlays for ANY request to close/hide/clear/dismiss ALL panels at once:\n'
         '  - "clear everything", "hide everything", "close everything", "remove everything"\n'
         '  - "hide all", "clear all", "close all", "dismiss all"\n'
@@ -216,6 +257,6 @@ root_agent = LlmAgent(
         '- Example: "Hemoglobin displayed." not "Routing to IR_Agent to show hemoglobin."\n'
         '- Never say you are routing or transferring. Just do it.\n'
     ),
-    sub_agents=[ir_agent, iv_agent, ar_agent],
+    sub_agents=[ir_agent, iv_agent, ar_agent, pc_agent],
     tools=[hide_all_overlays],
 )

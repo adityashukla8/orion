@@ -126,6 +126,7 @@ async function connect() {
       modelUrl: `${GCS_BASE}/${CONFIG.modelPath}`,
     });
     ClinicalPanel.init({ modalId: 'clinical-modal', bodyId: 'vitals-body' });
+    ChecklistPanel.init({ modalId: 'checklist-modal', bodyId: 'checklist-body' });
   };
 
   ws.onmessage = (event) => {
@@ -321,7 +322,7 @@ function dispatchRenderCommand(toolName, args) {
       Anatomy3D.reset();
       break;
     case 'hide_all_overlays':
-      CTViewer.hide(); ClinicalPanel.hide(); Anatomy3D.hide();
+      CTViewer.hide(); ClinicalPanel.hide(); Anatomy3D.hide(); ChecklistPanel.hide();
       relayoutTiles();  // belt-and-suspenders: ensure column collapses even if a module's modal ref is stale
       break;
     default:
@@ -335,12 +336,15 @@ function handleFunctionResponse(fr) {
   if (cmd.layer === 'clinical' && cmd.action === 'show') {
     ClinicalPanel.show(cmd.field, cmd.label, cmd.value, cmd.note);
   }
+  if (cmd.layer === 'checklist' && cmd.action === 'show') {
+    ChecklistPanel.show(cmd.phase, cmd.label, cmd.checklist, cmd.warning);
+  }
 }
 
 
 // ── Tile layout ────────────────────────────────────────────────────────────
 
-const MODAL_IDS = ['ct-modal', 'ar-modal', 'clinical-modal'];
+const MODAL_IDS = ['ct-modal', 'ar-modal', 'clinical-modal', 'checklist-modal'];
 
 // When any tile panel becomes visible the tiles column expands to 40% width,
 // pushing the video into the remaining 60%. No position arithmetic needed —

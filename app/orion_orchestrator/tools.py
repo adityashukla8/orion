@@ -353,6 +353,147 @@ def reset_3d_view() -> dict:
 
 
 # ---------------------------------------------------------------------------
+# PC Agent Tool — Procedural Context (surgical phase detection)
+# ---------------------------------------------------------------------------
+
+# Surgical phases for VATS left upper lobectomy (the demo procedure).
+# Each phase has a label, 4-point checklist, and optional critical warning.
+# Values are calibrated to standard robotic-assisted thoracic surgery protocol.
+SURGICAL_PHASES: dict[str, dict] = {
+    'port_placement': {
+        'label': 'Port Placement & Access',
+        'checklist': [
+            'CO2 insufflation pressure ≤12 mmHg',
+            'All 3 trocars seated and sealed',
+            'Camera white-balance and focus confirmed',
+            'DLT positioned — left lung deflated',
+        ],
+        'warning': 'Avoid intercostal vessels during trocar insertion',
+    },
+    'inspection': {
+        'label': 'Inspection & Adhesion Lysis',
+        'checklist': [
+            'Survey pleural cavity for unexpected metastases',
+            'Note adhesion density — assess resectability',
+            'Identify anterior vs posterior access to hilum',
+            'Confirm complete lung collapse',
+        ],
+        'warning': None,
+    },
+    'fissure_development': {
+        'label': 'Fissure Development',
+        'checklist': [
+            'Identify plane between upper and lower lobes',
+            'Stapler parallel to fissure — avoid PA branches',
+            'Posterior fissure complete before anterior',
+            'Watch for incomplete fissure — blunt dissection',
+        ],
+        'warning': 'Posterior PA branches hidden in fissure — stay lateral',
+    },
+    'vascular_dissection': {
+        'label': 'Vascular Dissection',
+        'checklist': [
+            'Identify lingular PA branch before upper division PA',
+            'Confirm 2 clips + 1 stapler load per vessel minimum',
+            'Superior PV — confirm no common trunk with lower',
+            'Divide: upper PA branches, then superior PV',
+        ],
+        'warning': 'CRITICAL: Left phrenic nerve runs anterior to hilum',
+    },
+    'bronchial_dissection': {
+        'label': 'Bronchial Dissection & Division',
+        'checklist': [
+            'Clear peribronchial lymph nodes from bronchus',
+            'Division point ≥5 mm distal to carina',
+            'Stapler load: green (4.8 mm) for bronchus',
+            'Test stump with warm saline — check for bubbles',
+        ],
+        'warning': 'Left upper bronchus — avoid injury to B6 (lower lobe)',
+    },
+    'specimen_extraction': {
+        'label': 'Specimen Extraction',
+        'checklist': [
+            'Place specimen in extraction bag before removal',
+            'Extend anterior port to 3–4 cm if needed',
+            'Confirm all vascular pedicles secured',
+            'Send for frozen section — margin status',
+        ],
+        'warning': None,
+    },
+    'lymph_node_dissection': {
+        'label': 'Lymph Node Dissection',
+        'checklist': [
+            'Level 5, 6 (subaortic, para-aortic) — standard for LUL',
+            'Level 7 (subcarinal) — downward retraction',
+            'Level 9, 10 (inferior pulmonary ligament)',
+            'Hemostasis at each nodal station before moving on',
+        ],
+        'warning': 'Recurrent laryngeal nerve at risk during level 5',
+    },
+    'closure': {
+        'label': 'Hemostasis & Closure',
+        'checklist': [
+            'Irrigate 500 mL warm saline — inspect for air bubbles',
+            'All staple lines and clips confirmed dry',
+            'Place 28Fr chest tube through inferior port site',
+            'Verify lung re-expansion on bronchoscopy/ventilation',
+        ],
+        'warning': None,
+    },
+}
+
+
+def get_surgical_phase(phase: str) -> dict:
+    """
+    Use this tool when the surgeon asks about the current surgical phase,
+    what structures to watch for, what comes next, or when stating a phase
+    transition. Use visual context from the live surgical video to determine
+    the current phase, then call this tool with the appropriate phase name.
+
+    Available phases (pass exactly as shown):
+      port_placement        — trocar insertion and OR setup
+      inspection            — pleural survey and adhesion lysis
+      fissure_development   — developing the interlobar fissure
+      vascular_dissection   — isolating and dividing PA and PV branches
+      bronchial_dissection  — skeletonizing and stapling the bronchus
+      specimen_extraction   — removing the resected lobe in a bag
+      lymph_node_dissection — systematic nodal harvest by station
+      closure               — hemostasis, chest tube, re-expansion check
+
+    Examples:
+      "what phase are we in" → call with phase you detect from the video
+      "what should I watch out for" → call with current detected phase
+      "we are starting the vascular dissection" → phase='vascular_dissection'
+      "show me the checklist" → call with current phase
+      "what's next" → call with the upcoming or next phase
+    """
+    phase = phase.lower().strip().replace(' ', '_')
+    if phase not in SURGICAL_PHASES:
+        return {
+            'status': 'error',
+            'message': (
+                f"Unknown phase '{phase}'. "
+                f"Valid phases: {', '.join(SURGICAL_PHASES.keys())}"
+            ),
+            'render_command': {'layer': 'checklist', 'action': 'error'},
+        }
+
+    data = SURGICAL_PHASES[phase]
+    return {
+        'status': 'success',
+        'phase': phase,
+        'render_command': {
+            'layer': 'checklist',
+            'action': 'show',
+            'phase': phase,
+            'label': data['label'],
+            'checklist': data['checklist'],
+            'warning': data.get('warning'),
+        },
+    }
+
+
+# ---------------------------------------------------------------------------
 # Root Agent Tool — crosses all three display domains
 # ---------------------------------------------------------------------------
 
