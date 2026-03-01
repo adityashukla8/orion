@@ -358,16 +358,20 @@ def reset_3d_view() -> dict:
 
 def hide_all_overlays() -> dict:
     """
-    Use this tool when the surgeon asks to clear, hide, or dismiss ALL active
-    overlays simultaneously — CT scan, clinical data, and the 3D model.
-    This is the 'clear everything' command. Examples:
-      "clear everything"
-      "hide all overlays"
-      "clear the screen"
-      "remove everything"
-      "clean up"
-      "ORION, clear"
-    Do NOT route this to a sub-agent. Handle it directly.
+    Use this tool when the surgeon asks to clear, hide, close, or dismiss ALL
+    active overlays simultaneously — CT scan, clinical data, and the 3D model.
+    Trigger on ANY of the following (and natural variations):
+      "clear everything"        "hide everything"
+      "hide all overlays"       "hide all"
+      "clear the screen"        "clear all"
+      "remove everything"       "remove all"
+      "clean up"                "clean the screen"
+      "close everything"        "close all"
+      "close all panels"        "close the panels"
+      "dismiss everything"      "dismiss all"
+      "ORION, clear"            "go back to just the video"
+      "get rid of everything"   "take it all away"
+    Do NOT route this to a sub-agent. Handle it directly at the root level.
     """
     return {
         'status': 'success',
