@@ -178,10 +178,13 @@ function handleServerEvent(jsonString) {
   catch { return; }
 
   // Input transcription (surgeon speech — what Gemini heard).
-  // Server uses by_alias=True so camelCase arrives first; snake_case is fallback.
-  // Streams in chunks — update the current surgeon bubble in place.
+  // A new surgeon utterance signals a new conversation exchange: seal the
+  // previous ORION bubble so the next agent response starts a fresh one.
   const inputText = event.inputTranscription?.text ?? event.input_transcription?.text;
-  if (inputText) _upsertTranscript('surgeon', inputText);
+  if (inputText) {
+    currentOrionEntry = null;   // surgeon is speaking → seal previous ORION bubble
+    _upsertTranscript('surgeon', inputText);
+  }
 
   // Output transcription (ORION spoken response) — also streams in chunks.
   // Update current ORION bubble in place so words don't flood as separate cards.
@@ -231,16 +234,18 @@ function handleServerEvent(jsonString) {
     if (fr) handleFunctionResponse(fr);
   }
 
-  // Interrupt — stop current audio playback, return to listening state
+  // Interrupt — ORION was cut off; next ORION speech starts a fresh bubble
   if (event.interrupted && audioPlayerNode) {
     audioPlayerNode.port.postMessage({ command: 'endOfAudio' });
-    currentOrionEntry = null;   // next ORION text starts a fresh bubble
+    currentOrionEntry = null;
     if (ws && ws.readyState === WebSocket.OPEN) setStatus('active');
   }
 
-  // Turn complete — seal current bubbles so the next turn starts fresh
+  // Turn complete — multi-agent flow fires turnComplete after each sub-agent.
+  // Only seal the surgeon bubble (their utterance is fully received).
+  // Keep currentOrionEntry open so all agent responses within one user
+  // request accumulate into a single ORION bubble.
   if (event.turnComplete ?? event.turn_complete) {
-    currentOrionEntry   = null;
     currentSurgeonEntry = null;
     if (ws && ws.readyState === WebSocket.OPEN) setStatus('active');
   }
