@@ -305,15 +305,18 @@ const MODAL_IDS = ['ct-modal', 'ar-modal', 'clinical-modal'];
 // Positions for 1, 2, or 3 simultaneously-visible modals.
 // Values are CSS inset strings applied to each modal's style.
 const MODAL_POSITIONS = {
-  1: [{ left: '30%', right: '30%', top: '22%', bottom: '22%' }],
+  // 1 modal: large centred window
+  1: [{ left: '20%', right: '20%', top: '12%', bottom: '12%' }],
+  // 2 modals: side by side
   2: [
-    { left: '3%',  right: '52%', top: '18%', bottom: '18%' },
-    { left: '52%', right: '3%',  top: '18%', bottom: '18%' },
+    { left: '2%',  right: '51%', top: '8%', bottom: '8%' },
+    { left: '51%', right: '2%',  top: '8%', bottom: '8%' },
   ],
+  // 3 modals: 2 on top row, 1 centred on bottom row
   3: [
-    { left: '2%',    right: '69%',  top: '12%', bottom: '12%' },
-    { left: '33.5%', right: '35.5%', top: '12%', bottom: '12%' },
-    { left: '66%',   right: '2%',   top: '12%', bottom: '12%' },
+    { left: '2%',  right: '51%', top: '3%',  bottom: '53%' },  // top-left
+    { left: '51%', right: '2%',  top: '3%',  bottom: '53%' },  // top-right
+    { left: '25%', right: '25%', top: '52%', bottom: '3%'  },  // bottom-centre
   ],
 };
 
