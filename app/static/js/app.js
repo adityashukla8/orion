@@ -40,6 +40,18 @@ let ws            = null;
 let videoInterval = null;
 let offscreenCtx  = null;
 
+// ── Transcript state ───────────────────────────────────────────────────────
+// Live API streams transcription word-by-word. Track the current in-progress
+// bubble for each speaker and update it in place rather than adding new entries.
+let currentOrionEntry   = null;
+let currentSurgeonEntry = null;
+
+// ── Tool-call deduplication ────────────────────────────────────────────────
+// Prevents duplicate execution when the user repeats a command while waiting
+// for a response. Key = "toolName:argsJSON", value = timestamp of last dispatch.
+const _dispatchedTools = new Map();
+const TOOL_DEDUP_MS    = 4000;  // ignore identical call within 4 s
+
 // ── Entry point ────────────────────────────────────────────────────────────
 orionOrb.addEventListener('click', () => {
   if (ws && ws.readyState === WebSocket.OPEN) disconnect();
@@ -167,12 +179,14 @@ function handleServerEvent(jsonString) {
 
   // Input transcription (surgeon speech — what Gemini heard).
   // Server uses by_alias=True so camelCase arrives first; snake_case is fallback.
+  // Streams in chunks — update the current surgeon bubble in place.
   const inputText = event.inputTranscription?.text ?? event.input_transcription?.text;
-  if (inputText) addTranscript('surgeon', inputText);
+  if (inputText) _upsertTranscript('surgeon', inputText);
 
-  // Output transcription (ORION spoken response)
+  // Output transcription (ORION spoken response) — also streams in chunks.
+  // Update current ORION bubble in place so words don't flood as separate cards.
   const outputText = event.outputTranscription?.text ?? event.output_transcription?.text;
-  if (outputText) addTranscript('orion', outputText);
+  if (outputText) _upsertTranscript('orion', outputText);
 
   // Agent routing visibility (show which specialist took the turn)
   if (event.author && event.author !== 'ORION_Orchestrator') {
@@ -194,14 +208,22 @@ function handleServerEvent(jsonString) {
 
     // Text from model (non-audio fallback)
     if (part.text && event.content?.role === 'model' && !outputText) {
-      addTranscript('orion', part.text);
+      _upsertTranscript('orion', part.text);
     }
 
-    // Function call → dispatch to display layer
+    // Function call → dispatch to display layer (deduplicated)
     const fc = part.functionCall ?? part.function_call;
     if (fc) {
-      logRouting(`▶ ${fc.name}(${JSON.stringify(fc.args)})`, 'tool-call');
-      dispatchRenderCommand(fc.name, fc.args ?? fc.arguments ?? {});
+      const key  = `${fc.name}:${JSON.stringify(fc.args ?? fc.arguments ?? {})}`;
+      const now  = Date.now();
+      const last = _dispatchedTools.get(key) ?? 0;
+      if (now - last > TOOL_DEDUP_MS) {
+        _dispatchedTools.set(key, now);
+        logRouting(`▶ ${fc.name}(${JSON.stringify(fc.args)})`, 'tool-call');
+        dispatchRenderCommand(fc.name, fc.args ?? fc.arguments ?? {});
+      } else {
+        logRouting(`⚠ deduplicated ${fc.name}`, 'turn');
+      }
     }
 
     // Function response → update display with actual clinical values
@@ -212,11 +234,14 @@ function handleServerEvent(jsonString) {
   // Interrupt — stop current audio playback, return to listening state
   if (event.interrupted && audioPlayerNode) {
     audioPlayerNode.port.postMessage({ command: 'endOfAudio' });
+    currentOrionEntry = null;   // next ORION text starts a fresh bubble
     if (ws && ws.readyState === WebSocket.OPEN) setStatus('active');
   }
 
-  // Turn complete — return to listening state
+  // Turn complete — seal current bubbles so the next turn starts fresh
   if (event.turnComplete ?? event.turn_complete) {
+    currentOrionEntry   = null;
+    currentSurgeonEntry = null;
     if (ws && ws.readyState === WebSocket.OPEN) setStatus('active');
   }
 }
@@ -345,16 +370,39 @@ function logRouting(text, type = 'turn') {
   while (routingLog.children.length > 50) routingLog.removeChild(routingLog.firstChild);
 }
 
-function addTranscript(speaker, text) {
+/**
+ * Upserts a transcript bubble for the given speaker.
+ * Live API streams text in chunks — this updates the current in-progress
+ * bubble in place instead of adding a new card for every chunk.
+ * A new bubble is created only when the previous turn has been sealed
+ * (currentOrionEntry / currentSurgeonEntry set to null on turnComplete).
+ */
+function _upsertTranscript(speaker, text) {
   if (!text?.trim()) return;
-  const entry = document.createElement('div');
-  entry.className = `transcript-entry ${speaker}`;
-  entry.innerHTML = `
-    <div class="speaker">${speaker === 'surgeon' ? 'Surgeon' : 'ORION'}</div>
-    <div class="text">${escapeHtml(text)}</div>`;
-  transcriptLog.appendChild(entry);
+
+  const isSurgeon = speaker === 'surgeon';
+  const current   = isSurgeon ? currentSurgeonEntry : currentOrionEntry;
+
+  if (current) {
+    // Update the existing in-progress bubble
+    const textEl = current.querySelector('.text');
+    if (textEl) textEl.innerHTML = escapeHtml(text);
+  } else {
+    // Start a new bubble for this turn
+    const entry = document.createElement('div');
+    entry.className = `transcript-entry ${speaker}`;
+    entry.innerHTML = `
+      <div class="speaker">${isSurgeon ? 'Surgeon' : 'ORION'}</div>
+      <div class="text">${escapeHtml(text)}</div>`;
+    transcriptLog.appendChild(entry);
+    // Trim history
+    while (transcriptLog.children.length > 100) transcriptLog.removeChild(transcriptLog.firstChild);
+
+    if (isSurgeon) currentSurgeonEntry = entry;
+    else           currentOrionEntry   = entry;
+  }
+
   transcriptLog.scrollTop = transcriptLog.scrollHeight;
-  while (transcriptLog.children.length > 100) transcriptLog.removeChild(transcriptLog.firstChild);
 }
 
 function escapeHtml(str) {
