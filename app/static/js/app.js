@@ -52,6 +52,32 @@ let currentSurgeonEntry = null;
 const _dispatchedTools = new Map();
 const TOOL_DEDUP_MS    = 4000;  // ignore identical call within 4 s
 
+// ── Agent & tool metrics ───────────────────────────────────────────────────
+let   _activeAgent  = null;                // current event.author
+const _toolMetrics  = new Map();           // toolName → { count, lastCalled }
+
+function updateAgentCard() {
+  // Highlight the currently active agent chip
+  document.querySelectorAll('.agent-chip').forEach((chip) => {
+    chip.classList.toggle('active', chip.dataset.agent === _activeAgent);
+  });
+
+  // Re-render tool call list, sorted by most recently called
+  const metricsEl = document.getElementById('tool-metrics');
+  if (!metricsEl) return;
+  const sorted = [..._toolMetrics.entries()]
+    .sort((a, b) => b[1].lastCalled - a[1].lastCalled);
+  if (sorted.length === 0) {
+    metricsEl.innerHTML = '<span class="tool-metrics-empty">No tools called yet</span>';
+  } else {
+    metricsEl.innerHTML = sorted.map(([name, { count }]) => `
+      <div class="tool-metric-row">
+        <span class="tool-metric-name">${name.replace(/_/g, '\u00a0')}</span>
+        <span class="tool-metric-count">×${count}</span>
+      </div>`).join('');
+  }
+}
+
 // ── Entry point ────────────────────────────────────────────────────────────
 orionOrb.addEventListener('click', () => {
   if (ws && ws.readyState === WebSocket.OPEN) disconnect();
@@ -108,6 +134,9 @@ async function connect() {
 
   ws.onclose = () => {
     setStatus('offline');
+    _activeAgent = null;
+    _toolMetrics.clear();
+    updateAgentCard();
     stopVideoCapture();
     if (micStream) { stopMicrophone(micStream); micStream = null; }
     logRouting('Connection closed.', 'turn');
@@ -192,9 +221,15 @@ function handleServerEvent(jsonString) {
   const outputText = event.outputTranscription?.text ?? event.output_transcription?.text;
   if (outputText) _upsertTranscript('orion', outputText);
 
-  // Agent routing visibility (show which specialist took the turn)
-  if (event.author && event.author !== 'ORION_Orchestrator') {
-    logRouting(`→ ${event.author}`, 'transfer');
+  // Agent routing visibility + metrics card
+  if (event.author) {
+    if (event.author !== _activeAgent) {
+      _activeAgent = event.author;
+      updateAgentCard();
+    }
+    if (event.author !== 'ORION_Orchestrator') {
+      logRouting(`→ ${event.author}`, 'transfer');
+    }
   }
 
   const parts = event.content?.parts ?? [];
@@ -223,6 +258,10 @@ function handleServerEvent(jsonString) {
       const last = _dispatchedTools.get(key) ?? 0;
       if (now - last > TOOL_DEDUP_MS) {
         _dispatchedTools.set(key, now);
+        // Track tool call count for the metrics card
+        const prev = _toolMetrics.get(fc.name) ?? { count: 0, lastCalled: 0 };
+        _toolMetrics.set(fc.name, { count: prev.count + 1, lastCalled: Date.now() });
+        updateAgentCard();
         logRouting(`▶ ${fc.name}(${JSON.stringify(fc.args)})`, 'tool-call');
         dispatchRenderCommand(fc.name, fc.args ?? fc.arguments ?? {});
       } else {

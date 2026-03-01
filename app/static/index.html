@@ -349,7 +349,115 @@
     #orion-status-label.lbl-speaking    { color: #0284c7; }
     #orion-status-label.lbl-interrupted { color: #d97706; }
 
-    /* ── Card 2: Agent activity ── */
+    /* ── Card 2: Agents & Tools ── */
+    #agents-card {
+      flex: 0 0 auto;
+    }
+
+    #agents-tools-body {
+      padding: 8px 12px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .at-section-label {
+      font-size: 7px;
+      font-weight: 700;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: #b0b8c8;
+      margin-bottom: 3px;
+    }
+
+    #agents-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .agent-chip {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(180, 195, 220, 0.2);
+      border: 1px solid rgba(180, 195, 220, 0.3);
+      color: #a8b2c4;
+      transition: background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+    }
+
+    /* Per-agent active colours */
+    .agent-chip.active[data-agent="ORION_Orchestrator"] {
+      background: rgba(59, 130, 246, 0.14);
+      border-color: rgba(59, 130, 246, 0.45);
+      color: #3b82f6;
+      box-shadow: 0 0 7px rgba(59, 130, 246, 0.22);
+    }
+    .agent-chip.active[data-agent="IR_Agent"] {
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #10b981;
+      box-shadow: 0 0 7px rgba(16, 185, 129, 0.2);
+    }
+    .agent-chip.active[data-agent="IV_Agent"] {
+      background: rgba(139, 92, 246, 0.12);
+      border-color: rgba(139, 92, 246, 0.4);
+      color: #8b5cf6;
+      box-shadow: 0 0 7px rgba(139, 92, 246, 0.2);
+    }
+    .agent-chip.active[data-agent="AR_Agent"] {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.4);
+      color: #f59e0b;
+      box-shadow: 0 0 7px rgba(245, 158, 11, 0.2);
+    }
+
+    #tool-metrics {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .tool-metric-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .tool-metric-name {
+      font-size: 9px;
+      font-weight: 500;
+      color: #7b8299;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .tool-metric-count {
+      font-size: 8px;
+      font-weight: 700;
+      color: #5a9fd4;
+      background: rgba(90, 159, 212, 0.12);
+      border-radius: 4px;
+      padding: 1px 5px;
+      flex-shrink: 0;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .tool-metrics-empty {
+      font-size: 9px;
+      color: #c0c8d8;
+      font-style: italic;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    /* ── Card 3: Agent activity ── */
     #routing-card {
       flex: 1;
       display: flex;
@@ -479,7 +587,29 @@
       <span id="orion-status-label">ORION offline</span>
     </div>
 
-    <!-- Card 2: Agent activity -->
+    <!-- Card 2: Agents & Tools -->
+    <div id="agents-card" class="side-card">
+      <div class="card-label">Agents &amp; Tools</div>
+      <div id="agents-tools-body">
+        <div>
+          <div class="at-section-label">Agents</div>
+          <div id="agents-row">
+            <div class="agent-chip" data-agent="ORION_Orchestrator">ORION</div>
+            <div class="agent-chip" data-agent="IR_Agent">IR</div>
+            <div class="agent-chip" data-agent="IV_Agent">IV</div>
+            <div class="agent-chip" data-agent="AR_Agent">AR</div>
+          </div>
+        </div>
+        <div>
+          <div class="at-section-label">Tool calls</div>
+          <div id="tool-metrics">
+            <span class="tool-metrics-empty">No tools called yet</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Agent activity -->
     <div id="routing-card" class="side-card">
       <div class="card-label">Agent activity</div>
       <div id="routing-log">
