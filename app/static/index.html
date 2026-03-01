@@ -70,7 +70,7 @@
     .modal-title {
       flex-shrink: 0;
       padding: 10px 14px 8px;
-      font-size: 9px;
+      font-size: 11px;
       font-weight: 600;
       letter-spacing: 0.13em;
       text-transform: uppercase;
@@ -115,7 +115,7 @@
     }
 
     .card-label {
-      font-size: 8px;
+      font-size: 10px;
       font-weight: 700;
       letter-spacing: 0.14em;
       text-transform: uppercase;
@@ -336,7 +336,7 @@
 
     /* ── Status label colours per state ── */
     #orion-status-label {
-      font-size: 9px;
+      font-size: 11px;
       font-weight: 600;
       letter-spacing: 0.1em;
       text-transform: uppercase;
@@ -362,7 +362,7 @@
     }
 
     .at-section-label {
-      font-size: 7px;
+      font-size: 9px;
       font-weight: 700;
       letter-spacing: 0.13em;
       text-transform: uppercase;
@@ -372,16 +372,16 @@
 
     #agents-row {
       display: flex;
-      flex-wrap: wrap;
+      flex-direction: column;
       gap: 4px;
     }
 
     .agent-chip {
-      font-size: 8px;
-      font-weight: 700;
-      letter-spacing: 0.07em;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
-      padding: 3px 8px;
+      padding: 4px 9px;
       border-radius: 6px;
       background: rgba(180, 195, 220, 0.2);
       border: 1px solid rgba(180, 195, 220, 0.3);
@@ -429,7 +429,7 @@
     }
 
     .tool-metric-name {
-      font-size: 9px;
+      font-size: 11px;
       font-weight: 500;
       color: #7b8299;
       white-space: nowrap;
@@ -440,7 +440,7 @@
     }
 
     .tool-metric-count {
-      font-size: 8px;
+      font-size: 10px;
       font-weight: 700;
       color: #5a9fd4;
       background: rgba(90, 159, 212, 0.12);
@@ -451,7 +451,7 @@
     }
 
     .tool-metrics-empty {
-      font-size: 9px;
+      font-size: 11px;
       color: #c0c8d8;
       font-style: italic;
       font-family: 'Poppins', sans-serif;
@@ -475,7 +475,7 @@
     }
 
     .routing-event {
-      font-size: 10px;
+      font-size: 12px;
       padding: 3px 0 3px 8px;
       border-left: 2px solid #d8dde8;
       color: #7b8299;
@@ -506,7 +506,7 @@
     }
 
     .transcript-entry {
-      font-size: 11px;
+      font-size: 13px;
       line-height: 1.5;
       padding: 7px 10px;
       border-radius: 10px;
@@ -515,7 +515,7 @@
     }
 
     .transcript-entry .speaker {
-      font-size: 8px;
+      font-size: 10px;
       font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
@@ -594,10 +594,10 @@
         <div>
           <div class="at-section-label">Agents</div>
           <div id="agents-row">
-            <div class="agent-chip" data-agent="ORION_Orchestrator">ORION</div>
-            <div class="agent-chip" data-agent="IR_Agent">IR</div>
-            <div class="agent-chip" data-agent="IV_Agent">IV</div>
-            <div class="agent-chip" data-agent="AR_Agent">AR</div>
+            <div class="agent-chip" data-agent="ORION_Orchestrator">Orchestrator</div>
+            <div class="agent-chip" data-agent="IR_Agent">IR — Patient Data</div>
+            <div class="agent-chip" data-agent="IV_Agent">IV — CT Imaging</div>
+            <div class="agent-chip" data-agent="AR_Agent">AR — 3D Anatomy</div>
           </div>
         </div>
         <div>
