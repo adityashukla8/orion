@@ -87,7 +87,7 @@ async function connect() {
       canvasId: 'ar-canvas',
       modelUrl: `${GCS_BASE}/${CONFIG.modelPath}`,
     });
-    ClinicalPanel.init({ containerId: 'clinical-panel' });
+    ClinicalPanel.init({ modalId: 'clinical-modal', bodyId: 'vitals-body' });
   };
 
   ws.onmessage = (event) => {
@@ -265,6 +265,55 @@ function handleFunctionResponse(fr) {
     ClinicalPanel.show(cmd.field, cmd.label, cmd.value, cmd.note);
   }
 }
+
+
+// ── Modal auto-layout ──────────────────────────────────────────────────────
+
+const MODAL_IDS = ['ct-modal', 'ar-modal', 'clinical-modal'];
+
+// Positions for 1, 2, or 3 simultaneously-visible modals.
+// Values are CSS inset strings applied to each modal's style.
+const MODAL_POSITIONS = {
+  1: [{ left: '30%', right: '30%', top: '22%', bottom: '22%' }],
+  2: [
+    { left: '3%',  right: '52%', top: '18%', bottom: '18%' },
+    { left: '52%', right: '3%',  top: '18%', bottom: '18%' },
+  ],
+  3: [
+    { left: '2%',    right: '69%',  top: '12%', bottom: '12%' },
+    { left: '33.5%', right: '35.5%', top: '12%', bottom: '12%' },
+    { left: '66%',   right: '2%',   top: '12%', bottom: '12%' },
+  ],
+};
+
+function relayoutModals() {
+  const visible = MODAL_IDS.filter(
+    (id) => document.getElementById(id)?.classList.contains('visible')
+  );
+  const count = Math.min(visible.length, 3);
+  const positions = MODAL_POSITIONS[count] || [];
+
+  // Apply positions to visible modals
+  visible.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const pos = positions[i] || positions[0];
+    el.style.left   = pos.left;
+    el.style.right  = pos.right;
+    el.style.top    = pos.top;
+    el.style.bottom = pos.bottom;
+  });
+
+  // Reset hidden modals to CSS default (30% margin from all sides)
+  MODAL_IDS.filter((id) => !visible.includes(id)).forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.left = el.style.right = el.style.top = el.style.bottom = '';
+  });
+}
+
+// Expose globally so ct-viewer.js, anatomy-3d.js, clinical-panel.js can call it
+window.ORION_relayoutModals = relayoutModals;
 
 
 // ── UI helpers ─────────────────────────────────────────────────────────────

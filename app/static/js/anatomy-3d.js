@@ -29,6 +29,7 @@ const Anatomy3D = (() => {
   let camera    = null;
   let model     = null;
   let canvas    = null;
+  let modal     = null;   // parent .overlay-modal wrapper
   let animFrame = null;
 
   // Map of lowercased mesh name → Three.js Mesh object
@@ -45,6 +46,7 @@ const Anatomy3D = (() => {
    */
   function init(config) {
     canvas = document.getElementById(config.canvasId);
+    modal  = canvas.closest('.overlay-modal');
 
     // Renderer with alpha so Three.js background is transparent
     renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
@@ -174,14 +176,14 @@ const Anatomy3D = (() => {
   }
 
   /**
-   * Hides the AR canvas entirely.
+   * Hides the AR modal.
    */
   function hide() {
-    if (canvas) canvas.style.display = 'none';
+    if (modal) { modal.classList.remove('visible'); window.ORION_relayoutModals?.(); }
   }
 
   function _show() {
-    if (canvas) canvas.style.display = 'block';
+    if (modal) { modal.classList.add('visible'); window.ORION_relayoutModals?.(); }
   }
 
 

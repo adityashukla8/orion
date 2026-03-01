@@ -18,6 +18,7 @@ const CTViewer = (() => {
   // ── State ────────────────────────────────────────────────────────────────
   let canvas      = null;
   let ctx         = null;
+  let modal       = null;   // parent .overlay-modal wrapper
   let gcsBase     = '';
   let ctPath      = '';
   let totalSlices = 350;
@@ -47,11 +48,12 @@ const CTViewer = (() => {
   function init(config) {
     canvas      = document.getElementById(config.canvasId);
     ctx         = canvas.getContext('2d');
+    modal       = canvas.closest('.overlay-modal');
     gcsBase     = config.gcsBase;
     ctPath      = config.ctPath;
     totalSlices = config.totalSlices || 350;
 
-    // Size canvas to match its display area
+    // Size canvas to match its modal body (modal is in layout even when opacity:0)
     _resizeCanvas();
     window.addEventListener('resize', _resizeCanvas);
   }
@@ -96,10 +98,10 @@ const CTViewer = (() => {
   }
 
   /**
-   * Hides the CT overlay canvas.
+   * Hides the CT modal.
    */
   function hide() {
-    if (canvas) canvas.style.display = 'none';
+    if (modal) { modal.classList.remove('visible'); window.ORION_relayoutModals?.(); }
   }
 
 
@@ -112,9 +114,6 @@ const CTViewer = (() => {
   function _loadAndDraw(sliceNum, landmarkLabel) {
     if (!canvas || !ctx) return;
 
-    // Make canvas visible
-    canvas.style.display = 'block';
-
     // Zero-pad slice number to 3 digits: 1 → '001'
     const padded = String(sliceNum).padStart(3, '0');
     const url = `${gcsBase}/${ctPath}/${padded}.png`;
@@ -123,17 +122,16 @@ const CTViewer = (() => {
     img.crossOrigin = 'anonymous';
 
     img.onload = () => {
-      // Ensure canvas is sized to its container
       _resizeCanvas();
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Show the modal
+      if (modal) { modal.classList.add('visible'); window.ORION_relayoutModals?.(); }
 
-      // Draw CT slice with semi-transparency over the surgical video
-      ctx.globalAlpha = 0.85;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.globalAlpha = 0.9;
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       ctx.globalAlpha = 1.0;
 
-      // Overlay text: slice number and landmark (if jumping)
       _drawLabel(sliceNum, landmarkLabel);
     };
 
@@ -157,24 +155,24 @@ const CTViewer = (() => {
   function _drawLabel(sliceNum, landmarkLabel) {
     const pad = 14;
 
-    ctx.font = '600 12px "Courier New", monospace';
+    ctx.font = "600 11px 'Poppins', sans-serif";
     ctx.textBaseline = 'top';
 
     // Slice counter — top-right
     const sliceText = `SLICE ${sliceNum} / ${totalSlices}`;
     const sliceW = ctx.measureText(sliceText).width;
-    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.fillRect(canvas.width - sliceW - pad * 2 - 4, pad - 4, sliceW + 8, 20);
-    ctx.fillStyle = '#80deea';
+    ctx.fillStyle = '#1a4e80';
     ctx.fillText(sliceText, canvas.width - sliceW - pad - 4, pad);
 
     // Landmark label — below slice counter
     if (landmarkLabel) {
       const label = landmarkLabel.toUpperCase().replace(/_/g, ' ');
       const labelW = ctx.measureText(label).width;
-      ctx.fillStyle = 'rgba(0,0,0,0.55)';
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
       ctx.fillRect(canvas.width - labelW - pad * 2 - 4, pad + 24, labelW + 8, 20);
-      ctx.fillStyle = '#ffcc80';
+      ctx.fillStyle = '#2a6090';
       ctx.fillText(label, canvas.width - labelW - pad - 4, pad + 24);
     }
   }

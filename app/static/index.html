@@ -4,282 +4,419 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ORION — Surgical Co-Pilot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: #e8ecf1;
+      background: #dde3ec;
       color: #1a1a2e;
-      font-family: Helvetica, Arial, sans-serif;
+      font-family: 'Poppins', sans-serif;
       height: 100vh;
       display: flex;
+      gap: 10px;
+      padding: 10px;
       overflow: hidden;
     }
 
-    /* ── Left column: surgical video + overlays ── */
+    /* ── Left 90%: surgical video ── */
     #display-area {
-      flex: 0 0 70%;
+      flex: 1;
       position: relative;
       background: #000;
+      border-radius: 18px;
       overflow: hidden;
-    }
-
-    /* All layers are stacked absolutely inside the display area */
-    #display-area > * {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
     }
 
     #surgical-video {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
       object-fit: cover;
       z-index: 0;
     }
 
-    #ct-canvas {
-      z-index: 1;
-      display: none;
-      opacity: 0.85;
-      pointer-events: none;
-    }
-
-    #ar-canvas {
-      z-index: 2;
-      display: none;
-      pointer-events: none;
-    }
-
-    #clinical-panel {
-      z-index: 3;
-      pointer-events: none;
-    }
-
-    /* ── Right column: glassmorphism panel ── */
-    #right-panel {
-      flex: 0 0 30%;
+    /* ── Overlay modals (CT, 3D, vitals) ── */
+    /* Opacity-based hide so canvas always has layout dimensions */
+    .overlay-modal {
+      position: absolute;
+      left: 30%; top: 30%; right: 30%; bottom: 30%;
+      z-index: 5;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.62);
+      backdrop-filter: blur(32px);
+      -webkit-backdrop-filter: blur(32px);
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      box-shadow:
+        0 8px 40px rgba(100, 140, 210, 0.14),
+        inset 0 1px 0 rgba(255, 255, 255, 0.85);
       display: flex;
       flex-direction: column;
-      background: rgba(255, 255, 255, 0.45);
+      overflow: hidden;
+      /* Hidden by default — opacity keeps canvas in layout for proper sizing */
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.95) translateY(6px);
+      transition: opacity 0.22s ease, transform 0.22s ease;
+    }
+
+    .overlay-modal.visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-title {
+      flex-shrink: 0;
+      padding: 10px 14px 8px;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: rgba(60, 90, 155, 0.7);
+      border-bottom: 1px solid rgba(180, 200, 235, 0.4);
+    }
+
+    .modal-body {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* CT and AR canvases fill their modal body */
+    #ct-canvas, #ar-canvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      display: block;
+    }
+
+    /* ── Right 10%: three floating glass cards ── */
+    #right-panel {
+      flex: 0 0 10%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow: hidden;
+      min-width: 140px;
+    }
+
+    /* Shared glass card style */
+    .side-card {
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.58);
       backdrop-filter: blur(28px);
       -webkit-backdrop-filter: blur(28px);
-      border-left: 1px solid rgba(255, 255, 255, 0.55);
-      box-shadow: -6px 0 40px rgba(0, 0, 0, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.75);
+      box-shadow:
+        0 6px 32px rgba(100, 140, 210, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
       overflow: hidden;
     }
 
-    /* ── Orb section — top 20% of right panel ── */
-    #orb-section {
-      flex: 0 0 20%;
+    .card-label {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #b0b8c8;
+      padding: 10px 12px 6px;
+      border-bottom: 1px solid rgba(180, 200, 235, 0.3);
+      flex-shrink: 0;
+    }
+
+    /* ── Card 1: ORION orb ── */
+    #orb-card {
+      flex: 0 0 auto;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 12px;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      gap: 10px;
+      padding: 18px 12px 16px;
     }
 
+    /* Pastel blue glass sphere */
     #orion-orb {
-      width: 76px;
-      height: 76px;
+      width: 74px;
+      height: 74px;
       border-radius: 50%;
+      position: relative;
       cursor: pointer;
-      background: radial-gradient(circle at 36% 30%, #ffffff 0%, #dce8f5 50%, #b8cee8 100%);
+      overflow: hidden;
+      background: radial-gradient(
+        circle at 50% 55%,
+        rgba(210, 230, 255, 0.18) 0%,
+        rgba(180, 210, 255, 0.08) 100%
+      );
       box-shadow:
-        0 4px 18px rgba(100, 149, 237, 0.22),
-        inset 0 1px 3px rgba(255, 255, 255, 0.9);
-      transition: transform 0.2s ease;
+        0 0 0 1px rgba(160, 200, 255, 0.35),
+        0 6px 22px rgba(100, 160, 255, 0.18),
+        inset 0 0 14px rgba(255, 255, 255, 0.12);
+      transition: transform 0.2s ease, box-shadow 0.35s ease;
       user-select: none;
       -webkit-user-select: none;
     }
 
     #orion-orb:hover  { transform: scale(1.05); }
-    #orion-orb:active { transform: scale(0.97); }
+    #orion-orb:active { transform: scale(0.96); }
 
-    /* Connected / listening */
+    /* Specular highlight */
+    #orion-orb::after {
+      content: '';
+      position: absolute; inset: 0; border-radius: 50%;
+      background: radial-gradient(
+        ellipse at 27% 20%,
+        rgba(255, 255, 255, 0.72) 0%,
+        rgba(255, 255, 255, 0.2) 28%,
+        transparent 52%
+      );
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    /* Rim glow */
+    #orion-orb::before {
+      content: '';
+      position: absolute; inset: 0; border-radius: 50%;
+      background: radial-gradient(
+        circle at 50% 50%,
+        transparent 50%,
+        rgba(140, 190, 255, 0.18) 68%,
+        rgba(160, 205, 255, 0.1) 82%,
+        transparent 100%
+      );
+      z-index: 9;
+      pointer-events: none;
+    }
+
+    .orb-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(14px);
+      z-index: 2;
+    }
+
+    .orb-blob.b1 {
+      width: 64px; height: 64px;
+      background: radial-gradient(circle, rgba(100, 170, 255, 0.72) 0%, rgba(80, 150, 255, 0.38) 50%, transparent 72%);
+      top: -12px; left: -12px;
+    }
+
+    .orb-blob.b2 {
+      width: 56px; height: 56px;
+      background: radial-gradient(circle, rgba(150, 205, 255, 0.65) 0%, rgba(120, 185, 255, 0.32) 50%, transparent 72%);
+      bottom: -8px; right: -10px;
+    }
+
+    .orb-blob.b3 {
+      width: 44px; height: 44px;
+      background: radial-gradient(circle, rgba(190, 225, 255, 0.6) 0%, rgba(170, 215, 255, 0.28) 50%, transparent 72%);
+      top: 22%; right: -6px;
+    }
+
+    /* Connected: blobs slowly swirl */
     #orion-orb.connected {
-      background: radial-gradient(circle at 36% 30%, #ffffff 0%, #b3e5fc 42%, #4fc3f7 100%);
       box-shadow:
-        0 0 30px rgba(79, 195, 247, 0.50),
-        inset 0 1px 3px rgba(255, 255, 255, 0.7);
-      animation: orb-breathe 2.6s ease-in-out infinite;
+        0 0 0 1px rgba(120, 180, 255, 0.45),
+        0 0 28px rgba(100, 165, 255, 0.42),
+        0 6px 22px rgba(80, 140, 230, 0.2),
+        inset 0 0 12px rgba(255, 255, 255, 0.1);
     }
 
-    /* ORION speaking */
+    #orion-orb.connected .orb-blob.b1 { animation: swirl-a 5.5s ease-in-out infinite; }
+    #orion-orb.connected .orb-blob.b2 { animation: swirl-b 6.5s ease-in-out infinite; }
+    #orion-orb.connected .orb-blob.b3 { animation: swirl-c 7.5s ease-in-out infinite; }
+
+    /* Speaking: faster swirl + bright pulse */
     #orion-orb.speaking {
-      background: radial-gradient(circle at 36% 30%, #ffffff 0%, #80deea 38%, #00bcd4 100%);
       box-shadow:
-        0 0 46px rgba(0, 188, 212, 0.68),
-        inset 0 1px 3px rgba(255, 255, 255, 0.6);
-      animation: orb-pulse 0.65s ease-in-out infinite alternate;
+        0 0 0 2px rgba(100, 175, 255, 0.55),
+        0 0 44px rgba(80, 160, 255, 0.62),
+        0 6px 22px rgba(60, 130, 220, 0.3),
+        inset 0 0 10px rgba(255, 255, 255, 0.08);
     }
 
-    @keyframes orb-breathe {
-      0%, 100% { box-shadow: 0 0 28px rgba(79, 195, 247, 0.48), inset 0 1px 3px rgba(255,255,255,0.7); }
-      50%       { box-shadow: 0 0 46px rgba(79, 195, 247, 0.80), inset 0 1px 3px rgba(255,255,255,0.7); }
+    #orion-orb.speaking .orb-blob.b1 { animation: swirl-a 1.6s ease-in-out infinite; }
+    #orion-orb.speaking .orb-blob.b2 { animation: swirl-b 2.0s ease-in-out infinite; }
+    #orion-orb.speaking .orb-blob.b3 { animation: swirl-c 2.4s ease-in-out infinite; }
+
+    @keyframes swirl-a {
+      0%   { transform: translate(0px, 0px); }
+      25%  { transform: translate(16px, 10px); }
+      50%  { transform: translate(10px, 20px); }
+      75%  { transform: translate(-6px, 9px); }
+      100% { transform: translate(0px, 0px); }
     }
 
-    @keyframes orb-pulse {
-      from { box-shadow: 0 0 30px rgba(0, 188, 212, 0.50), inset 0 1px 3px rgba(255,255,255,0.6); transform: scale(1); }
-      to   { box-shadow: 0 0 56px rgba(0, 188, 212, 0.82), inset 0 1px 3px rgba(255,255,255,0.6); transform: scale(1.07); }
+    @keyframes swirl-b {
+      0%   { transform: translate(0px, 0px); }
+      25%  { transform: translate(-13px, -16px); }
+      50%  { transform: translate(-19px, -6px); }
+      75%  { transform: translate(8px, -12px); }
+      100% { transform: translate(0px, 0px); }
+    }
+
+    @keyframes swirl-c {
+      0%   { transform: translate(0px, 0px); }
+      33%  { transform: translate(-13px, 9px); }
+      66%  { transform: translate(-6px, -13px); }
+      100% { transform: translate(0px, 0px); }
     }
 
     #orion-status-label {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.14em;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
       color: #9aa3b5;
+      text-align: center;
     }
 
-    #orion-status-label.active { color: #0288d1; }
+    #orion-status-label.active { color: #3a82d4; }
 
-    /* ── Content section — bottom 80% ── */
-    #content-panel {
+    /* ── Card 2: Agent activity ── */
+    #routing-card {
       flex: 1;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      min-height: 0;
     }
 
-    /* Agent routing log */
-    #routing-panel {
-      flex: 0 0 auto;
-      max-height: 36%;
+    #routing-log {
+      flex: 1;
       overflow-y: auto;
-      padding: 12px 16px;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    }
-
-    #routing-panel-label {
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.13em;
-      text-transform: uppercase;
-      color: #b0b8c8;
-      margin-bottom: 8px;
+      padding: 8px 12px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
 
     .routing-event {
-      font-size: 11px;
-      padding: 3px 0 3px 9px;
+      font-size: 10px;
+      padding: 3px 0 3px 8px;
       border-left: 2px solid #d8dde8;
       color: #7b8299;
-      margin-bottom: 3px;
       line-height: 1.4;
+      word-break: break-word;
     }
 
-    .routing-event.transfer  { border-left-color: #ff9800; color: #9c6000; }
-    .routing-event.tool-call { border-left-color: #7c3aed; color: #5b1fa8; }
-    .routing-event.turn      { border-left-color: #0288d1; color: #025f99; }
-    .routing-event.error     { border-left-color: #e53935; color: #b71c1c; }
+    .routing-event.transfer  { border-left-color: #f0a040; color: #8a5800; }
+    .routing-event.tool-call { border-left-color: #5aabf0; color: #1a6baa; }
+    .routing-event.turn      { border-left-color: #80b8f0; color: #2a6090; }
+    .routing-event.error     { border-left-color: #e05555; color: #a02020; }
 
-    /* Transcript */
-    #transcript-panel {
-      flex: 1;
+    /* ── Card 3: Conversation ── */
+    #transcript-card {
+      flex: 2;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
-      padding: 12px 16px;
-    }
-
-    #transcript-panel-label {
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.13em;
-      text-transform: uppercase;
-      color: #b0b8c8;
-      margin-bottom: 10px;
-      flex-shrink: 0;
+      min-height: 0;
     }
 
     #transcript-log {
       flex: 1;
       overflow-y: auto;
+      padding: 8px 10px 10px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 7px;
     }
 
     .transcript-entry {
-      font-size: 12px;
+      font-size: 11px;
       line-height: 1.5;
-      padding: 8px 11px;
-      border-radius: 9px;
-      max-width: 92%;
+      padding: 7px 10px;
+      border-radius: 10px;
+      max-width: 100%;
+      word-break: break-word;
     }
 
     .transcript-entry .speaker {
-      font-size: 9px;
+      font-size: 8px;
       font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
       margin-bottom: 3px;
-      opacity: 0.55;
+      opacity: 0.5;
     }
 
     .transcript-entry.surgeon {
-      background: rgba(2, 136, 209, 0.08);
-      border: 1px solid rgba(2, 136, 209, 0.15);
-      color: #014e75;
+      background: rgba(58, 130, 212, 0.08);
+      border: 1px solid rgba(58, 130, 212, 0.18);
+      color: #1a4e80;
       align-self: flex-end;
     }
 
     .transcript-entry.orion {
-      background: rgba(0, 188, 212, 0.07);
-      border: 1px solid rgba(0, 188, 212, 0.15);
-      color: #00636e;
+      background: rgba(100, 170, 240, 0.07);
+      border: 1px solid rgba(100, 170, 240, 0.16);
+      color: #1e5c96;
       align-self: flex-start;
     }
 
     /* Scrollbar */
-    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar { width: 3px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.12); border-radius: 2px; }
+    ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.1); border-radius: 2px; }
   </style>
 </head>
 <body>
 
-  <!-- ── Left 70%: surgical video + agent overlays ── -->
+  <!-- ── Left 90%: surgical video + agent overlay modals ── -->
   <div id="display-area">
 
-    <!-- Layer 0: surgical video background -->
     <video id="surgical-video" autoplay muted loop playsinline></video>
 
-    <!-- Layer 1: CT scan overlay -->
-    <canvas id="ct-canvas"></canvas>
+    <!-- CT scan modal — centered on video with 30% margin on all sides -->
+    <div id="ct-modal" class="overlay-modal">
+      <div class="modal-title">CT Viewer</div>
+      <div class="modal-body">
+        <canvas id="ct-canvas"></canvas>
+      </div>
+    </div>
 
-    <!-- Layer 2: Three.js 3D anatomy model -->
-    <canvas id="ar-canvas"></canvas>
+    <!-- 3D anatomy modal -->
+    <div id="ar-modal" class="overlay-modal">
+      <div class="modal-title">3D Anatomy</div>
+      <div class="modal-body">
+        <canvas id="ar-canvas"></canvas>
+      </div>
+    </div>
 
-    <!-- Layer 3: clinical data cards (managed by clinical-panel.js) -->
-    <div id="clinical-panel"></div>
+    <!-- Patient vitals modal -->
+    <div id="clinical-modal" class="overlay-modal">
+      <div class="modal-title">Patient Vitals</div>
+      <div id="vitals-body" class="modal-body"></div>
+    </div>
 
   </div>
 
-  <!-- ── Right 30%: glassmorphism panel ── -->
+  <!-- ── Right 10%: three glassmorphism cards ── -->
   <div id="right-panel">
 
-    <!-- Top 20%: voice orb + status -->
-    <div id="orb-section">
-      <div id="orion-orb" title="Click to connect / disconnect ORION"></div>
+    <!-- Card 1: ORION orb + status -->
+    <div id="orb-card" class="side-card">
+      <div id="orion-orb" title="Click to connect / disconnect ORION">
+        <div class="orb-blob b1"></div>
+        <div class="orb-blob b2"></div>
+        <div class="orb-blob b3"></div>
+      </div>
       <span id="orion-status-label">ORION offline</span>
     </div>
 
-    <!-- Bottom 80%: agent activity + transcript -->
-    <div id="content-panel">
-
-      <div id="routing-panel">
-        <div id="routing-panel-label">Agent activity</div>
-        <div id="routing-log">
-          <div class="routing-event">Waiting for connection…</div>
-        </div>
+    <!-- Card 2: Agent activity -->
+    <div id="routing-card" class="side-card">
+      <div class="card-label">Agent activity</div>
+      <div id="routing-log">
+        <div class="routing-event">Waiting for connection…</div>
       </div>
+    </div>
 
-      <div id="transcript-panel">
-        <div id="transcript-panel-label">Conversation</div>
-        <div id="transcript-log"></div>
-      </div>
-
+    <!-- Card 3: Conversation -->
+    <div id="transcript-card" class="side-card">
+      <div class="card-label">Conversation</div>
+      <div id="transcript-log"></div>
     </div>
 
   </div>
