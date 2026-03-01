@@ -1,0 +1,28 @@
+# Environment — never commit credentials
+app/.env
+.env
+
+# Large binary assets — stored in GCS, not git
+assets/ct_slices/
+assets/dicom_raw/
+assets/mmc6.mp4
+assets/*.mp4
+assets/*.glb
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+*.egg-info/
+dist/
+build/
+
+# IDE / OS
+.DS_Store
+.vscode/
+*.swp
+*.swo
+
+# Claude personal memory — not project code
+.claude/

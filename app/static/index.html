@@ -8,15 +8,15 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: #0a0a0f;
-      color: #e0e8f0;
-      font-family: 'Courier New', 'Consolas', monospace;
+      background: #e8ecf1;
+      color: #1a1a2e;
+      font-family: Helvetica, Arial, sans-serif;
       height: 100vh;
       display: flex;
       overflow: hidden;
     }
 
-    /* ── Left column: surgical display area ── */
+    /* ── Left column: surgical video + overlays ── */
     #display-area {
       flex: 0 0 70%;
       position: relative;
@@ -24,13 +24,11 @@
       overflow: hidden;
     }
 
-    /* Stacked layers — all absolute, overlapping */
+    /* All layers are stacked absolutely inside the display area */
     #display-area > * {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
     }
 
     #surgical-video {
@@ -49,193 +47,131 @@
       z-index: 2;
       display: none;
       pointer-events: none;
-      /* Three.js WebGLRenderer will set alpha:true — background is transparent */
     }
 
     #clinical-panel {
       z-index: 3;
       pointer-events: none;
-      /* Content positioned by clinical-panel.js */
     }
 
-    /* Status badge — top-left corner */
-    #status-badge {
-      position: absolute;
-      top: 16px;
-      left: 16px;
-      z-index: 10;
-      background: rgba(0, 20, 40, 0.85);
-      border: 1px solid #1a6fbf;
-      border-radius: 6px;
-      padding: 6px 14px;
-      font-size: 11px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: #4fc3f7;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    #status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #546e7a;
-      transition: background 0.3s;
-    }
-
-    #status-dot.active {
-      background: #00e676;
-      box-shadow: 0 0 6px #00e676;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-
-    /* Mic waveform indicator — bottom-left */
-    #mic-indicator {
-      position: absolute;
-      bottom: 20px;
-      left: 16px;
-      z-index: 10;
-      display: none;
-      align-items: center;
-      gap: 3px;
-    }
-
-    #mic-indicator.active { display: flex; }
-
-    .mic-bar {
-      width: 4px;
-      background: #4fc3f7;
-      border-radius: 2px;
-      animation: wave 0.8s ease-in-out infinite alternate;
-    }
-
-    .mic-bar:nth-child(1) { height: 8px;  animation-delay: 0s; }
-    .mic-bar:nth-child(2) { height: 16px; animation-delay: 0.1s; }
-    .mic-bar:nth-child(3) { height: 24px; animation-delay: 0.2s; }
-    .mic-bar:nth-child(4) { height: 16px; animation-delay: 0.3s; }
-    .mic-bar:nth-child(5) { height: 8px;  animation-delay: 0.4s; }
-
-    @keyframes wave {
-      from { transform: scaleY(0.4); }
-      to   { transform: scaleY(1.2); }
-    }
-
-    /* ORION watermark */
-    #watermark {
-      position: absolute;
-      bottom: 16px;
-      right: 16px;
-      z-index: 10;
-      font-size: 10px;
-      color: rgba(79, 195, 247, 0.3);
-      letter-spacing: 3px;
-      text-transform: uppercase;
-    }
-
-    /* ── Right column: demo panel ── */
-    #demo-panel {
+    /* ── Right column: glassmorphism panel ── */
+    #right-panel {
       flex: 0 0 30%;
       display: flex;
       flex-direction: column;
-      background: #0d1117;
-      border-left: 1px solid #1a2332;
+      background: rgba(255, 255, 255, 0.45);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border-left: 1px solid rgba(255, 255, 255, 0.55);
+      box-shadow: -6px 0 40px rgba(0, 0, 0, 0.07);
       overflow: hidden;
     }
 
-    /* Panel header */
-    #panel-header {
-      padding: 16px 20px 12px;
-      border-bottom: 1px solid #1a2332;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-shrink: 0;
-    }
-
-    #panel-title {
-      font-size: 13px;
-      letter-spacing: 3px;
-      color: #4fc3f7;
-      text-transform: uppercase;
-    }
-
-    #panel-subtitle {
-      font-size: 10px;
-      color: #546e7a;
-      margin-top: 2px;
-      letter-spacing: 1px;
-    }
-
-    /* Connect button */
-    #connect-btn {
-      background: #0d47a1;
-      border: 1px solid #1565c0;
-      color: #e3f2fd;
-      padding: 8px 16px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-family: inherit;
-      font-size: 11px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      transition: background 0.2s, border-color 0.2s;
-    }
-
-    #connect-btn:hover { background: #1565c0; }
-
-    #connect-btn.connected {
-      background: #1b5e20;
-      border-color: #2e7d32;
-      color: #c8e6c9;
-      cursor: default;
-    }
-
-    #connect-btn.connected:hover { background: #1b5e20; }
-
-    /* Routing event log */
-    #routing-panel {
-      flex: 0 0 auto;
-      border-bottom: 1px solid #1a2332;
-      padding: 12px 16px;
-    }
-
-    #routing-label {
-      font-size: 9px;
-      letter-spacing: 2px;
-      color: #37474f;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-
-    #routing-log {
-      max-height: 160px;
-      overflow-y: auto;
+    /* ── Orb section — top 20% of right panel ── */
+    #orb-section {
+      flex: 0 0 20%;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    #orion-orb {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      cursor: pointer;
+      background: radial-gradient(circle at 36% 30%, #ffffff 0%, #dce8f5 50%, #b8cee8 100%);
+      box-shadow:
+        0 4px 18px rgba(100, 149, 237, 0.22),
+        inset 0 1px 3px rgba(255, 255, 255, 0.9);
+      transition: transform 0.2s ease;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    #orion-orb:hover  { transform: scale(1.05); }
+    #orion-orb:active { transform: scale(0.97); }
+
+    /* Connected / listening */
+    #orion-orb.connected {
+      background: radial-gradient(circle at 36% 30%, #ffffff 0%, #b3e5fc 42%, #4fc3f7 100%);
+      box-shadow:
+        0 0 30px rgba(79, 195, 247, 0.50),
+        inset 0 1px 3px rgba(255, 255, 255, 0.7);
+      animation: orb-breathe 2.6s ease-in-out infinite;
+    }
+
+    /* ORION speaking */
+    #orion-orb.speaking {
+      background: radial-gradient(circle at 36% 30%, #ffffff 0%, #80deea 38%, #00bcd4 100%);
+      box-shadow:
+        0 0 46px rgba(0, 188, 212, 0.68),
+        inset 0 1px 3px rgba(255, 255, 255, 0.6);
+      animation: orb-pulse 0.65s ease-in-out infinite alternate;
+    }
+
+    @keyframes orb-breathe {
+      0%, 100% { box-shadow: 0 0 28px rgba(79, 195, 247, 0.48), inset 0 1px 3px rgba(255,255,255,0.7); }
+      50%       { box-shadow: 0 0 46px rgba(79, 195, 247, 0.80), inset 0 1px 3px rgba(255,255,255,0.7); }
+    }
+
+    @keyframes orb-pulse {
+      from { box-shadow: 0 0 30px rgba(0, 188, 212, 0.50), inset 0 1px 3px rgba(255,255,255,0.6); transform: scale(1); }
+      to   { box-shadow: 0 0 56px rgba(0, 188, 212, 0.82), inset 0 1px 3px rgba(255,255,255,0.6); transform: scale(1.07); }
+    }
+
+    #orion-status-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #9aa3b5;
+    }
+
+    #orion-status-label.active { color: #0288d1; }
+
+    /* ── Content section — bottom 80% ── */
+    #content-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Agent routing log */
+    #routing-panel {
+      flex: 0 0 auto;
+      max-height: 36%;
+      overflow-y: auto;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    #routing-panel-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: #b0b8c8;
+      margin-bottom: 8px;
     }
 
     .routing-event {
       font-size: 11px;
-      padding: 4px 8px;
-      border-radius: 3px;
-      border-left: 3px solid #37474f;
-      background: rgba(255,255,255,0.02);
-      color: #78909c;
+      padding: 3px 0 3px 9px;
+      border-left: 2px solid #d8dde8;
+      color: #7b8299;
+      margin-bottom: 3px;
       line-height: 1.4;
     }
 
-    .routing-event.transfer { border-left-color: #ff9800; color: #ffb74d; }
-    .routing-event.tool-call { border-left-color: #7c4dff; color: #b39ddb; }
-    .routing-event.turn { border-left-color: #00bcd4; color: #80deea; }
-    .routing-event.error { border-left-color: #f44336; color: #ef9a9a; }
+    .routing-event.transfer  { border-left-color: #ff9800; color: #9c6000; }
+    .routing-event.tool-call { border-left-color: #7c3aed; color: #5b1fa8; }
+    .routing-event.turn      { border-left-color: #0288d1; color: #025f99; }
+    .routing-event.error     { border-left-color: #e53935; color: #b71c1c; }
 
     /* Transcript */
     #transcript-panel {
@@ -246,12 +182,13 @@
       padding: 12px 16px;
     }
 
-    #transcript-label {
+    #transcript-panel-label {
       font-size: 9px;
-      letter-spacing: 2px;
-      color: #37474f;
+      font-weight: 700;
+      letter-spacing: 0.13em;
       text-transform: uppercase;
-      margin-bottom: 8px;
+      color: #b0b8c8;
+      margin-bottom: 10px;
       flex-shrink: 0;
     }
 
@@ -266,36 +203,47 @@
     .transcript-entry {
       font-size: 12px;
       line-height: 1.5;
+      padding: 8px 11px;
+      border-radius: 9px;
+      max-width: 92%;
     }
 
     .transcript-entry .speaker {
       font-size: 9px;
-      letter-spacing: 1px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      margin-bottom: 2px;
+      margin-bottom: 3px;
+      opacity: 0.55;
     }
 
-    .transcript-entry.surgeon .speaker { color: #4fc3f7; }
-    .transcript-entry.orion .speaker   { color: #a5d6a7; }
+    .transcript-entry.surgeon {
+      background: rgba(2, 136, 209, 0.08);
+      border: 1px solid rgba(2, 136, 209, 0.15);
+      color: #014e75;
+      align-self: flex-end;
+    }
 
-    .transcript-entry.surgeon .text { color: #b0bec5; }
-    .transcript-entry.orion .text   { color: #c8e6c9; }
+    .transcript-entry.orion {
+      background: rgba(0, 188, 212, 0.07);
+      border: 1px solid rgba(0, 188, 212, 0.15);
+      color: #00636e;
+      align-self: flex-start;
+    }
 
-    /* Scrollbar styling */
+    /* Scrollbar */
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #1a2332; border-radius: 2px; }
+    ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.12); border-radius: 2px; }
   </style>
 </head>
 <body>
 
-  <!-- ── Left: surgical display area ── -->
+  <!-- ── Left 70%: surgical video + agent overlays ── -->
   <div id="display-area">
 
     <!-- Layer 0: surgical video background -->
-    <video id="surgical-video" autoplay muted loop playsinline>
-      <!-- The GCS URL is injected by app.js from window.ORION_CONFIG -->
-    </video>
+    <video id="surgical-video" autoplay muted loop playsinline></video>
 
     <!-- Layer 1: CT scan overlay -->
     <canvas id="ct-canvas"></canvas>
@@ -306,65 +254,44 @@
     <!-- Layer 3: clinical data cards (managed by clinical-panel.js) -->
     <div id="clinical-panel"></div>
 
-    <!-- Status badge -->
-    <div id="status-badge">
-      <div id="status-dot"></div>
-      <span id="status-text">ORION STANDBY</span>
-    </div>
-
-    <!-- Mic waveform indicator -->
-    <div id="mic-indicator">
-      <div class="mic-bar"></div>
-      <div class="mic-bar"></div>
-      <div class="mic-bar"></div>
-      <div class="mic-bar"></div>
-      <div class="mic-bar"></div>
-    </div>
-
-    <!-- Watermark -->
-    <div id="watermark">ORION · v0.1</div>
-
   </div>
 
-  <!-- ── Right: demo panel ── -->
-  <div id="demo-panel">
+  <!-- ── Right 30%: glassmorphism panel ── -->
+  <div id="right-panel">
 
-    <div id="panel-header">
-      <div>
-        <div id="panel-title">ORION</div>
-        <div id="panel-subtitle">Surgical Co-Pilot · Agent Monitor</div>
-      </div>
-      <button id="connect-btn">Connect ORION</button>
+    <!-- Top 20%: voice orb + status -->
+    <div id="orb-section">
+      <div id="orion-orb" title="Click to connect / disconnect ORION"></div>
+      <span id="orion-status-label">ORION offline</span>
     </div>
 
-    <!-- Live routing / tool call log — visible to demo judges -->
-    <div id="routing-panel">
-      <div id="routing-label">Agent Routing</div>
-      <div id="routing-log">
-        <div class="routing-event">Waiting for connection...</div>
-      </div>
-    </div>
+    <!-- Bottom 80%: agent activity + transcript -->
+    <div id="content-panel">
 
-    <!-- Surgeon ↔ ORION transcript -->
-    <div id="transcript-panel">
-      <div id="transcript-label">Transcript</div>
-      <div id="transcript-log"></div>
+      <div id="routing-panel">
+        <div id="routing-panel-label">Agent activity</div>
+        <div id="routing-log">
+          <div class="routing-event">Waiting for connection…</div>
+        </div>
+      </div>
+
+      <div id="transcript-panel">
+        <div id="transcript-panel-label">Conversation</div>
+        <div id="transcript-log"></div>
+      </div>
+
     </div>
 
   </div>
 
   <!-- ── Scripts ── -->
-  <!-- Three.js r128 from Cloudflare CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <!-- GLTFLoader for r128 -->
   <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/loaders/GLTFLoader.js"></script>
 
-  <!-- Display layer modules (globals — must load before app.js module) -->
   <script src="/static/js/ct-viewer.js"></script>
   <script src="/static/js/anatomy-3d.js"></script>
   <script src="/static/js/clinical-panel.js"></script>
 
-  <!-- app.js is an ES module; it imports audio-player.js and audio-recorder.js -->
   <script type="module" src="/static/js/app.js"></script>
 
 </body>

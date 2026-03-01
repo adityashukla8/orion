@@ -25,13 +25,11 @@ const CONFIG = Object.assign({
 const GCS_BASE = `https://storage.googleapis.com/${CONFIG.gcsBucket}`;
 
 // ── DOM references ─────────────────────────────────────────────────────────
-const connectBtn    = document.getElementById('connect-btn');
-const statusDot     = document.getElementById('status-dot');
-const statusText    = document.getElementById('status-text');
-const micIndicator  = document.getElementById('mic-indicator');
-const routingLog    = document.getElementById('routing-log');
-const transcriptLog = document.getElementById('transcript-log');
-const surgicalVideo = document.getElementById('surgical-video');
+const orionOrb         = document.getElementById('orion-orb');
+const orionStatusLabel = document.getElementById('orion-status-label');
+const routingLog       = document.getElementById('routing-log');
+const transcriptLog    = document.getElementById('transcript-log');
+const surgicalVideo    = document.getElementById('surgical-video');
 
 // ── Audio state ────────────────────────────────────────────────────────────
 let audioPlayerNode = null;
@@ -43,7 +41,11 @@ let videoInterval = null;
 let offscreenCtx  = null;
 
 // ── Entry point ────────────────────────────────────────────────────────────
-connectBtn.addEventListener('click', connect);
+orionOrb.addEventListener('click', () => {
+  if (ws && ws.readyState === WebSocket.OPEN) disconnect();
+  else connect();
+});
+
 surgicalVideo.src = `${GCS_BASE}/${CONFIG.videoPath}`;
 
 
@@ -55,24 +57,21 @@ async function connect() {
   const protocol  = window.location.protocol === 'https:' ? 'wss' : 'ws';
   const wsUrl     = `${protocol}://${window.location.host}/ws/${userId}/${sessionId}`;
 
-  setStatus('connecting', 'ORION CONNECTING…');
+  setStatus('connecting');
   logRouting('Connecting to ORION server…', 'turn');
 
   ws = new WebSocket(wsUrl);
   ws.binaryType = 'arraybuffer';
 
   ws.onopen = async () => {
-    setStatus('active', 'ORION ACTIVE');
-    connectBtn.textContent = 'Connected';
-    connectBtn.classList.add('connected');
-    logRouting('WebSocket connected. Session established.', 'turn');
+    setStatus('active');
+    logRouting('Session established.', 'turn');
 
     // Start audio output (24kHz playback)
     [audioPlayerNode] = await startAudioPlayerWorklet();
 
     // Start audio input (16kHz capture) — handler receives ArrayBuffer
     [, , micStream] = await startAudioRecorderWorklet(audioRecorderHandler);
-    micIndicator.classList.add('active');
 
     // Start video frame capture
     startVideoCapture();
@@ -96,19 +95,20 @@ async function connect() {
   };
 
   ws.onclose = () => {
-    setStatus('offline', 'ORION OFFLINE');
-    connectBtn.textContent = 'Reconnect ORION';
-    connectBtn.classList.remove('connected');
-    micIndicator.classList.remove('active');
+    setStatus('offline');
     stopVideoCapture();
     if (micStream) { stopMicrophone(micStream); micStream = null; }
     logRouting('Connection closed.', 'turn');
   };
 
   ws.onerror = () => {
-    setStatus('offline', 'CONNECTION ERROR');
+    setStatus('offline');
     logRouting('WebSocket error — check server logs.', 'error');
   };
+}
+
+function disconnect() {
+  if (ws) { ws.close(); ws = null; }
 }
 
 
@@ -188,6 +188,7 @@ function handleServerEvent(jsonString) {
     const inlineData = part.inlineData ?? part.inline_data;
     const mimeType   = inlineData?.mimeType ?? inlineData?.mime_type ?? '';
     if (inlineData && mimeType.startsWith('audio/pcm') && audioPlayerNode) {
+      setStatus('speaking');
       audioPlayerNode.port.postMessage(base64ToArray(inlineData.data));
     }
 
@@ -208,13 +209,15 @@ function handleServerEvent(jsonString) {
     if (fr) handleFunctionResponse(fr);
   }
 
-  // Interrupt — stop current audio playback
+  // Interrupt — stop current audio playback, return to listening state
   if (event.interrupted && audioPlayerNode) {
     audioPlayerNode.port.postMessage({ command: 'endOfAudio' });
+    if (ws && ws.readyState === WebSocket.OPEN) setStatus('active');
   }
 
+  // Turn complete — return to listening state
   if (event.turnComplete ?? event.turn_complete) {
-    micIndicator.classList.add('active');
+    if (ws && ws.readyState === WebSocket.OPEN) setStatus('active');
   }
 }
 
@@ -266,9 +269,22 @@ function handleFunctionResponse(fr) {
 
 // ── UI helpers ─────────────────────────────────────────────────────────────
 
-function setStatus(state, text) {
-  statusText.textContent = text;
-  statusDot.className = state === 'active' ? 'active' : '';
+function setStatus(state) {
+  orionOrb.className = '';
+  orionStatusLabel.className = '';
+  if (state === 'connecting') {
+    orionStatusLabel.textContent = 'Connecting…';
+  } else if (state === 'active') {
+    orionOrb.classList.add('connected');
+    orionStatusLabel.textContent = 'ORION active';
+    orionStatusLabel.classList.add('active');
+  } else if (state === 'speaking') {
+    orionOrb.classList.add('speaking');
+    orionStatusLabel.textContent = 'Speaking';
+    orionStatusLabel.classList.add('active');
+  } else {
+    orionStatusLabel.textContent = 'ORION offline';
+  }
 }
 
 function logRouting(text, type = 'turn') {
