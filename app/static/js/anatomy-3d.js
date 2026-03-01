@@ -46,7 +46,7 @@ const Anatomy3D = (() => {
    */
   function init(config) {
     canvas = document.getElementById(config.canvasId);
-    modal  = canvas.closest('.overlay-modal');
+    modal  = canvas.closest('.tile-panel');
 
     // Renderer with alpha so Three.js background is transparent
     renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });

@@ -21,13 +21,21 @@
       overflow: hidden;
     }
 
-    /* ── Left 90%: surgical video ── */
+    /* ── Left area: video pane + tiles column ── */
     #display-area {
       flex: 1;
-      position: relative;
+      display: flex;
+      flex-direction: row;
       background: #000;
       border-radius: 18px;
       overflow: hidden;
+    }
+
+    /* Video fills the left portion of display-area */
+    #video-pane {
+      flex: 1;
+      position: relative;
+      min-width: 0;
     }
 
     #surgical-video {
@@ -37,34 +45,49 @@
       z-index: 0;
     }
 
-    /* ── Overlay modals (CT, 3D, vitals) ── */
-    /* Opacity-based hide so canvas always has layout dimensions */
-    .overlay-modal {
-      position: absolute;
-      left: 30%; top: 30%; right: 30%; bottom: 30%;
-      z-index: 5;
-      border-radius: 20px;
+    /* ── Tile column: context panels slide in from the right ── */
+    #tiles-column {
+      flex: 0 0 0%;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      padding: 0;
+      background: #dde3ec;
+      /* No transition — column expands/collapses instantly so canvas        dimensions are valid on the very next rAF after tile is shown.       Visual polish comes from the per-tile tile-in animation instead. */
+    }
+
+    #tiles-column.has-tiles {
+      flex-basis: 40%;
+      padding: 8px;
+      gap: 8px;
+    }
+
+    /* Individual tile panel */
+    .tile-panel {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      border-radius: 14px;
       background: rgba(255, 255, 255, 0.62);
       backdrop-filter: blur(32px);
       -webkit-backdrop-filter: blur(32px);
       border: 1px solid rgba(255, 255, 255, 0.72);
       box-shadow:
-        0 8px 40px rgba(100, 140, 210, 0.14),
+        0 4px 24px rgba(100, 140, 210, 0.12),
         inset 0 1px 0 rgba(255, 255, 255, 0.85);
-      display: flex;
-      flex-direction: column;
       overflow: hidden;
-      /* Hidden by default — opacity keeps canvas in layout for proper sizing */
-      opacity: 0;
-      pointer-events: none;
-      transform: scale(0.95) translateY(6px);
-      transition: opacity 0.22s ease, transform 0.22s ease;
     }
 
-    .overlay-modal.visible {
-      opacity: 1;
-      pointer-events: auto;
-      transform: scale(1) translateY(0);
+    .tile-panel.visible {
+      display: flex;
+      animation: tile-in 0.28s ease forwards;
+    }
+
+    @keyframes tile-in {
+      from { opacity: 0; transform: translateX(10px); }
+      to   { opacity: 1; transform: translateX(0); }
     }
 
     .modal-title {
@@ -545,31 +568,39 @@
 </head>
 <body>
 
-  <!-- ── Left 90%: surgical video + agent overlay modals ── -->
+  <!-- ── Left area: surgical video + context tiles ── -->
   <div id="display-area">
 
-    <video id="surgical-video" autoplay muted loop playsinline></video>
-
-    <!-- CT scan modal — centered on video with 30% margin on all sides -->
-    <div id="ct-modal" class="overlay-modal">
-      <div class="modal-title">CT Viewer</div>
-      <div class="modal-body">
-        <canvas id="ct-canvas"></canvas>
-      </div>
+    <!-- Video always fills the left portion -->
+    <div id="video-pane">
+      <video id="surgical-video" autoplay muted loop playsinline></video>
     </div>
 
-    <!-- 3D anatomy modal -->
-    <div id="ar-modal" class="overlay-modal">
-      <div class="modal-title">3D Anatomy</div>
-      <div class="modal-body">
-        <canvas id="ar-canvas"></canvas>
-      </div>
-    </div>
+    <!-- Tile column — expands when any panel is visible -->
+    <div id="tiles-column">
 
-    <!-- Patient vitals modal -->
-    <div id="clinical-modal" class="overlay-modal">
-      <div class="modal-title">Patient Vitals</div>
-      <div id="vitals-body" class="modal-body"></div>
+      <!-- CT scan tile -->
+      <div id="ct-modal" class="tile-panel">
+        <div class="modal-title">CT Viewer</div>
+        <div class="modal-body">
+          <canvas id="ct-canvas"></canvas>
+        </div>
+      </div>
+
+      <!-- 3D anatomy tile -->
+      <div id="ar-modal" class="tile-panel">
+        <div class="modal-title">3D Anatomy</div>
+        <div class="modal-body">
+          <canvas id="ar-canvas"></canvas>
+        </div>
+      </div>
+
+      <!-- Patient vitals tile -->
+      <div id="clinical-modal" class="tile-panel">
+        <div class="modal-title">Patient Vitals</div>
+        <div id="vitals-body" class="modal-body"></div>
+      </div>
+
     </div>
 
   </div>

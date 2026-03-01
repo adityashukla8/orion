@@ -48,7 +48,7 @@ const CTViewer = (() => {
   function init(config) {
     canvas      = document.getElementById(config.canvasId);
     ctx         = canvas.getContext('2d');
-    modal       = canvas.closest('.overlay-modal');
+    modal       = canvas.closest('.tile-panel');
     gcsBase     = config.gcsBase;
     ctPath      = config.ctPath;
     totalSlices = config.totalSlices || 350;
@@ -122,17 +122,20 @@ const CTViewer = (() => {
     img.crossOrigin = 'anonymous';
 
     img.onload = () => {
-      _resizeCanvas();
-
-      // Show the modal
+      // Show tile FIRST — tiles-column expands instantly (no CSS transition),
+      // so canvas gets real dimensions after the browser's next layout pass.
       if (modal) { modal.classList.add('visible'); window.ORION_relayoutModals?.(); }
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.globalAlpha = 0.9;
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      ctx.globalAlpha = 1.0;
-
-      _drawLabel(sliceNum, landmarkLabel);
+      // Defer resize+draw to the next animation frame so the browser has
+      // recalculated layout and canvas.offsetWidth/Height are non-zero.
+      requestAnimationFrame(() => {
+        _resizeCanvas();
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.globalAlpha = 0.9;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        ctx.globalAlpha = 1.0;
+        _drawLabel(sliceNum, landmarkLabel);
+      });
     };
 
     img.onerror = () => {

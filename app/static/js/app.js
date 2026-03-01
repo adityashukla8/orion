@@ -322,6 +322,7 @@ function dispatchRenderCommand(toolName, args) {
       break;
     case 'hide_all_overlays':
       CTViewer.hide(); ClinicalPanel.hide(); Anatomy3D.hide();
+      relayoutTiles();  // belt-and-suspenders: ensure column collapses even if a module's modal ref is stale
       break;
     default:
       console.warn('[app.js] Unknown tool:', toolName);
@@ -337,56 +338,24 @@ function handleFunctionResponse(fr) {
 }
 
 
-// ── Modal auto-layout ──────────────────────────────────────────────────────
+// ── Tile layout ────────────────────────────────────────────────────────────
 
 const MODAL_IDS = ['ct-modal', 'ar-modal', 'clinical-modal'];
 
-// Positions for 1, 2, or 3 simultaneously-visible modals.
-// Values are CSS inset strings applied to each modal's style.
-const MODAL_POSITIONS = {
-  // 1 modal: large centred window
-  1: [{ left: '20%', right: '20%', top: '12%', bottom: '12%' }],
-  // 2 modals: side by side
-  2: [
-    { left: '2%',  right: '51%', top: '8%', bottom: '8%' },
-    { left: '51%', right: '2%',  top: '8%', bottom: '8%' },
-  ],
-  // 3 modals: 2 on top row, 1 centred on bottom row
-  3: [
-    { left: '2%',  right: '51%', top: '3%',  bottom: '53%' },  // top-left
-    { left: '51%', right: '2%',  top: '3%',  bottom: '53%' },  // top-right
-    { left: '25%', right: '25%', top: '52%', bottom: '3%'  },  // bottom-centre
-  ],
-};
-
-function relayoutModals() {
-  const visible = MODAL_IDS.filter(
+// When any tile panel becomes visible the tiles column expands to 40% width,
+// pushing the video into the remaining 60%. No position arithmetic needed —
+// each visible tile gets an equal share of the column height via flex: 1.
+function relayoutTiles() {
+  const col = document.getElementById('tiles-column');
+  if (!col) return;
+  const anyVisible = MODAL_IDS.some(
     (id) => document.getElementById(id)?.classList.contains('visible')
   );
-  const count = Math.min(visible.length, 3);
-  const positions = MODAL_POSITIONS[count] || [];
-
-  // Apply positions to visible modals
-  visible.forEach((id, i) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const pos = positions[i] || positions[0];
-    el.style.left   = pos.left;
-    el.style.right  = pos.right;
-    el.style.top    = pos.top;
-    el.style.bottom = pos.bottom;
-  });
-
-  // Reset hidden modals to CSS default (30% margin from all sides)
-  MODAL_IDS.filter((id) => !visible.includes(id)).forEach((id) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.style.left = el.style.right = el.style.top = el.style.bottom = '';
-  });
+  col.classList.toggle('has-tiles', anyVisible);
 }
 
 // Expose globally so ct-viewer.js, anatomy-3d.js, clinical-panel.js can call it
-window.ORION_relayoutModals = relayoutModals;
+window.ORION_relayoutModals = relayoutTiles;
 
 
 // ── UI helpers ─────────────────────────────────────────────────────────────
