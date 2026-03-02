@@ -300,6 +300,9 @@ function dispatchRenderCommand(toolName, args) {
     case 'display_patient_data':
       ClinicalPanel.showLoading(args.field);
       break;
+    case 'display_all_patient_data':
+      // No loading state needed — show_all arrives in handleFunctionResponse
+      break;
     case 'hide_patient_data':
       ClinicalPanel.hide();
       break;
@@ -335,6 +338,9 @@ function handleFunctionResponse(fr) {
   if (!cmd) return;
   if (cmd.layer === 'clinical' && cmd.action === 'show') {
     ClinicalPanel.show(cmd.field, cmd.label, cmd.value, cmd.note);
+  }
+  if (cmd.layer === 'clinical' && cmd.action === 'show_all') {
+    (cmd.fields || []).forEach(f => ClinicalPanel.show(f.field, f.label, f.value, f.note));
   }
   if (cmd.layer === 'checklist' && cmd.action === 'show') {
     ChecklistPanel.show(cmd.phase, cmd.label, cmd.checklist, cmd.warning);

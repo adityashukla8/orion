@@ -84,10 +84,13 @@ def display_patient_data(field: str) -> dict:
 
     Examples:
       "show me the hemoglobin" → field='hemoglobin'
-      "what are the labs" → call display_patient_data for hemoglobin, then creatinine, then platelets
+      "what is the creatinine" → field='creatinine'
       "what medications is he on" → field='medications'
       "any allergies" → field='allergies'
       "what's the diagnosis" → field='diagnosis'
+
+    For broad requests ("show all labs", "all patient data"), use
+    display_all_patient_data() instead — do NOT call this tool in a loop.
     """
     field = field.lower().strip()
     if field not in _PATIENT_DATA:
@@ -110,6 +113,38 @@ def display_patient_data(field: str) -> dict:
             'label': record['label'],
             'value': record['value'],
             'note': record['note'],
+        },
+    }
+
+
+def display_all_patient_data() -> dict:
+    """
+    Use this tool when the surgeon asks to see ALL patient data, all labs,
+    all vitals, all patient information, or any broad request for the full
+    patient record. This shows every field in one single call — do NOT loop
+    through display_patient_data repeatedly.
+
+    Use this for:
+      "show all patient data"        → display_all_patient_data()
+      "show me everything"           → display_all_patient_data()
+      "show all the labs"            → display_all_patient_data()
+      "what are all the vitals"      → display_all_patient_data()
+      "show the full patient record" → display_all_patient_data()
+      "display all data"             → display_all_patient_data()
+
+    For a SINGLE specific field, use display_patient_data(field) instead.
+    NEVER call display_patient_data in a loop — use this tool instead.
+    """
+    fields = [
+        {'field': k, 'label': v['label'], 'value': v['value'], 'note': v['note']}
+        for k, v in _PATIENT_DATA.items()
+    ]
+    return {
+        'status': 'success',
+        'render_command': {
+            'layer': 'clinical',
+            'action': 'show_all',
+            'fields': fields,
         },
     }
 

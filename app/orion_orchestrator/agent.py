@@ -22,6 +22,7 @@ from google.adk.agents import LlmAgent
 
 from .tools import (
     display_patient_data,
+    display_all_patient_data,
     hide_patient_data,
     navigate_ct,
     jump_to_landmark,
@@ -77,14 +78,18 @@ ir_agent = LlmAgent(
         '- Respond in under 15 words. The surgeon cannot listen to long '
         'explanations.\n'
         '- Always call the appropriate tool — never recite values from memory.\n'
-        '- For "labs" or "all labs", call display_patient_data for: '
-        'hemoglobin, creatinine, platelets, and INR in sequence.\n'
+        '- For ANY broad request ("all data", "all labs", "all vitals", '
+        '"everything", "full record", "show all"), call display_all_patient_data() '
+        'ONCE — never loop through display_patient_data repeatedly.\n'
+        '- For a single specific field request, call display_patient_data(field) '
+        'ONCE and stop.\n'
         '- To hide data: call hide_patient_data.\n\n'
         'TOOL USE:\n'
-        '  display_patient_data(field) → shows a clinical value on screen\n'
+        '  display_all_patient_data()  → shows ALL fields at once (use for broad requests)\n'
+        '  display_patient_data(field) → shows ONE clinical value (use for specific requests)\n'
         '  hide_patient_data()         → removes all clinical data cards\n'
     ),
-    tools=[display_patient_data, hide_patient_data],
+    tools=[display_patient_data, display_all_patient_data, hide_patient_data],
 )
 
 
