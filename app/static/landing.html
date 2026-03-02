@@ -484,19 +484,46 @@
     /* ── Tech Stack ── */
     #tech { padding: 90px 0; }
     .tech-header { margin-bottom: 52px; }
-    .tech-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-    .tech-card {
-      background: var(--glass); border: 1px solid var(--glass-border);
-      border-radius: 14px; padding: 22px 18px;
-      backdrop-filter: blur(16px); text-align: center;
-      box-shadow: 0 2px 12px rgba(100,140,200,0.06), inset 0 1px 0 rgba(255,255,255,0.9);
-      transition: transform 0.2s, box-shadow 0.2s;
+    .tech-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+      border: 1px solid rgba(0,0,0,0.09); border-radius: 4px; overflow: hidden;
     }
-    .tech-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(100,140,200,0.14), inset 0 1px 0 rgba(255,255,255,0.9); }
-    .tech-icon { display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; width: 40px; height: 40px; }
-    .tech-icon svg { display: block; }
-    .tech-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; font-family: 'Poppins', sans-serif; }
-    .tech-role { font-size: 11px; color: var(--text-3); font-weight: 500; font-family: 'Poppins', sans-serif; }
+    .tech-card {
+      background: none; padding: 28px 24px;
+      border-right: 1px solid rgba(0,0,0,0.09);
+      border-bottom: 1px solid rgba(0,0,0,0.09);
+      display: flex; flex-direction: column;
+      cursor: default; transition: background 0.28s;
+    }
+    /* Remove right border from last column */
+    .tech-card:nth-child(4n) { border-right: none; }
+    /* Remove bottom border from last row */
+    .tech-card:nth-last-child(-n+4) { border-bottom: none; }
+
+    /* Icons: BNW by default, coloured on hover */
+    .tech-icon { margin-bottom: 18px; }
+    .tech-icon svg { display: block; stroke: rgba(0,0,0,0.22); transition: stroke 0.3s; }
+
+    /* Per-card hover: accent background + icon colour */
+    .tech-card:nth-child(1):hover { background: rgba(2,132,199,0.04); }
+    .tech-card:nth-child(1):hover .tech-icon svg { stroke: #0284c7; }
+    .tech-card:nth-child(2):hover { background: rgba(99,102,241,0.04); }
+    .tech-card:nth-child(2):hover .tech-icon svg { stroke: #6366f1; }
+    .tech-card:nth-child(3):hover { background: rgba(5,150,105,0.04); }
+    .tech-card:nth-child(3):hover .tech-icon svg { stroke: #059669; }
+    .tech-card:nth-child(4):hover { background: rgba(217,119,6,0.04); }
+    .tech-card:nth-child(4):hover .tech-icon svg { stroke: #d97706; }
+    .tech-card:nth-child(5):hover { background: rgba(34,211,238,0.04); }
+    .tech-card:nth-child(5):hover .tech-icon svg { stroke: #22d3ee; }
+    .tech-card:nth-child(6):hover { background: rgba(129,140,248,0.04); }
+    .tech-card:nth-child(6):hover .tech-icon svg { stroke: #818cf8; }
+    .tech-card:nth-child(7):hover { background: rgba(2,132,199,0.04); }
+    .tech-card:nth-child(7):hover .tech-icon svg { stroke: #0284c7; }
+    .tech-card:nth-child(8):hover { background: rgba(16,185,129,0.04); }
+    .tech-card:nth-child(8):hover .tech-icon svg { stroke: #10b981; }
+
+    .tech-name { font-size: 13.5px; font-weight: 700; color: var(--text); margin-bottom: 5px; font-family: 'Poppins', sans-serif; }
+    .tech-role { font-size: 11.5px; color: var(--text-2); font-weight: 500; font-family: 'Poppins', sans-serif; line-height: 1.5; }
 
     /* ── CTA ── */
     #cta { padding: 100px 0; }
@@ -555,6 +582,11 @@
       .arch-agent:nth-child(3) { border-top: 1px solid rgba(0,0,0,0.09); }
       .arch-agent:nth-child(4) { border-top: 1px solid rgba(0,0,0,0.09); border-right: none; }
       .tech-grid         { grid-template-columns: repeat(2, 1fr); }
+      /* reset 4-col rules, apply 2-col rules */
+      .tech-card:nth-child(4n)      { border-right: 1px solid rgba(0,0,0,0.09); }
+      .tech-card:nth-last-child(-n+4) { border-bottom: 1px solid rgba(0,0,0,0.09); }
+      .tech-card:nth-child(2n)      { border-right: none; }
+      .tech-card:nth-last-child(-n+2) { border-bottom: none; }
       .cta-inner         { padding: 52px 32px; }
       nav                { padding: 0 16px; }
       .container         { padding: 0 16px; }
