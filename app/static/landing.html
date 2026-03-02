@@ -302,78 +302,66 @@
     }
     .section-sub { font-size: 16px; line-height: 1.7; color: var(--text-2); max-width: 520px; }
 
-    /* ── How It Works — Vapi-style grid ── */
-    #how { padding: 110px 0; background: var(--white); }
-
-    .how-header { margin-bottom: 0; }
-
-    /* Vapi-grid: full-width bordered card grid */
-    .how-grid {
-      margin-top: 64px;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      overflow: hidden;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
+    /* ── How It Works — Vapi-inspired split layout ── */
+    #how {
+      padding: 100px 0;
+      background: #f7f5f0;
+      background-image: radial-gradient(rgba(0,0,0,0.038) 1px, transparent 1px);
+      background-size: 24px 24px;
     }
 
-    .how-cell {
-      position: relative;
-      display: flex; flex-direction: column;
-      padding: 32px 28px 30px;
-      border-right: 1px solid var(--border);
-      background: var(--white);
-      transition: background 0.22s;
-      min-height: 280px;
-    }
-    .how-cell:last-child { border-right: none; }
-    .how-cell:hover { background: #f8fafd; }
-
-    .how-cell-top {
-      display: flex; align-items: flex-start; justify-content: space-between;
-      margin-bottom: 32px;
-    }
-    .how-step-label {
-      font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
-      text-transform: uppercase; color: var(--text-3);
-      font-family: 'Poppins', sans-serif;
-    }
-    .how-step-num {
-      font-size: 22px; font-weight: 800; color: rgba(0,0,0,0.06);
-      line-height: 1; letter-spacing: -0.04em; font-family: 'Poppins', sans-serif;
+    .how-eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--blue); margin-bottom: 22px;
+      display: block; font-family: 'Poppins', sans-serif;
     }
 
-    .how-icon-wrap {
-      flex: 1; display: flex; align-items: center; justify-content: center;
-      margin-bottom: 24px;
+    .how-headline {
+      font-size: clamp(34px, 4.2vw, 54px); font-weight: 800;
+      letter-spacing: -0.03em; line-height: 1.08; color: #08111f;
+      margin-bottom: 64px;
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
     }
-    .how-icon {
-      width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;
-      border-radius: 16px; background: rgba(2,132,199,0.07);
-      transition: background 0.22s, transform 0.22s;
+    .hw-sep {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 46px; height: 46px; border-radius: 13px; flex-shrink: 0;
     }
-    .how-cell:hover .how-icon { background: rgba(2,132,199,0.12); transform: scale(1.06); }
-    .how-icon svg { display: block; }
+    .hw-sep.s1 { background: rgba(6,182,212,0.13); }
+    .hw-sep.s2 { background: rgba(129,140,248,0.13); }
 
-    .how-cell-bottom {}
-    .how-cell-title {
-      font-size: 14px; font-weight: 700; color: var(--text);
-      margin-bottom: 8px; font-family: 'Poppins', sans-serif;
-    }
-    .how-cell-body {
-      font-size: 12.5px; line-height: 1.62; color: var(--text-2);
-      font-family: 'Poppins', sans-serif;
+    .how-body {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: center;
     }
 
-    /* Icon color variants */
-    .how-icon.ic-cyan   { background: rgba(34,211,238,0.08); }
-    .how-icon.ic-purple { background: rgba(129,140,248,0.08); }
-    .how-icon.ic-green  { background: rgba(16,185,129,0.08); }
-    .how-icon.ic-blue   { background: rgba(2,132,199,0.08); }
-    .how-cell:hover .how-icon.ic-cyan   { background: rgba(34,211,238,0.14); }
-    .how-cell:hover .how-icon.ic-purple { background: rgba(129,140,248,0.14); }
-    .how-cell:hover .how-icon.ic-green  { background: rgba(16,185,129,0.14); }
-    .how-cell:hover .how-icon.ic-blue   { background: rgba(2,132,199,0.14); }
+    /* Step list */
+    .how-list { display: flex; flex-direction: column; }
+    .how-row {
+      display: flex; align-items: center; gap: 20px;
+      padding: 22px 0; border-bottom: 1px solid rgba(0,0,0,0.07);
+    }
+    .how-row:first-child { border-top: 1px solid rgba(0,0,0,0.07); }
+
+    .hw-pill {
+      flex-shrink: 0; width: 54px; height: 54px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hw-pill.p1 { background: #22d3ee; }
+    .hw-pill.p2 { background: #a78bfa; }
+    .hw-pill.p3 { background: #34d399; }
+    .hw-pill.p4 { background: #60a5fa; }
+
+    .how-row-text {}
+    .how-row-title {
+      font-size: 16px; font-weight: 700; color: #08111f; margin-bottom: 4px;
+      font-family: 'Poppins', sans-serif; line-height: 1.3;
+    }
+    .how-row-desc {
+      font-size: 13px; line-height: 1.67; color: #4a5568; font-family: 'Poppins', sans-serif;
+    }
+
+    /* Right illustration */
+    .how-visual { display: flex; align-items: center; justify-content: center; }
+    .how-svg { width: 100%; max-width: 420px; height: auto; }
 
     /* ── Agents ── */
     #agents { padding: 110px 0; background: linear-gradient(180deg, #e8edf5 0%, #f2f5f9 100%); }
@@ -482,10 +470,9 @@
     /* ── Responsive ── */
     @media (max-width: 960px) {
       .problem-inner     { grid-template-columns: 1fr; gap: 44px; }
-      .how-grid          { grid-template-columns: repeat(2, 1fr); }
-      .how-cell:nth-child(2) { border-right: none; }
-      .how-cell:nth-child(3) { border-top: 1px solid var(--border); }
-      .how-cell:nth-child(4) { border-top: 1px solid var(--border); border-right: none; }
+      .how-body          { grid-template-columns: 1fr; gap: 40px; }
+      .how-visual        { display: none; }
+      .how-headline      { font-size: clamp(30px, 5vw, 42px); gap: 10px; }
       .agent-grid        { grid-template-columns: 1fr 1fr; }
       .agent-bottom-row  { grid-template-columns: 1fr; }
       .tech-grid         { grid-template-columns: repeat(2, 1fr); }
@@ -496,11 +483,9 @@
       footer             { padding: 24px; }
     }
     @media (max-width: 600px) {
-      .how-grid    { grid-template-columns: 1fr; }
-      .how-cell    { border-right: none; border-top: 1px solid var(--border); }
-      .how-cell:first-child { border-top: none; }
-      .agent-grid  { grid-template-columns: 1fr; }
-      .tech-grid   { grid-template-columns: repeat(2, 1fr); }
+      .how-headline      { font-size: 28px; }
+      .agent-grid        { grid-template-columns: 1fr; }
+      .tech-grid         { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
@@ -631,109 +616,181 @@
   <!-- How It Works -->
   <section id="how">
     <div class="container">
-      <div class="how-header reveal">
-        <span class="section-tag">How It Works</span>
-        <h2 class="section-headline">From voice to display<br>in milliseconds</h2>
-        <p class="section-sub">
-          A real-time multimodal pipeline: live audio in, native Gemini intelligence,
-          specialist agent routing, and instant visual output on the surgical display.
-        </p>
+
+      <div class="reveal">
+        <span class="how-eyebrow">How It Works</span>
+        <h2 class="how-headline">
+          Speak.
+          <span class="hw-sep s1">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            </svg>
+          </span>
+          Process.
+          <span class="hw-sep s2">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="4" width="16" height="16" rx="2"/>
+              <rect x="9" y="9" width="6" height="6"/>
+              <line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/>
+              <line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/>
+              <line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/>
+              <line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/>
+            </svg>
+          </span>
+          Render.
+        </h2>
       </div>
 
-      <div class="how-grid reveal">
+      <div class="how-body reveal">
 
-        <div class="how-cell">
-          <div class="how-cell-top">
-            <span class="how-step-label">Step 01</span>
-            <span class="how-step-num">01</span>
-          </div>
-          <div class="how-icon-wrap">
-            <div class="how-icon ic-cyan">
-              <!-- Microphone icon -->
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <!-- Step list (left) -->
+        <div class="how-list">
+
+          <div class="how-row">
+            <div class="hw-pill p1">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
                 <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                <line x1="12" y1="19" x2="12" y2="23"/>
-                <line x1="8"  y1="23" x2="16" y2="23"/>
+                <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
               </svg>
             </div>
+            <div class="how-row-text">
+              <div class="how-row-title">Voice Command</div>
+              <div class="how-row-desc">Surgeon speaks. 16kHz PCM audio streams via WebSocket. Wake-word filtering ignores ambient OR noise and staff conversation.</div>
+            </div>
           </div>
-          <div class="how-cell-bottom">
-            <div class="how-cell-title">Voice Command</div>
-            <div class="how-cell-body">Surgeon speaks. 16kHz PCM audio streams to ORION via WebSocket. Wake-word filtering ignores ambient OR noise and staff conversation.</div>
-          </div>
-        </div>
 
-        <div class="how-cell">
-          <div class="how-cell-top">
-            <span class="how-step-label">Step 02</span>
-            <span class="how-step-num">02</span>
-          </div>
-          <div class="how-icon-wrap">
-            <div class="how-icon ic-purple">
-              <!-- CPU / brain icon -->
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <div class="how-row">
+            <div class="hw-pill p2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="4" y="4" width="16" height="16" rx="2"/>
                 <rect x="9" y="9" width="6" height="6"/>
-                <line x1="9"  y1="1"  x2="9"  y2="4"/>
-                <line x1="15" y1="1"  x2="15" y2="4"/>
-                <line x1="9"  y1="20" x2="9"  y2="23"/>
-                <line x1="15" y1="20" x2="15" y2="23"/>
-                <line x1="20" y1="9"  x2="23" y2="9"/>
-                <line x1="20" y1="14" x2="23" y2="14"/>
-                <line x1="1"  y1="9"  x2="4"  y2="9"/>
-                <line x1="1"  y1="14" x2="4"  y2="14"/>
+                <line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/>
+                <line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/>
+                <line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/>
+                <line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/>
               </svg>
             </div>
-          </div>
-          <div class="how-cell-bottom">
-            <div class="how-cell-title">Gemini Live API</div>
-            <div class="how-cell-body">Audio and live surgical video (1 fps) are processed natively by Gemini 2.5 Flash. Full multimodal context — intent understood in the OR environment.</div>
-          </div>
-        </div>
-
-        <div class="how-cell">
-          <div class="how-cell-top">
-            <span class="how-step-label">Step 03</span>
-            <span class="how-step-num">03</span>
-          </div>
-          <div class="how-icon-wrap">
-            <div class="how-icon ic-green">
-              <!-- Network / routing icon -->
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="18" cy="5"  r="3"/>
-                <circle cx="6"  cy="12" r="3"/>
-                <circle cx="18" cy="19" r="3"/>
-                <line x1="8.59"  y1="13.51" x2="15.42" y2="17.49"/>
-                <line x1="15.41" y1="6.51"  x2="8.59"  y2="10.49"/>
-              </svg>
+            <div class="how-row-text">
+              <div class="how-row-title">Gemini Live API</div>
+              <div class="how-row-desc">Audio and live surgical video (1 fps) processed natively. Full multimodal context — the AI understands the OR environment in real time.</div>
             </div>
           </div>
-          <div class="how-cell-bottom">
-            <div class="how-cell-title">Multi-Agent Routing</div>
-            <div class="how-cell-body">ORION Orchestrator uses ADK AutoFlow to route the command to the correct specialist — patient data, CT imaging, 3D anatomy, or procedural context.</div>
-          </div>
-        </div>
 
-        <div class="how-cell">
-          <div class="how-cell-top">
-            <span class="how-step-label">Step 04</span>
-            <span class="how-step-num">04</span>
+          <div class="how-row">
+            <div class="hw-pill p3">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+              </svg>
+            </div>
+            <div class="how-row-text">
+              <div class="how-row-title">Multi-Agent Routing</div>
+              <div class="how-row-desc">ADK Orchestrator routes the intent to the right specialist — patient data, CT imaging, 3D anatomy, or surgical phase context.</div>
+            </div>
           </div>
-          <div class="how-icon-wrap">
-            <div class="how-icon ic-blue">
-              <!-- Monitor icon -->
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                <line x1="8"  y1="21" x2="16" y2="21"/>
+
+          <div class="how-row">
+            <div class="hw-pill p4">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
                 <line x1="12" y1="17" x2="12" y2="21"/>
               </svg>
             </div>
+            <div class="how-row-text">
+              <div class="how-row-title">Visual Overlay</div>
+              <div class="how-row-desc">Results appear as glassmorphic tiles on the surgical display. ORION speaks a brief confirmation. Hands never leave the controls.</div>
+            </div>
           </div>
-          <div class="how-cell-bottom">
-            <div class="how-cell-title">Visual Overlay</div>
-            <div class="how-cell-body">Results appear as glassmorphism tiles on the surgical display. ORION speaks a brief voice confirmation. The surgeon's hands never move.</div>
-          </div>
+
+        </div>
+
+        <!-- SVG diagram (right) -->
+        <div class="how-visual">
+          <svg class="how-svg" viewBox="0 0 420 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="orbGrad" cx="38%" cy="32%" r="68%">
+                <stop offset="0%" stop-color="#38bdf8"/>
+                <stop offset="100%" stop-color="#0369a1"/>
+              </radialGradient>
+              <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+                <feGaussianBlur stdDeviation="8" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+
+            <!-- Ambient halo -->
+            <circle cx="210" cy="155" r="108" fill="rgba(56,189,248,0.055)"/>
+            <circle cx="210" cy="155" r="80"  fill="rgba(56,189,248,0.06)"/>
+
+            <!-- Animated paths: center → agents -->
+            <!-- → IR (bottom-left) -->
+            <path d="M 210 155 C 180 200 120 220 82 262" stroke="#10b981" stroke-width="1.6" stroke-dasharray="7 5" opacity="0.55">
+              <animate attributeName="stroke-dashoffset" from="120" to="0" dur="2.6s" repeatCount="indefinite"/>
+            </path>
+            <!-- → IV -->
+            <path d="M 210 155 C 200 210 170 235 155 272" stroke="#818cf8" stroke-width="1.6" stroke-dasharray="7 5" opacity="0.55">
+              <animate attributeName="stroke-dashoffset" from="120" to="0" dur="2.0s" repeatCount="indefinite"/>
+            </path>
+            <!-- → AR -->
+            <path d="M 210 155 C 220 210 248 235 263 272" stroke="#f59e0b" stroke-width="1.6" stroke-dasharray="7 5" opacity="0.55">
+              <animate attributeName="stroke-dashoffset" from="120" to="0" dur="3.1s" repeatCount="indefinite"/>
+            </path>
+            <!-- → PC (bottom-right) -->
+            <path d="M 210 155 C 240 200 298 220 336 262" stroke="#f472b6" stroke-width="1.6" stroke-dasharray="7 5" opacity="0.55">
+              <animate attributeName="stroke-dashoffset" from="120" to="0" dur="2.4s" repeatCount="indefinite"/>
+            </path>
+            <!-- Voice → center -->
+            <path d="M 210 42 L 210 118" stroke="#22d3ee" stroke-width="1.6" stroke-dasharray="5 4" opacity="0.65">
+              <animate attributeName="stroke-dashoffset" from="50" to="0" dur="1.6s" repeatCount="indefinite"/>
+            </path>
+
+            <!-- Voice input node (top) -->
+            <circle cx="210" cy="28" r="20" fill="#22d3ee"/>
+            <svg x="198" y="16" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            </svg>
+            <text x="210" y="62" text-anchor="middle" font-family="Poppins, sans-serif" font-size="9.5" font-weight="600" fill="#4a5568" letter-spacing="0.5">SURGEON VOICE</text>
+
+            <!-- ORION center node (Gemini) with pulse -->
+            <circle cx="210" cy="155" r="48" fill="rgba(2,132,199,0.09)">
+              <animate attributeName="r" values="46;52;46" dur="3.2s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="210" cy="155" r="38" fill="url(#orbGrad)" filter="url(#glow)"/>
+            <text x="210" y="151" text-anchor="middle" font-family="Poppins, sans-serif" font-size="8.5" font-weight="700" fill="rgba(255,255,255,0.85)" letter-spacing="1.2">GEMINI</text>
+            <text x="210" y="163" text-anchor="middle" font-family="Poppins, sans-serif" font-size="7" font-weight="500" fill="rgba(255,255,255,0.6)" letter-spacing="0.6">LIVE API</text>
+
+            <!-- Agent: IR -->
+            <circle cx="82" cy="272" r="28" fill="#dcfce7" stroke="#bbf7d0" stroke-width="1.2"/>
+            <text x="82" y="268" text-anchor="middle" font-family="Poppins, sans-serif" font-size="10" font-weight="700" fill="#059669">IR</text>
+            <text x="82" y="281" text-anchor="middle" font-family="Poppins, sans-serif" font-size="7.5" font-weight="500" fill="#059669">Clinical</text>
+
+            <!-- Agent: IV -->
+            <circle cx="155" cy="284" r="28" fill="#ede9fe" stroke="#ddd6fe" stroke-width="1.2"/>
+            <text x="155" y="280" text-anchor="middle" font-family="Poppins, sans-serif" font-size="10" font-weight="700" fill="#6d28d9">IV</text>
+            <text x="155" y="293" text-anchor="middle" font-family="Poppins, sans-serif" font-size="7.5" font-weight="500" fill="#6d28d9">CT Scan</text>
+
+            <!-- Agent: AR -->
+            <circle cx="263" cy="284" r="28" fill="#fef3c7" stroke="#fde68a" stroke-width="1.2"/>
+            <text x="263" y="280" text-anchor="middle" font-family="Poppins, sans-serif" font-size="10" font-weight="700" fill="#b45309">AR</text>
+            <text x="263" y="293" text-anchor="middle" font-family="Poppins, sans-serif" font-size="7.5" font-weight="500" fill="#b45309">3D Model</text>
+
+            <!-- Agent: PC -->
+            <circle cx="336" cy="272" r="28" fill="#fce7f3" stroke="#fbcfe8" stroke-width="1.2"/>
+            <text x="336" y="268" text-anchor="middle" font-family="Poppins, sans-serif" font-size="10" font-weight="700" fill="#be185d">PC</text>
+            <text x="336" y="281" text-anchor="middle" font-family="Poppins, sans-serif" font-size="7.5" font-weight="500" fill="#be185d">Phase</text>
+
+            <!-- Surgical Display output bar -->
+            <rect x="100" y="330" width="218" height="30" rx="8" fill="rgba(2,132,199,0.07)" stroke="rgba(2,132,199,0.2)" stroke-width="1.2"/>
+            <!-- small dot connectors from agents to display -->
+            <line x1="155" y1="312" x2="175" y2="330" stroke="rgba(0,0,0,0.1)" stroke-width="1"/>
+            <line x1="263" y1="312" x2="243" y2="330" stroke="rgba(0,0,0,0.1)" stroke-width="1"/>
+            <text x="209" y="349" text-anchor="middle" font-family="Poppins, sans-serif" font-size="10" font-weight="600" fill="#0369a1" letter-spacing="0.3">Surgical Display</text>
+          </svg>
         </div>
 
       </div>
