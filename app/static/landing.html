@@ -443,7 +443,7 @@
 
     .arch-num {
       display: inline-flex; font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
-      color: rgba(255,255,255,0.26); border: 1px solid rgba(255,255,255,0.11);
+      color: rgba(255,255,255,0.42); border: 1px solid rgba(255,255,255,0.18);
       border-radius: 100px; padding: 3px 9px; margin-bottom: 14px; width: fit-content;
       font-family: 'Poppins', sans-serif;
     }
@@ -453,16 +453,17 @@
     .arch-visual svg { max-width: 156px; }
     .arch-agent-label {
       font-size: 10px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
-      color: rgba(255,255,255,0.28); margin-bottom: 5px; font-family: 'Poppins', sans-serif;
+      color: rgba(255,255,255,0.42); margin-bottom: 5px; font-family: 'Poppins', sans-serif;
     }
     .arch-agent-title {
-      font-size: 15px; font-weight: 700; color: #fff;
-      margin-bottom: 7px; font-family: 'Poppins', sans-serif; line-height: 1.25;
+      font-size: 16px; font-weight: 700; color: #fff;
+      margin-bottom: 8px; font-family: 'Poppins', sans-serif; line-height: 1.25;
     }
     .arch-agent-desc {
-      font-size: 12px; line-height: 1.68; color: rgba(255,255,255,0.36);
-      font-family: 'Poppins', sans-serif;
+      font-size: 12.5px; line-height: 1.72; color: rgba(255,255,255,0.54);
+      font-family: 'Poppins', sans-serif; margin-bottom: 16px;
     }
+    .arch-agent-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: auto; }
 
     /* ── Tech Stack ── */
     #tech { padding: 90px 0; }
@@ -967,6 +968,11 @@
             <div class="arch-agent-label">IR_Agent</div>
             <div class="arch-agent-title">Information Retrieval</div>
             <div class="arch-agent-desc">Patient labs, vitals, medications, and allergies — retrieved by voice and rendered instantly on the surgical display.</div>
+            <div class="arch-agent-tags">
+              <span class="arch-tag">Labs &amp; vitals</span>
+              <span class="arch-tag">Medications</span>
+              <span class="arch-tag">Allergies</span>
+            </div>
           </div>
 
           <!-- IV_Agent -->
@@ -1000,6 +1006,10 @@
             <div class="arch-agent-label">IV_Agent</div>
             <div class="arch-agent-title">CT Image Viewer</div>
             <div class="arch-agent-desc">Voice-navigated CT slices. Jump to anatomical landmarks — carina, aortic arch, tumor — or scroll superior and inferior.</div>
+            <div class="arch-agent-tags">
+              <span class="arch-tag">Slice navigation</span>
+              <span class="arch-tag">Landmark jump</span>
+            </div>
           </div>
 
           <!-- AR_Agent -->
@@ -1038,6 +1048,10 @@
             <div class="arch-agent-label">AR_Agent</div>
             <div class="arch-agent-title">3D Anatomy Renderer</div>
             <div class="arch-agent-desc">Three.js lung model — rotate to any view, toggle vessel, bronchi, and tumor visibility by name.</div>
+            <div class="arch-agent-tags">
+              <span class="arch-tag">3D rotation</span>
+              <span class="arch-tag">Structure toggle</span>
+            </div>
           </div>
 
           <!-- PC_Agent -->
@@ -1072,6 +1086,12 @@
             <div class="arch-agent-label">PC_Agent</div>
             <div class="arch-agent-title">Procedural Context</div>
             <div class="arch-agent-desc">Detects surgical phase from live video. Surfaces 4-point anatomical checklists with critical anatomy warnings — no input needed.</div>
+            <div class="arch-agent-tags">
+              <span class="arch-tag">Live video analysis</span>
+              <span class="arch-tag">Phase detection</span>
+              <span class="arch-tag">Checklists</span>
+              <span class="arch-tag">Critical warnings</span>
+            </div>
           </div>
 
         </div>
