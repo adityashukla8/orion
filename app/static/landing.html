@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ORION — Operating Room Intelligent Orchestration Node</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400&display=swap" rel="stylesheet">
+
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --white:     #ffffff;
+      --bg:        #f2f5f9;
+      --bg-alt:    #e8edf5;
+      --glass:     rgba(255,255,255,0.68);
+      --glass-border: rgba(255,255,255,0.82);
+      --text:      #0c1527;
+      --text-2:    #3d5066;
+      --text-3:    #7a8ca3;
+      --blue:      #0284c7;
+      --blue-2:    #3b82f6;
+      --cyan:      #22d3ee;
+      --green:     #10b981;
+      --pink:      #f472b6;
+      --purple:    #818cf8;
+      --amber:     #f59e0b;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Ambient blobs ── */
+    .blob-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      height: 64px;
+      background: rgba(242,245,249,0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.6);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .nav-orb {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 36% 30%, rgba(255,255,255,0.9) 0%, rgba(56,189,248,0.7) 42%, rgba(2,132,199,0.9) 100%);
+      box-shadow: 0 0 12px rgba(34,211,238,0.45), inset 0 1px 2px rgba(255,255,255,0.8);
+      animation: nav-orb-breathe 3s ease-in-out infinite;
+    }
+
+    @keyframes nav-orb-breathe {
+      0%,100% { box-shadow: 0 0 10px rgba(34,211,238,0.35); }
+      50%      { box-shadow: 0 0 20px rgba(34,211,238,0.65); }
+    }
+
+    .nav-wordmark {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-2);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--blue); }
+
+    .nav-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 20px;
+      background: var(--blue);
+      color: #fff;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+      box-shadow: 0 2px 12px rgba(2,132,199,0.25);
+    }
+    .nav-cta:hover {
+      background: #0369a1;
+      box-shadow: 0 4px 20px rgba(2,132,199,0.4);
+      transform: translateY(-1px);
+    }
+
+    /* ── Sections common ── */
+    section { position: relative; z-index: 1; }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 40px;
+    }
+
+    /* ── Hero ── */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding-top: 64px;
+    }
+
+    .hero-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 0;
+      padding: 80px 0 60px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: rgba(2,132,199,0.08);
+      border: 1px solid rgba(2,132,199,0.22);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--blue);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+      opacity: 0;
+      animation: fade-up 0.7s ease 0.1s forwards;
+    }
+
+    .badge-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--blue);
+      animation: badge-dot-pulse 2s ease-in-out infinite;
+    }
+    @keyframes badge-dot-pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    /* Central voice orb */
+    .hero-orb-wrap {
+      position: relative;
+      width: 160px;
+      height: 160px;
+      margin-bottom: 44px;
+      opacity: 0;
+      animation: fade-scale 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.25s forwards;
+    }
+
+    .hero-orb {
+      width: 140px; height: 140px;
+      border-radius: 50%;
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      overflow: hidden;
+      background: radial-gradient(
+        circle at 50% 55%,
+        rgba(210,240,255,0.22) 0%,
+        rgba(170,220,255,0.1) 100%
+      );
+      box-shadow:
+        0 0 0 1.5px rgba(160,210,255,0.4),
+        0 8px 40px rgba(34,211,238,0.22),
+        inset 0 0 20px rgba(255,255,255,0.14);
+      animation: hero-orb-spin 6s ease-in-out infinite;
+    }
+
+    @keyframes hero-orb-spin {
+      0%,100% { box-shadow: 0 0 0 1.5px rgba(160,210,255,0.4), 0 8px 40px rgba(34,211,238,0.22), inset 0 0 20px rgba(255,255,255,0.14); }
+      33%      { box-shadow: 0 0 0 2px rgba(129,140,248,0.5), 0 8px 50px rgba(129,140,248,0.3), inset 0 0 20px rgba(255,255,255,0.14); }
+      66%      { box-shadow: 0 0 0 2px rgba(16,185,129,0.4), 0 8px 40px rgba(16,185,129,0.22), inset 0 0 20px rgba(255,255,255,0.14); }
+    }
+
+    .orb-blob { position: absolute; border-radius: 50%; filter: blur(16px); }
+    .orb-blob.ob1 {
+      width: 90px; height: 90px;
+      background: radial-gradient(circle, rgba(34,211,238,0.82) 0%, rgba(2,132,199,0.42) 55%, transparent 75%);
+      top: -18px; left: -18px;
+      animation: ob1-move 5.5s ease-in-out infinite;
+    }
+    .orb-blob.ob2 {
+      width: 76px; height: 76px;
+      background: radial-gradient(circle, rgba(129,140,248,0.78) 0%, rgba(99,102,241,0.36) 55%, transparent 75%);
+      bottom: -10px; right: -12px;
+      animation: ob2-move 6.5s ease-in-out infinite;
+    }
+    .orb-blob.ob3 {
+      width: 60px; height: 60px;
+      background: radial-gradient(circle, rgba(16,185,129,0.72) 0%, rgba(5,150,105,0.32) 55%, transparent 75%);
+      bottom: 10px; left: -5px;
+      animation: ob3-move 7.5s ease-in-out infinite;
+    }
+    .orb-blob.ob4 {
+      width: 50px; height: 50px;
+      background: radial-gradient(circle, rgba(244,114,182,0.65) 0%, rgba(236,72,153,0.3) 55%, transparent 75%);
+      top: 14px; right: -4px;
+      animation: ob4-move 4.8s ease-in-out infinite;
+    }
+
+    @keyframes ob1-move {
+      0%,100%{ transform:translate(0,0); } 33%{ transform:translate(22px,14px); } 66%{ transform:translate(10px,26px); }
+    }
+    @keyframes ob2-move {
+      0%,100%{ transform:translate(0,0); } 33%{ transform:translate(-18px,-20px); } 66%{ transform:translate(-26px,-8px); }
+    }
+    @keyframes ob3-move {
+      0%,100%{ transform:translate(0,0); } 40%{ transform:translate(16px,-10px); } 80%{ transform:translate(6px,-22px); }
+    }
+    @keyframes ob4-move {
+      0%,100%{ transform:translate(0,0); } 50%{ transform:translate(-12px,16px); }
+    }
+
+    /* specular */
+    .hero-orb::after {
+      content:'';
+      position:absolute;inset:0;border-radius:50%;
+      background: radial-gradient(ellipse at 28% 22%, rgba(255,255,255,0.78) 0%, rgba(255,255,255,0.22) 30%, transparent 55%);
+      z-index:10; pointer-events:none;
+    }
+
+    /* rings */
+    .orb-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(34,211,238,0.2);
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      animation: ring-pulse 3s ease-in-out infinite;
+    }
+    .orb-ring:nth-child(1) { width: 158px; height: 158px; animation-delay: 0s; }
+    .orb-ring:nth-child(2) { width: 180px; height: 180px; border-color: rgba(129,140,248,0.14); animation-delay: 0.8s; }
+    .orb-ring:nth-child(3) { width: 205px; height: 205px; border-color: rgba(16,185,129,0.10); animation-delay: 1.6s; }
+
+    @keyframes ring-pulse {
+      0%,100% { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+      50%      { opacity: 0; transform: translate(-50%,-50%) scale(1.08); }
+    }
+
+    .hero-headline {
+      font-size: clamp(38px, 5.5vw, 68px);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      max-width: 820px;
+      margin-bottom: 20px;
+      opacity: 0;
+      animation: fade-up 0.75s ease 0.4s forwards;
+    }
+
+    .hero-headline .hl-blue { color: var(--blue); }
+    .hero-headline .hl-cyan { color: #0891b2; }
+
+    .hero-sub {
+      font-size: clamp(15px, 1.8vw, 18px);
+      font-weight: 400;
+      line-height: 1.7;
+      color: var(--text-2);
+      max-width: 600px;
+      margin-bottom: 40px;
+      opacity: 0;
+      animation: fade-up 0.75s ease 0.55s forwards;
+    }
+
+    .hero-sub em { font-style: normal; font-weight: 600; color: var(--text); }
+
+    .hero-ctas {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fade-up 0.75s ease 0.7s forwards;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      background: var(--blue);
+      color: #fff;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      box-shadow: 0 4px 20px rgba(2,132,199,0.3);
+    }
+    .btn-primary:hover {
+      background: #0369a1;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(2,132,199,0.42);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(2,132,199,0.2);
+      color: var(--blue);
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.9);
+      border-color: rgba(2,132,199,0.4);
+      transform: translateY(-2px);
+    }
+
+    .hero-voice-hint {
+      margin-top: 52px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-3);
+      letter-spacing: 0.04em;
+      opacity: 0;
+      animation: fade-up 0.75s ease 0.9s forwards;
+    }
+
+    .voice-wave {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .voice-wave span {
+      display: block;
+      width: 2px;
+      border-radius: 2px;
+      background: var(--cyan);
+      animation: wave-bar 1.4s ease-in-out infinite;
+    }
+    .voice-wave span:nth-child(1) { height: 8px; animation-delay: 0s; }
+    .voice-wave span:nth-child(2) { height: 14px; animation-delay: 0.1s; }
+    .voice-wave span:nth-child(3) { height: 18px; animation-delay: 0.2s; }
+    .voice-wave span:nth-child(4) { height: 12px; animation-delay: 0.3s; }
+    .voice-wave span:nth-child(5) { height: 8px;  animation-delay: 0.4s; }
+
+    @keyframes wave-bar {
+      0%,100% { transform: scaleY(1); opacity: 0.5; }
+      50%      { transform: scaleY(1.6); opacity: 1; }
+    }
+
+    /* ── Animations ── */
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fade-scale {
+      from { opacity: 0; transform: scale(0.82); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* ── Problem Section ── */
+    #problem {
+      padding: 100px 0;
+      background: var(--text);
+      overflow: hidden;
+    }
+
+    .problem-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+
+    .problem-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 18px;
+    }
+
+    .problem-headline {
+      font-size: clamp(30px, 3.5vw, 46px);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.025em;
+      color: #ffffff;
+      margin-bottom: 22px;
+    }
+
+    .problem-body {
+      font-size: 15px;
+      line-height: 1.75;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .problem-body strong { color: rgba(255,255,255,0.92); font-weight: 600; }
+
+    .problem-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 22px 26px;
+      backdrop-filter: blur(8px);
+      transition: transform 0.25s ease, background 0.25s;
+    }
+    .stat-card:hover {
+      transform: translateX(6px);
+      background: rgba(255,255,255,0.08);
+    }
+
+    .stat-icon {
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.3;
+    }
+
+    .stat-card.sc-blue  { border-left: 3px solid var(--cyan);  }
+    .stat-card.sc-green { border-left: 3px solid var(--green); }
+    .stat-card.sc-pink  { border-left: 3px solid var(--pink);  }
+
+    /* ── How it works ── */
+    #how {
+      padding: 110px 0;
+    }
+
+    .section-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 14px;
+    }
+
+    .section-headline {
+      font-size: clamp(28px, 3.2vw, 42px);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      line-height: 1.15;
+      color: var(--text);
+      margin-bottom: 14px;
+    }
+
+    .section-sub {
+      font-size: 16px;
+      line-height: 1.7;
+      color: var(--text-2);
+      max-width: 520px;
+    }
+
+    .how-header { margin-bottom: 64px; }
+
+    .how-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      position: relative;
+    }
+
+    /* connector line */
+    .how-steps::before {
+      content: '';
+      position: absolute;
+      top: 36px;
+      left: calc(12.5% + 20px);
+      right: calc(12.5% + 20px);
+      height: 1px;
+      background: linear-gradient(to right, var(--cyan), var(--purple), var(--green), transparent);
+      opacity: 0.4;
+    }
+
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 0 16px;
+    }
+
+    .step-num {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+      transition: transform 0.25s;
+    }
+    .step:hover .step-num { transform: scale(1.08); }
+
+    .step-num.sn1 { background: rgba(34,211,238,0.12); border: 1.5px solid rgba(34,211,238,0.35); }
+    .step-num.sn2 { background: rgba(129,140,248,0.12); border: 1.5px solid rgba(129,140,248,0.35); }
+    .step-num.sn3 { background: rgba(16,185,129,0.12);  border: 1.5px solid rgba(16,185,129,0.35);  }
+    .step-num.sn4 { background: rgba(2,132,199,0.12);   border: 1.5px solid rgba(2,132,199,0.35);   }
+
+    .step-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .step-body {
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--text-2);
+    }
+
+    /* ── Agents ── */
+    #agents {
+      padding: 110px 0;
+      background: linear-gradient(180deg, #e8edf5 0%, #f2f5f9 100%);
+    }
+
+    .agents-header {
+      margin-bottom: 56px;
+    }
+
+    .agent-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .agent-card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 18px;
+      padding: 28px 26px;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      box-shadow:
+        0 4px 24px rgba(100,140,200,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.9);
+      transition: transform 0.25s ease, box-shadow 0.25s;
+      cursor: default;
+    }
+
+    .agent-card:hover {
+      transform: translateY(-4px);
+      box-shadow:
+        0 12px 40px rgba(100,140,200,0.16),
+        inset 0 1px 0 rgba(255,255,255,0.9);
+    }
+
+    /* span last 2 cards across */
+    .agent-card.span2 {
+      grid-column: span 1;
+    }
+
+    .agent-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .agent-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 19px;
+      flex-shrink: 0;
+    }
+
+    .ai-root  { background: rgba(2,132,199,0.12);  }
+    .ai-ir    { background: rgba(16,185,129,0.12); }
+    .ai-iv    { background: rgba(129,140,248,0.12);}
+    .ai-ar    { background: rgba(245,158,11,0.12); }
+    .ai-pc    { background: rgba(244,114,182,0.12);}
+
+    .agent-name {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 2px;
+    }
+
+    .agent-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .agent-desc {
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--text-2);
+      margin-bottom: 16px;
+    }
+
+    .agent-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .atag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 100px;
+      background: rgba(2,132,199,0.08);
+      color: var(--blue);
+      border: 1px solid rgba(2,132,199,0.15);
+    }
+    .atag.green  { background: rgba(16,185,129,0.08);  color: #059669; border-color: rgba(16,185,129,0.18);  }
+    .atag.purple { background: rgba(129,140,248,0.08); color: #6366f1; border-color: rgba(129,140,248,0.18); }
+    .atag.amber  { background: rgba(245,158,11,0.08);  color: #d97706; border-color: rgba(245,158,11,0.18);  }
+    .atag.pink   { background: rgba(244,114,182,0.08); color: #db2777; border-color: rgba(244,114,182,0.18); }
+
+    /* bottom row: full-width pair */
+    .agent-bottom-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    /* ── Tech Stack ── */
+    #tech {
+      padding: 90px 0;
+    }
+
+    .tech-header { margin-bottom: 52px; }
+
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .tech-card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 22px 20px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 2px 12px rgba(100,140,200,0.07), inset 0 1px 0 rgba(255,255,255,0.9);
+      transition: transform 0.22s, box-shadow 0.22s;
+      text-align: center;
+    }
+    .tech-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 28px rgba(100,140,200,0.14), inset 0 1px 0 rgba(255,255,255,0.9);
+    }
+
+    .tech-icon { font-size: 28px; margin-bottom: 10px; }
+
+    .tech-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .tech-role {
+      font-size: 11px;
+      color: var(--text-3);
+      font-weight: 500;
+    }
+
+    /* ── CTA Banner ── */
+    #cta {
+      padding: 100px 0;
+    }
+
+    .cta-inner {
+      background: linear-gradient(135deg, #0c1e3a 0%, #0d2d4a 50%, #0a1e38 100%);
+      border-radius: 28px;
+      padding: 80px 64px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-blobs {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      border-radius: 28px;
+    }
+
+    .cta-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.18;
+    }
+    .cta-blob.cb1 { width: 320px; height: 320px; background: var(--cyan);   top: -80px;  left: -80px; }
+    .cta-blob.cb2 { width: 280px; height: 280px; background: var(--purple); bottom: -60px; right: -60px; }
+    .cta-blob.cb3 { width: 200px; height: 200px; background: var(--green);  top: 20px; right: 30%; }
+
+    .cta-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 18px;
+      position: relative;
+    }
+
+    .cta-headline {
+      font-size: clamp(28px, 3.5vw, 46px);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: 18px;
+      position: relative;
+    }
+
+    .cta-sub {
+      font-size: 16px;
+      color: rgba(255,255,255,0.55);
+      max-width: 480px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+      position: relative;
+    }
+
+    .cta-btn-wrap { position: relative; }
+
+    .btn-cta-main {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 36px;
+      background: linear-gradient(135deg, var(--cyan) 0%, var(--blue) 100%);
+      color: #fff;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 6px 30px rgba(34,211,238,0.35);
+      transition: all 0.25s;
+    }
+    .btn-cta-main:hover {
+      box-shadow: 0 10px 40px rgba(34,211,238,0.5);
+      transform: translateY(-2px);
+    }
+
+    .cta-note {
+      margin-top: 18px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.35);
+      position: relative;
+    }
+
+    /* ── Footer ── */
+    footer {
+      padding: 32px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .footer-orb {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 36% 30%, rgba(255,255,255,0.9) 0%, rgba(34,211,238,0.7) 42%, rgba(2,132,199,0.9) 100%);
+      box-shadow: 0 0 8px rgba(34,211,238,0.4);
+    }
+
+    .footer-name {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+
+    .footer-right {
+      font-size: 12px;
+      color: var(--text-3);
+    }
+
+    .footer-right a { color: var(--blue); text-decoration: none; }
+    .footer-right a:hover { text-decoration: underline; }
+
+    /* ── Responsiveness ── */
+    @media (max-width: 900px) {
+      .problem-inner     { grid-template-columns: 1fr; gap: 44px; }
+      .how-steps         { grid-template-columns: repeat(2, 1fr); gap: 32px; }
+      .how-steps::before { display: none; }
+      .agent-grid        { grid-template-columns: 1fr 1fr; }
+      .agent-bottom-row  { grid-template-columns: 1fr; }
+      .tech-grid         { grid-template-columns: repeat(2, 1fr); }
+      .cta-inner         { padding: 52px 32px; }
+      nav                { padding: 0 24px; }
+      .nav-links         { display: none; }
+      .container         { padding: 0 24px; }
+    }
+
+    @media (max-width: 600px) {
+      .agent-grid  { grid-template-columns: 1fr; }
+      .tech-grid   { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient background blobs (canvas) -->
+  <canvas class="blob-canvas" id="blobCanvas"></canvas>
+
+  <!-- ── Navigation ── -->
+  <nav>
+    <a href="/" class="nav-logo">
+      <div class="nav-orb"></div>
+      <span class="nav-wordmark">ORION</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#problem">Problem</a></li>
+      <li><a href="#how">How It Works</a></li>
+      <li><a href="#agents">Agents</a></li>
+      <li><a href="#tech">Tech Stack</a></li>
+    </ul>
+    <a href="/console" class="nav-cta">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16"/></svg>
+      Launch Console
+    </a>
+  </nav>
+
+  <!-- ── Hero ── -->
+  <section id="hero">
+    <div class="container">
+      <div class="hero-inner">
+
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          Google Gemini Live Agent Hackathon
+        </div>
+
+        <div class="hero-orb-wrap">
+          <div class="orb-ring"></div>
+          <div class="orb-ring"></div>
+          <div class="orb-ring"></div>
+          <div class="hero-orb">
+            <div class="orb-blob ob1"></div>
+            <div class="orb-blob ob2"></div>
+            <div class="orb-blob ob3"></div>
+            <div class="orb-blob ob4"></div>
+          </div>
+        </div>
+
+        <h1 class="hero-headline">
+          Voice-Directed Intelligence<br>
+          for the <span class="hl-blue">Operating Room</span>
+        </h1>
+
+        <p class="hero-sub">
+          ORION gives surgeons <em>hands-free access to everything</em> — patient data, CT imaging,
+          3D anatomy, and AI-driven surgical checklists — using only their voice,
+          while their hands never leave the controls.
+        </p>
+
+        <div class="hero-ctas">
+          <a href="/console" class="btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16"/></svg>
+            Launch Console
+          </a>
+          <a href="#how" class="btn-secondary">
+            See How It Works
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>
+          </a>
+        </div>
+
+        <div class="hero-voice-hint">
+          <div class="voice-wave">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          "ORION, show me the hemoglobin"
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Problem ── -->
+  <section id="problem">
+    <div class="container">
+      <div class="problem-inner">
+
+        <div class="reveal">
+          <span class="problem-tag">The Problem</span>
+          <h2 class="problem-headline">
+            Locked hands.<br>Critical information<br>out of reach.
+          </h2>
+          <p class="problem-body">
+            During robotic surgery, the surgeon's hands are <strong>locked on instrument controls</strong>
+            inside a sterile field. They cannot type, click, or interact with any computer system.<br><br>
+            Critical patient data, imaging, and anatomical context require them to
+            <strong>break scrub or rely on circulating staff</strong> — both slow, disruptive,
+            and potentially dangerous at the wrong moment.
+          </p>
+        </div>
+
+        <div class="problem-stats reveal">
+          <div class="stat-card sc-blue">
+            <div class="stat-icon">🔒</div>
+            <div class="stat-label">Sterile Field Constraint</div>
+            <div class="stat-value">Hands never leave the controls during critical phases</div>
+          </div>
+          <div class="stat-card sc-green">
+            <div class="stat-icon">⏱</div>
+            <div class="stat-label">Information Latency</div>
+            <div class="stat-value">Relying on staff to retrieve data adds cognitive load and delay</div>
+          </div>
+          <div class="stat-card sc-pink">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-label">Context Switching Cost</div>
+            <div class="stat-value">Breaking scrub for data interrupts surgical flow and focus</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── How It Works ── -->
+  <section id="how">
+    <div class="container">
+      <div class="how-header reveal">
+        <span class="section-tag">How It Works</span>
+        <h2 class="section-headline">From voice to display<br>in milliseconds</h2>
+        <p class="section-sub">
+          ORION runs a real-time multimodal pipeline: live audio in, native Gemini intelligence, specialist agents, and instant visual output.
+        </p>
+      </div>
+
+      <div class="how-steps">
+        <div class="step reveal">
+          <div class="step-num sn1">🎙</div>
+          <div class="step-title">Voice Command</div>
+          <div class="step-body">Surgeon speaks. 16kHz audio streams to ORION via WebSocket in real time. Wake-word filtering ignores background OR noise.</div>
+        </div>
+        <div class="step reveal">
+          <div class="step-num sn2">🧠</div>
+          <div class="step-title">Gemini Live API</div>
+          <div class="step-body">Audio + live video (1fps) processed natively by Gemini 2.5 Flash. Intent understood in the full surgical context.</div>
+        </div>
+        <div class="step reveal">
+          <div class="step-num sn3">⚡</div>
+          <div class="step-title">Multi-Agent Routing</div>
+          <div class="step-body">ORION Orchestrator routes to the right specialist agent — patient data, CT imaging, 3D anatomy, or procedural context.</div>
+        </div>
+        <div class="step reveal">
+          <div class="step-num sn4">🖥</div>
+          <div class="step-title">Visual Overlay</div>
+          <div class="step-body">Results appear as glassmorphism tiles on the surgical display. ORION speaks the confirmation. Hands never move.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Agents ── -->
+  <section id="agents">
+    <div class="container">
+      <div class="agents-header reveal">
+        <span class="section-tag">Specialist Agents</span>
+        <h2 class="section-headline">Five agents. One voice.</h2>
+        <p class="section-sub">
+          Each specialist is a dedicated Gemini agent with purpose-built tools and instructions. The orchestrator routes every command with zero latency.
+        </p>
+      </div>
+
+      <div class="agent-grid">
+
+        <!-- Orchestrator — full top row width -->
+        <div class="agent-card reveal" style="grid-column: 1 / -1;">
+          <div class="agent-card-header">
+            <div class="agent-icon ai-root">🎛</div>
+            <div>
+              <div class="agent-name">ORION_Orchestrator</div>
+              <div class="agent-title">Root Agent — Wake-Word Detection & Routing</div>
+            </div>
+          </div>
+          <p class="agent-desc">
+            The always-on orchestrator receives all audio, filters ambient OR noise using wake-word detection, and routes each command to the correct specialist using ADK's AutoFlow. Handles hide-all overlays directly. Never says "routing" — just acts.
+          </p>
+          <div class="agent-tags">
+            <span class="atag">Wake-word filtering</span>
+            <span class="atag">AutoFlow routing</span>
+            <span class="atag">Multi-turn conversation</span>
+            <span class="atag">Gemini 2.5 Flash Native Audio</span>
+          </div>
+        </div>
+
+        <!-- IR Agent -->
+        <div class="agent-card reveal">
+          <div class="agent-card-header">
+            <div class="agent-icon ai-ir">📋</div>
+            <div>
+              <div class="agent-name">IR_Agent</div>
+              <div class="agent-title">Information Retrieval</div>
+            </div>
+          </div>
+          <p class="agent-desc">
+            Retrieves and displays patient clinical data on demand — lab values, vitals, medication lists, allergies, and diagnosis — as glassmorphism tiles.
+          </p>
+          <div class="agent-tags">
+            <span class="atag green">Labs & vitals</span>
+            <span class="atag green">Medications</span>
+            <span class="atag green">Allergies</span>
+          </div>
+        </div>
+
+        <!-- IV Agent -->
+        <div class="agent-card reveal">
+          <div class="agent-card-header">
+            <div class="agent-icon ai-iv">🔬</div>
+            <div>
+              <div class="agent-name">IV_Agent</div>
+              <div class="agent-title">CT Image Viewer</div>
+            </div>
+          </div>
+          <p class="agent-desc">
+            Navigates CT scan slices by voice. Jump to anatomical landmarks like carina, aortic arch, or tumor — or scroll slice-by-slice superior and inferior.
+          </p>
+          <div class="agent-tags">
+            <span class="atag purple">Slice navigation</span>
+            <span class="atag purple">Landmark jump</span>
+          </div>
+        </div>
+
+        <!-- AR Agent -->
+        <div class="agent-card reveal">
+          <div class="agent-card-header">
+            <div class="agent-icon ai-ar">🫁</div>
+            <div>
+              <div class="agent-name">AR_Agent</div>
+              <div class="agent-title">3D Anatomy Renderer</div>
+            </div>
+          </div>
+          <p class="agent-desc">
+            Controls a Three.js 3D lung anatomy model. Rotate to posterior, anterior, lateral or superior views. Toggle structure visibility by name — vessels, bronchi, tumor, pleura.
+          </p>
+          <div class="agent-tags">
+            <span class="atag amber">3D rotation</span>
+            <span class="atag amber">Structure toggle</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom row: PC Agent full-width -->
+      <div class="agent-bottom-row">
+        <div class="agent-card reveal" style="grid-column: 1 / -1;">
+          <div class="agent-card-header">
+            <div class="agent-icon ai-pc">🧬</div>
+            <div>
+              <div class="agent-name">PC_Agent</div>
+              <div class="agent-title">Procedural Context — Live Video Phase Detection</div>
+            </div>
+          </div>
+          <p class="agent-desc">
+            The most advanced agent. Gemini already receives the live surgical video at 1fps via the realtime API. PC_Agent uses that visual context to detect the current surgical phase and surface a phase-specific 4-point anatomical checklist with critical warnings — no surgeon input needed to detect phase transitions.
+          </p>
+          <div class="agent-tags">
+            <span class="atag pink">Live video analysis</span>
+            <span class="atag pink">Phase detection</span>
+            <span class="atag pink">Anatomical checklists</span>
+            <span class="atag pink">Critical warnings</span>
+            <span class="atag pink">8 surgical phases</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── Tech Stack ── -->
+  <section id="tech">
+    <div class="container">
+      <div class="tech-header reveal">
+        <span class="section-tag">Technology</span>
+        <h2 class="section-headline">Built on Gemini Live</h2>
+        <p class="section-sub">
+          A production-grade stack using Google's latest multimodal real-time AI, purpose-built ADK agents, and a high-performance WebSocket server.
+        </p>
+      </div>
+
+      <div class="tech-grid">
+        <div class="tech-card reveal">
+          <div class="tech-icon">🤖</div>
+          <div class="tech-name">Gemini Live API</div>
+          <div class="tech-role">Native audio + vision, real-time streaming</div>
+        </div>
+        <div class="tech-card reveal">
+          <div class="tech-icon">🧩</div>
+          <div class="tech-name">Google ADK</div>
+          <div class="tech-role">Multi-agent orchestration, AutoFlow routing</div>
+        </div>
+        <div class="tech-card reveal">
+          <div class="tech-icon">⚡</div>
+          <div class="tech-name">FastAPI + WebSocket</div>
+          <div class="tech-role">Bidirectional audio/video streaming server</div>
+        </div>
+        <div class="tech-card reveal">
+          <div class="tech-icon">🫁</div>
+          <div class="tech-name">Three.js</div>
+          <div class="tech-role">Real-time 3D anatomy GLB model renderer</div>
+        </div>
+        <div class="tech-card reveal">
+          <div class="tech-icon">🎙</div>
+          <div class="tech-name">AudioWorklet API</div>
+          <div class="tech-role">16kHz capture / 24kHz playback pipeline</div>
+        </div>
+        <div class="tech-card reveal">
+          <div class="tech-icon">🖼</div>
+          <div class="tech-name">LIDC-IDRI CT Data</div>
+          <div class="tech-role">133-slice DICOM → PNG, GCS-hosted</div>
+        </div>
+        <div class="tech-card reveal">
+          <div class="tech-icon">☁</div>
+          <div class="tech-name">Vertex AI</div>
+          <div class="tech-role">Gemini model serving & session management</div>
+        </div>
+        <div class="tech-card reveal">
+          <div class="tech-icon">🐍</div>
+          <div class="tech-name">Python 3.11</div>
+          <div class="tech-role">Async server, ADK runners, tool execution</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA ── -->
+  <section id="cta">
+    <div class="container">
+      <div class="cta-inner reveal">
+        <div class="cta-blobs">
+          <div class="cta-blob cb1"></div>
+          <div class="cta-blob cb2"></div>
+          <div class="cta-blob cb3"></div>
+        </div>
+        <div class="cta-tag">Live Demo</div>
+        <h2 class="cta-headline">
+          Experience ORION<br>in the operating room
+        </h2>
+        <p class="cta-sub">
+          Connect your microphone, speak a command, and watch ORION route it to the right agent — all in real time.
+        </p>
+        <div class="cta-btn-wrap">
+          <a href="/console" class="btn-cta-main">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16"/></svg>
+            Launch Surgical Console
+          </a>
+        </div>
+        <p class="cta-note">Click the orb to connect · Say "ORION, show hemoglobin" to begin</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ── -->
+  <footer>
+    <div class="footer-left">
+      <div class="footer-orb"></div>
+      <span class="footer-name">ORION</span>
+    </div>
+    <div class="footer-right">
+      Built for the <a href="https://ai.google.dev/competition" target="_blank">Google Gemini Live Agent Hackathon</a> &mdash; March 2026
+    </div>
+  </footer>
+
+  <script>
+    // ── Ambient blob canvas ────────────────────────────────────────────────
+    (function () {
+      const canvas = document.getElementById('blobCanvas');
+      const ctx    = canvas.getContext('2d');
+
+      const BLOBS = [
+        { x: 0.15, y: 0.20, r: 0.28, color: [34, 211, 238],  speed: 0.00018, phase: 0   },
+        { x: 0.82, y: 0.15, r: 0.22, color: [129,140, 248],  speed: 0.00014, phase: 1.8 },
+        { x: 0.70, y: 0.72, r: 0.26, color: [16,  185, 129], speed: 0.00016, phase: 0.9 },
+        { x: 0.25, y: 0.78, r: 0.20, color: [244, 114, 182], speed: 0.00012, phase: 2.5 },
+        { x: 0.50, y: 0.45, r: 0.18, color: [59,  130, 246], speed: 0.00010, phase: 1.2 },
+      ];
+
+      let W, H;
+
+      function resize() {
+        W = canvas.width  = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+      }
+
+      function draw(t) {
+        ctx.clearRect(0, 0, W, H);
+
+        for (const b of BLOBS) {
+          const ox = Math.sin(t * b.speed + b.phase)         * 0.07 * W;
+          const oy = Math.cos(t * b.speed * 0.7 + b.phase)   * 0.07 * H;
+          const cx = b.x * W + ox;
+          const cy = b.y * H + oy;
+          const r  = b.r * Math.min(W, H);
+
+          const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+          g.addColorStop(0,   `rgba(${b.color[0]},${b.color[1]},${b.color[2]}, 0.13)`);
+          g.addColorStop(0.5, `rgba(${b.color[0]},${b.color[1]},${b.color[2]}, 0.06)`);
+          g.addColorStop(1,   `rgba(${b.color[0]},${b.color[1]},${b.color[2]}, 0)`);
+
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, 0, Math.PI * 2);
+          ctx.fillStyle = g;
+          ctx.fill();
+        }
+
+        requestAnimationFrame(draw);
+      }
+
+      window.addEventListener('resize', resize);
+      resize();
+      requestAnimationFrame(draw);
+    })();
+
+    // ── Scroll reveal ──────────────────────────────────────────────────────
+    (function () {
+      const els = document.querySelectorAll('.reveal');
+      const io  = new IntersectionObserver((entries) => {
+        entries.forEach((e, i) => {
+          if (e.isIntersecting) {
+            // Stagger siblings
+            const siblings = [...e.target.parentElement.querySelectorAll('.reveal')];
+            const idx      = siblings.indexOf(e.target);
+            e.target.style.transitionDelay = `${idx * 80}ms`;
+            e.target.classList.add('visible');
+            io.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.12 });
+
+      els.forEach(el => io.observe(el));
+    })();
+  </script>
+
+</body>
+</html>

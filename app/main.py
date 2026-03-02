@@ -65,7 +65,12 @@ app.mount('/static', StaticFiles(directory='static'), name='static')
 
 
 @app.get('/')
-async def index():
+async def landing():
+    return FileResponse('static/landing.html')
+
+
+@app.get('/console')
+async def console():
     return FileResponse('static/index.html')
 
 
