@@ -361,48 +361,108 @@
     .how-visual { display: flex; align-items: center; justify-content: center; }
     .how-svg { width: 100%; max-width: 420px; height: auto; }
 
-    /* ── Agents ── */
-    #agents { padding: 110px 0; background: linear-gradient(180deg, #e8edf5 0%, #f2f5f9 100%); }
-    .agents-header { margin-bottom: 56px; }
+    /* ── Agents — Architecture (dark) ── */
+    #agents { padding: 80px 0; background: #0a0a0a; }
+    .agents-header { margin-bottom: 48px; }
+    .agents-header .section-tag      { color: rgba(255,255,255,0.35); }
+    .agents-header .section-headline { color: #ffffff; }
+    .agents-header .section-sub      { color: rgba(255,255,255,0.42); }
 
-    .agent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    .agent-card {
-      background: var(--glass); border: 1px solid var(--glass-border);
-      border-radius: 18px; padding: 26px 24px;
-      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-      box-shadow: 0 4px 24px rgba(100,140,200,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
-      transition: transform 0.22s ease, box-shadow 0.22s;
+    /* Architecture container */
+    .arch-wrap {
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 4px; overflow: hidden;
     }
-    .agent-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 40px rgba(100,140,200,0.16), inset 0 1px 0 rgba(255,255,255,0.9);
+
+    /* ── Orchestrator row (top) ── */
+    .arch-orch {
+      display: grid; grid-template-columns: 1fr 1.9fr;
+      border-bottom: 1px solid rgba(255,255,255,0.09);
+      min-height: 190px; cursor: default; transition: background 0.3s;
     }
-    .agent-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-    .agent-icon {
-      width: 42px; height: 42px; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    .arch-orch:hover { background: rgba(255,255,255,0.025); }
+    .arch-orch .pill    { fill: rgba(255,255,255,0.2);  transition: fill 0.35s; }
+    .arch-orch .pill.hi { fill: rgba(255,255,255,0.42); }
+    .arch-orch:hover .pill    { fill: rgba(34,211,238,0.32); }
+    .arch-orch:hover .pill.hi { fill: #22d3ee; }
+
+    .arch-orch-left {
+      padding: 32px 36px; border-right: 1px solid rgba(255,255,255,0.09);
+      display: flex; flex-direction: column; justify-content: space-between;
     }
-    .ai-root   { background: rgba(2,132,199,0.1); }
-    .ai-ir     { background: rgba(16,185,129,0.1); }
-    .ai-iv     { background: rgba(129,140,248,0.1); }
-    .ai-ar     { background: rgba(245,158,11,0.1); }
-    .ai-pc     { background: rgba(244,114,182,0.1); }
-    .agent-name { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); margin-bottom: 2px; }
-    .agent-title { font-size: 15px; font-weight: 700; color: var(--text); }
-    .agent-desc { font-size: 13px; line-height: 1.65; color: var(--text-2); margin-bottom: 16px; }
-    .agent-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-    .atag {
-      font-size: 11px; font-weight: 600; padding: 3px 10px;
-      border-radius: 100px; background: rgba(2,132,199,0.07);
-      color: var(--blue); border: 1px solid rgba(2,132,199,0.14);
+    .arch-orch-right {
+      padding: 24px 32px; display: flex; align-items: center; overflow: hidden;
+    }
+    .arch-orch-right svg { width: 100%; }
+
+    .arch-orch-badge {
+      display: inline-flex; font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+      color: rgba(255,255,255,0.28); border: 1px solid rgba(255,255,255,0.13);
+      border-radius: 100px; padding: 3px 10px; width: fit-content;
+      font-family: 'Poppins', sans-serif; margin-bottom: 10px;
+    }
+    .arch-orch-title {
+      font-size: 20px; font-weight: 700; color: #fff;
+      font-family: 'Poppins', sans-serif; margin-bottom: 8px;
+    }
+    .arch-orch-sub {
+      font-size: 12.5px; line-height: 1.65; color: rgba(255,255,255,0.4);
       font-family: 'Poppins', sans-serif;
     }
-    .atag.green  { background: rgba(16,185,129,0.07);  color: #059669; border-color: rgba(16,185,129,0.16); }
-    .atag.purple { background: rgba(129,140,248,0.07); color: #6366f1; border-color: rgba(129,140,248,0.16); }
-    .atag.amber  { background: rgba(245,158,11,0.07);  color: #d97706; border-color: rgba(245,158,11,0.16); }
-    .atag.pink   { background: rgba(244,114,182,0.07); color: #db2777; border-color: rgba(244,114,182,0.16); }
+    .arch-orch-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+    .arch-tag {
+      font-size: 10px; font-weight: 600; padding: 3px 9px;
+      border-radius: 100px; color: rgba(255,255,255,0.38);
+      border: 1px solid rgba(255,255,255,0.11); font-family: 'Poppins', sans-serif;
+    }
 
-    .agent-bottom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+    /* ── Agent panels (bottom row) ── */
+    .arch-agents { display: grid; grid-template-columns: repeat(4, 1fr); }
+    .arch-agent {
+      border-right: 1px solid rgba(255,255,255,0.09);
+      padding: 28px 24px 34px; display: flex; flex-direction: column;
+      min-height: 340px; cursor: default; transition: background 0.28s;
+    }
+    .arch-agent:last-child { border-right: none; }
+
+    /* Pill fill: default grey; accent on hover */
+    .arch-agent .pill    { fill: rgba(255,255,255,0.17); transition: fill 0.35s; }
+    .arch-agent .pill.hi { fill: rgba(255,255,255,0.38); }
+    .arch-agent.ir:hover { background: rgba(52,211,153,0.04); }
+    .arch-agent.ir:hover .pill    { fill: rgba(52,211,153,0.3); }
+    .arch-agent.ir:hover .pill.hi { fill: #34d399; }
+    .arch-agent.iv:hover { background: rgba(129,140,248,0.04); }
+    .arch-agent.iv:hover .pill    { fill: rgba(129,140,248,0.3); }
+    .arch-agent.iv:hover .pill.hi { fill: #818cf8; }
+    .arch-agent.ar:hover { background: rgba(251,191,36,0.04); }
+    .arch-agent.ar:hover .pill    { fill: rgba(251,191,36,0.3); }
+    .arch-agent.ar:hover .pill.hi { fill: #fbbf24; }
+    .arch-agent.pc:hover { background: rgba(244,114,182,0.04); }
+    .arch-agent.pc:hover .pill    { fill: rgba(244,114,182,0.3); }
+    .arch-agent.pc:hover .pill.hi { fill: #f472b6; }
+
+    .arch-num {
+      display: inline-flex; font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.26); border: 1px solid rgba(255,255,255,0.11);
+      border-radius: 100px; padding: 3px 9px; margin-bottom: 14px; width: fit-content;
+      font-family: 'Poppins', sans-serif;
+    }
+    .arch-visual {
+      flex: 1; display: flex; align-items: center; justify-content: center; padding: 8px 0 20px;
+    }
+    .arch-visual svg { max-width: 156px; }
+    .arch-agent-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+      color: rgba(255,255,255,0.28); margin-bottom: 5px; font-family: 'Poppins', sans-serif;
+    }
+    .arch-agent-title {
+      font-size: 15px; font-weight: 700; color: #fff;
+      margin-bottom: 7px; font-family: 'Poppins', sans-serif; line-height: 1.25;
+    }
+    .arch-agent-desc {
+      font-size: 12px; line-height: 1.68; color: rgba(255,255,255,0.36);
+      font-family: 'Poppins', sans-serif;
+    }
 
     /* ── Tech Stack ── */
     #tech { padding: 90px 0; }
@@ -471,8 +531,12 @@
       .how-body          { grid-template-columns: 1fr; gap: 40px; }
       .how-visual        { display: none; }
       .how-headline      { font-size: clamp(30px, 5vw, 42px); gap: 10px; }
-      .agent-grid        { grid-template-columns: 1fr 1fr; }
-      .agent-bottom-row  { grid-template-columns: 1fr; }
+      .arch-orch         { grid-template-columns: 1fr; }
+      .arch-orch-right   { display: none; }
+      .arch-agents       { grid-template-columns: repeat(2, 1fr); }
+      .arch-agent:nth-child(2) { border-right: none; }
+      .arch-agent:nth-child(3) { border-top: 1px solid rgba(255,255,255,0.09); }
+      .arch-agent:nth-child(4) { border-top: 1px solid rgba(255,255,255,0.09); border-right: none; }
       .tech-grid         { grid-template-columns: repeat(2, 1fr); }
       .cta-inner         { padding: 52px 32px; }
       nav                { padding: 0 24px; }
@@ -481,9 +545,11 @@
       footer             { padding: 24px; }
     }
     @media (max-width: 600px) {
-      .how-headline      { font-size: 28px; }
-      .agent-grid        { grid-template-columns: 1fr; }
-      .tech-grid         { grid-template-columns: repeat(2, 1fr); }
+      .how-headline  { font-size: 28px; }
+      .arch-agents   { grid-template-columns: 1fr; }
+      .arch-agent    { border-right: none; border-top: 1px solid rgba(255,255,255,0.09); }
+      .arch-agent:first-child { border-top: none; }
+      .tech-grid     { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
@@ -799,148 +865,217 @@
   <section id="agents">
     <div class="container">
       <div class="agents-header reveal">
-        <span class="section-tag">Specialist Agents</span>
-        <h2 class="section-headline">Five agents. One voice.</h2>
+        <span class="section-tag">Architecture</span>
+        <h2 class="section-headline">One orchestrator.<br>Four specialists.</h2>
         <p class="section-sub">
-          Each specialist is a dedicated Gemini agent with purpose-built tools and instructions. The orchestrator routes every command with zero latency.
+          ORION routes every voice command to the right specialist agent — no configuration, no delays, no hands.
         </p>
       </div>
 
-      <div class="agent-grid">
+      <!-- Architecture grid -->
+      <div class="arch-wrap reveal">
 
-        <!-- Orchestrator — full row -->
-        <div class="agent-card reveal" style="grid-column: 1 / -1;">
-          <div class="agent-card-header">
-            <div class="agent-icon ai-root">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
-                <path d="M15.54 8.46a5 5 0 0 1 0 7.07M8.46 8.46a5 5 0 0 0 0 7.07"/>
-              </svg>
-            </div>
+        <!-- ── Orchestrator (top horizontal layer) ── -->
+        <div class="arch-orch">
+          <div class="arch-orch-left">
             <div>
-              <div class="agent-name">ORION_Orchestrator</div>
-              <div class="agent-title">Root Agent — Wake-Word Detection & Routing</div>
+              <div class="arch-orch-badge">ROOT AGENT</div>
+              <div class="arch-orch-title">ORION Orchestrator</div>
+              <div class="arch-orch-sub">Always-on. Listens for the wake-word, filters ambient OR noise, and routes each command to the right specialist via ADK AutoFlow. Handles display clearing directly — never announces routing.</div>
+            </div>
+            <div class="arch-orch-tags">
+              <span class="arch-tag">Wake-word filtering</span>
+              <span class="arch-tag">AutoFlow routing</span>
+              <span class="arch-tag">Multi-turn</span>
+              <span class="arch-tag">Gemini 2.5 Flash</span>
             </div>
           </div>
-          <p class="agent-desc">
-            The always-on orchestrator receives all audio, filters ambient OR noise via wake-word detection, and routes each command to the correct specialist using ADK AutoFlow. Handles hide-all overlays directly. Never announces routing — just acts.
-          </p>
-          <div class="agent-tags">
-            <span class="atag">Wake-word filtering</span>
-            <span class="atag">AutoFlow routing</span>
-            <span class="atag">Multi-turn conversation</span>
-            <span class="atag">Gemini 2.5 Flash Native Audio</span>
+          <div class="arch-orch-right">
+            <!-- Voice waveform: 2-cycle sine wave of pills -->
+            <svg viewBox="0 0 430 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="4"   y="50" width="8" height="20" rx="4" class="pill"/>
+              <rect x="20"  y="67" width="8" height="20" rx="4" class="pill hi"/>
+              <rect x="36"  y="79" width="8" height="20" rx="4" class="pill"/>
+              <rect x="52"  y="84" width="8" height="20" rx="4" class="pill hi"/>
+              <rect x="68"  y="77" width="8" height="20" rx="4" class="pill"/>
+              <rect x="84"  y="62" width="8" height="20" rx="4" class="pill"/>
+              <rect x="100" y="44" width="8" height="20" rx="4" class="pill"/>
+              <rect x="116" y="26" width="8" height="20" rx="4" class="pill hi"/>
+              <rect x="132" y="13" width="8" height="20" rx="4" class="pill"/>
+              <rect x="148" y="7"  width="8" height="20" rx="4" class="pill hi"/>
+              <rect x="164" y="9"  width="8" height="20" rx="4" class="pill"/>
+              <rect x="180" y="20" width="8" height="20" rx="4" class="pill"/>
+              <rect x="196" y="36" width="8" height="20" rx="4" class="pill"/>
+              <rect x="212" y="52" width="8" height="20" rx="4" class="pill"/>
+              <rect x="228" y="67" width="8" height="20" rx="4" class="pill hi"/>
+              <rect x="244" y="79" width="8" height="20" rx="4" class="pill"/>
+              <rect x="260" y="84" width="8" height="20" rx="4" class="pill hi"/>
+              <rect x="276" y="77" width="8" height="20" rx="4" class="pill"/>
+              <rect x="292" y="62" width="8" height="20" rx="4" class="pill"/>
+              <rect x="308" y="44" width="8" height="20" rx="4" class="pill"/>
+              <rect x="324" y="26" width="8" height="20" rx="4" class="pill hi"/>
+              <rect x="340" y="13" width="8" height="20" rx="4" class="pill"/>
+              <rect x="356" y="7"  width="8" height="20" rx="4" class="pill hi"/>
+              <rect x="372" y="9"  width="8" height="20" rx="4" class="pill"/>
+              <rect x="388" y="20" width="8" height="20" rx="4" class="pill"/>
+              <rect x="404" y="36" width="8" height="20" rx="4" class="pill"/>
+              <rect x="420" y="52" width="8" height="20" rx="4" class="pill"/>
+            </svg>
           </div>
         </div>
 
-        <!-- IR -->
-        <div class="agent-card reveal">
-          <div class="agent-card-header">
-            <div class="agent-icon ai-ir">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14,2 14,8 20,8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/>
-                <line x1="16" y1="17" x2="8" y2="17"/>
-                <polyline points="10,9 9,9 8,9"/>
+        <!-- ── Four specialist agents (vertical panels) ── -->
+        <div class="arch-agents">
+
+          <!-- IR_Agent -->
+          <div class="arch-agent ir">
+            <div class="arch-num">001</div>
+            <div class="arch-visual">
+              <!-- Data-grid illustration (clinical records) -->
+              <svg viewBox="0 0 156 156" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="10"  y="8"   width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="30"  y="8"   width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="50"  y="8"   width="8" height="20" rx="4" class="pill"/>
+                <rect x="70"  y="8"   width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="90"  y="8"   width="8" height="20" rx="4" class="pill"/>
+                <rect x="110" y="8"   width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="130" y="8"   width="8" height="20" rx="4" class="pill"/>
+                <rect x="10"  y="40"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="30"  y="40"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="50"  y="40"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="70"  y="40"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="90"  y="40"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="130" y="40"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="10"  y="72"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="30"  y="72"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="50"  y="72"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="90"  y="72"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="110" y="72"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="130" y="72"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="10"  y="104" width="8" height="20" rx="4" class="pill"/>
+                <rect x="30"  y="104" width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="50"  y="104" width="8" height="20" rx="4" class="pill"/>
+                <rect x="70"  y="104" width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="110" y="104" width="8" height="20" rx="4" class="pill"/>
+                <rect x="30"  y="136" width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="50"  y="136" width="8" height="20" rx="4" class="pill"/>
+                <rect x="70"  y="136" width="8" height="20" rx="4" class="pill"/>
+                <rect x="110" y="136" width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="130" y="136" width="8" height="20" rx="4" class="pill"/>
               </svg>
             </div>
-            <div>
-              <div class="agent-name">IR_Agent</div>
-              <div class="agent-title">Information Retrieval</div>
-            </div>
+            <div class="arch-agent-label">IR_Agent</div>
+            <div class="arch-agent-title">Information Retrieval</div>
+            <div class="arch-agent-desc">Patient labs, vitals, medications, and allergies — retrieved by voice and rendered instantly on the surgical display.</div>
           </div>
-          <p class="agent-desc">
-            Retrieves and displays patient clinical data on demand — lab values, vitals, medication lists, allergies, and diagnosis — as glassmorphism tiles on the surgical display.
-          </p>
-          <div class="agent-tags">
-            <span class="atag green">Labs &amp; vitals</span>
-            <span class="atag green">Medications</span>
-            <span class="atag green">Allergies</span>
-          </div>
-        </div>
 
-        <!-- IV -->
-        <div class="agent-card reveal">
-          <div class="agent-card-header">
-            <div class="agent-icon ai-iv">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2"/>
-                <circle cx="12" cy="12" r="4"/>
-                <line x1="12" y1="3"  x2="12" y2="7"/>
-                <line x1="12" y1="17" x2="12" y2="21"/>
-                <line x1="3"  y1="12" x2="7"  y2="12"/>
-                <line x1="17" y1="12" x2="21" y2="12"/>
+          <!-- IV_Agent -->
+          <div class="arch-agent iv">
+            <div class="arch-num">002</div>
+            <div class="arch-visual">
+              <!-- Ring illustration (CT scan cross-section) -->
+              <svg viewBox="0 0 156 156" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Outer ring, r=62, center=(78,78), 12 pills at 30° -->
+                <rect x="127" y="68" width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="119" y="95" width="8" height="20" rx="4" class="pill"/>
+                <rect x="97"  y="113" width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="70"  y="118" width="8" height="20" rx="4" class="pill"/>
+                <rect x="43"  y="113" width="8" height="20" rx="4" class="pill"/>
+                <rect x="21"  y="95"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="13"  y="68"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="21"  y="41"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="43"  y="23"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="70"  y="18"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="97"  y="23"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="119" y="41"  width="8" height="20" rx="4" class="pill hi"/>
+                <!-- Inner ring, r=32, 6 pills at 60° -->
+                <rect x="106" y="68"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="88"  y="91"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="58"  y="91"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="40"  y="68"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="58"  y="45"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="88"  y="45"  width="8" height="20" rx="4" class="pill"/>
               </svg>
             </div>
-            <div>
-              <div class="agent-name">IV_Agent</div>
-              <div class="agent-title">CT Image Viewer</div>
-            </div>
+            <div class="arch-agent-label">IV_Agent</div>
+            <div class="arch-agent-title">CT Image Viewer</div>
+            <div class="arch-agent-desc">Voice-navigated CT slices. Jump to anatomical landmarks — carina, aortic arch, tumor — or scroll superior and inferior.</div>
           </div>
-          <p class="agent-desc">
-            Navigates CT scan slices by voice. Jump to anatomical landmarks — carina, aortic arch, or tumor — or scroll slice-by-slice in superior and inferior directions.
-          </p>
-          <div class="agent-tags">
-            <span class="atag purple">Slice navigation</span>
-            <span class="atag purple">Landmark jump</span>
-          </div>
-        </div>
 
-        <!-- AR -->
-        <div class="agent-card reveal">
-          <div class="agent-card-header">
-            <div class="agent-icon ai-ar">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                <polyline points="3.27,6.96 12,12.01 20.73,6.96"/>
-                <line x1="12" y1="22.08" x2="12" y2="12"/>
+          <!-- AR_Agent -->
+          <div class="arch-agent ar">
+            <div class="arch-num">003</div>
+            <div class="arch-visual">
+              <!-- Radial spokes illustration (3D anatomy) -->
+              <svg viewBox="0 0 156 156" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="74"  y="68"  width="8" height="20" rx="4" class="pill hi"/>
+                <!-- Right -->
+                <rect x="97"  y="68"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="120" y="68"  width="8" height="20" rx="4" class="pill hi"/>
+                <!-- Down-right 45° -->
+                <rect x="91"  y="91"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="107" y="108" width="8" height="20" rx="4" class="pill hi"/>
+                <!-- Down -->
+                <rect x="74"  y="95"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="74"  y="118" width="8" height="20" rx="4" class="pill hi"/>
+                <!-- Down-left 135° -->
+                <rect x="51"  y="91"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="33"  y="108" width="8" height="20" rx="4" class="pill"/>
+                <!-- Left -->
+                <rect x="49"  y="68"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="26"  y="68"  width="8" height="20" rx="4" class="pill"/>
+                <!-- Up-left 225° -->
+                <rect x="51"  y="45"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="33"  y="28"  width="8" height="20" rx="4" class="pill hi"/>
+                <!-- Up -->
+                <rect x="74"  y="41"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="74"  y="18"  width="8" height="20" rx="4" class="pill hi"/>
+                <!-- Up-right 315° -->
+                <rect x="91"  y="45"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="107" y="28"  width="8" height="20" rx="4" class="pill"/>
               </svg>
             </div>
-            <div>
-              <div class="agent-name">AR_Agent</div>
-              <div class="agent-title">3D Anatomy Renderer</div>
-            </div>
+            <div class="arch-agent-label">AR_Agent</div>
+            <div class="arch-agent-title">3D Anatomy Renderer</div>
+            <div class="arch-agent-desc">Three.js lung model — rotate to any view, toggle vessel, bronchi, and tumor visibility by name.</div>
           </div>
-          <p class="agent-desc">
-            Controls a Three.js 3D lung anatomy model. Rotate to posterior, anterior, lateral, or superior views. Toggle structure visibility by name — vessels, bronchi, tumor, pleura.
-          </p>
-          <div class="agent-tags">
-            <span class="atag amber">3D rotation</span>
-            <span class="atag amber">Structure toggle</span>
-          </div>
-        </div>
 
-      </div>
-
-      <!-- PC Agent — full row -->
-      <div class="agent-bottom-row">
-        <div class="agent-card reveal" style="grid-column: 1 / -1;">
-          <div class="agent-card-header">
-            <div class="agent-icon ai-pc">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#db2777" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          <!-- PC_Agent -->
+          <div class="arch-agent pc">
+            <div class="arch-num">004</div>
+            <div class="arch-visual">
+              <!-- Starburst / burst illustration (phase detection) -->
+              <svg viewBox="0 0 156 156" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="74"  y="68"  width="8" height="20" rx="4" class="pill hi"/>
+                <!-- Ring 1 -->
+                <rect x="92"  y="54"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="92"  y="82"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="74"  y="94"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="50"  y="82"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="50"  y="54"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="74"  y="42"  width="8" height="20" rx="4" class="pill hi"/>
+                <!-- Ring 2 -->
+                <rect x="114" y="36"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="118" y="68"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="114" y="100" width="8" height="20" rx="4" class="pill"/>
+                <rect x="92"  y="120" width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="74"  y="124" width="8" height="20" rx="4" class="pill"/>
+                <rect x="46"  y="120" width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="22"  y="100" width="8" height="20" rx="4" class="pill"/>
+                <rect x="18"  y="68"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="22"  y="36"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="46"  y="16"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="74"  y="10"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="92"  y="16"  width="8" height="20" rx="4" class="pill hi"/>
               </svg>
             </div>
-            <div>
-              <div class="agent-name">PC_Agent</div>
-              <div class="agent-title">Procedural Context — Live Video Phase Detection</div>
-            </div>
+            <div class="arch-agent-label">PC_Agent</div>
+            <div class="arch-agent-title">Procedural Context</div>
+            <div class="arch-agent-desc">Detects surgical phase from live video. Surfaces 4-point anatomical checklists with critical anatomy warnings — no input needed.</div>
           </div>
-          <p class="agent-desc">
-            The most advanced agent. Gemini already receives the live surgical video at 1 fps via the Realtime API. PC_Agent uses that visual context to detect the current surgical phase and surface a phase-specific 4-point anatomical checklist with critical warnings — no surgeon input required for phase transitions.
-          </p>
-          <div class="agent-tags">
-            <span class="atag pink">Live video analysis</span>
-            <span class="atag pink">Phase detection</span>
-            <span class="atag pink">Anatomical checklists</span>
-            <span class="atag pink">Critical warnings</span>
-            <span class="atag pink">8 surgical phases</span>
-          </div>
+
         </div>
-      </div>
+      </div><!-- /arch-wrap -->
 
     </div>
   </section>
