@@ -275,20 +275,28 @@
     .problem-body { font-size: 15px; line-height: 1.78; color: var(--text-2); }
     .problem-body strong { color: var(--text); font-weight: 600; }
 
-    .problem-stats { display: flex; flex-direction: column; gap: 14px; }
-    .stat-card {
-      background: rgba(0,0,0,0.022); border: 1px solid rgba(0,0,0,0.08);
-      border-radius: 14px; padding: 22px 24px;
-      transition: transform 0.22s ease, background 0.22s;
+    .problem-stats {
+      display: flex; flex-direction: column; gap: 0;
+      border: 1px solid rgba(0,0,0,0.09); border-radius: 4px; overflow: hidden;
     }
-    .stat-card:hover { transform: translateX(6px); background: rgba(0,0,0,0.042); }
-    .stat-icon { margin-bottom: 10px; }
-    .stat-icon svg { display: block; }
+    .stat-card {
+      background: none; border: none; border-bottom: 1px solid rgba(0,0,0,0.09);
+      border-radius: 0; padding: 22px 24px;
+      display: flex; align-items: flex-start; gap: 16px;
+      cursor: default; transition: background 0.28s;
+    }
+    .stat-card:last-child { border-bottom: none; }
+    .stat-card.sc-blue:hover  { background: rgba(34,211,238,0.05); }
+    .stat-card.sc-green:hover { background: rgba(52,211,153,0.05); }
+    .stat-card.sc-pink:hover  { background: rgba(244,114,182,0.05); }
+    .stat-card.sc-blue:hover  svg { stroke: #22d3ee; }
+    .stat-card.sc-green:hover svg { stroke: #10b981; }
+    .stat-card.sc-pink:hover  svg { stroke: #ec4899; }
+    .stat-icon { flex-shrink: 0; padding-top: 2px; }
+    .stat-icon svg { display: block; transition: stroke 0.3s; }
+    .stat-content { flex: 1; }
     .stat-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(0,0,0,0.38); margin-bottom: 5px; }
-    .stat-value { font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.4; }
-    .stat-card.sc-blue  { border-left: 3px solid var(--cyan); }
-    .stat-card.sc-green { border-left: 3px solid var(--green); }
-    .stat-card.sc-pink  { border-left: 3px solid var(--pink); }
+    .stat-value { font-size: 14.5px; font-weight: 500; color: var(--text); line-height: 1.5; }
 
     /* ── Section headers (shared) ── */
     .section-tag {
@@ -652,22 +660,28 @@
             <div class="stat-icon">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(34,211,238,0.9)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             </div>
-            <div class="stat-label">Sterile Field Constraint</div>
-            <div class="stat-value">Hands never leave the controls during critical phases</div>
+            <div class="stat-content">
+              <div class="stat-label">Sterile Field Constraint</div>
+              <div class="stat-value">Hands never leave the controls during critical phases</div>
+            </div>
           </div>
           <div class="stat-card sc-green">
             <div class="stat-icon">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(16,185,129,0.9)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
             </div>
-            <div class="stat-label">Information Latency</div>
-            <div class="stat-value">Relying on staff to retrieve data adds cognitive load and delay</div>
+            <div class="stat-content">
+              <div class="stat-label">Information Latency</div>
+              <div class="stat-value">Relying on staff to retrieve data adds cognitive load and delay</div>
+            </div>
           </div>
           <div class="stat-card sc-pink">
             <div class="stat-icon">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(244,114,182,0.9)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             </div>
-            <div class="stat-label">Context Switching Cost</div>
-            <div class="stat-value">Breaking scrub for data interrupts surgical flow and focus</div>
+            <div class="stat-content">
+              <div class="stat-label">Context Switching Cost</div>
+              <div class="stat-value">Breaking scrub for data interrupts surgical flow and focus</div>
+            </div>
           </div>
         </div>
 
