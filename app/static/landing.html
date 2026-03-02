@@ -346,120 +346,137 @@
     .hw-sep.s1 { background: rgba(6,182,212,0.13); }
     .hw-sep.s2 { background: rgba(129,140,248,0.13); }
 
-    .how-body {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: center;
-    }
+    /* ── How It Works — mirrors agents section layout ── */
+    .hw-wrap { border: 1px solid rgba(0,0,0,0.09); border-radius: 4px; overflow: hidden; }
 
-    /* ── Step list (agents-section style) ── */
-    .hw-steps { border: 1px solid rgba(0,0,0,0.09); border-radius: 4px; overflow: hidden; }
+    /* Top row: pipeline diagram (mirrors arch-orch) */
+    .hw-pipeline {
+      display: grid; grid-template-columns: 1fr 1.9fr;
+      border-bottom: 1px solid rgba(0,0,0,0.09); min-height: 220px;
+    }
+    .hw-pipeline-left {
+      padding: 32px 36px; border-right: 1px solid rgba(0,0,0,0.09);
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .hw-pipeline-badge {
+      display: inline-flex; font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+      color: rgba(0,0,0,0.38); border: 1px solid rgba(0,0,0,0.14);
+      border-radius: 100px; padding: 3px 10px; width: fit-content;
+      font-family: 'Poppins', sans-serif; margin-bottom: 10px;
+    }
+    .hw-pipeline-title {
+      font-size: 20px; font-weight: 700; color: var(--text);
+      font-family: 'Poppins', sans-serif; margin-bottom: 8px;
+    }
+    .hw-pipeline-sub {
+      font-size: 12.5px; line-height: 1.65; color: var(--text-2);
+      font-family: 'Poppins', sans-serif;
+    }
+    .hw-pipeline-right {
+      background-color: #f7f9fc;
+      background-image: radial-gradient(circle, rgba(0,0,0,0.09) 1px, transparent 1px);
+      background-size: 18px 18px;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px; overflow: hidden;
+    }
+    .hw-canvas-svg { width: 100%; max-width: 440px; height: auto; }
+
+    /* Bottom row: 4 step panels (mirrors arch-agents) */
+    .hw-steps { display: grid; grid-template-columns: repeat(4, 1fr); }
     .hw-step {
-      display: flex; align-items: flex-start; gap: 16px; padding: 20px 22px;
-      border-bottom: 1px solid rgba(0,0,0,0.09); cursor: pointer;
-      box-shadow: inset 3px 0 0 transparent;
-      transition: background 0.25s, box-shadow 0.25s;
+      border-right: 1px solid rgba(0,0,0,0.09);
+      padding: 28px 24px 34px; display: flex; flex-direction: column;
+      min-height: 340px; cursor: default; transition: background 0.28s;
     }
-    .hw-step:last-child { border-bottom: none; }
+    .hw-step:last-child { border-right: none; }
     .hw-step-num {
-      display: inline-flex; flex-shrink: 0; font-size: 10px; font-weight: 600;
-      letter-spacing: 0.12em; color: rgba(0,0,0,0.35);
-      border: 1px solid rgba(0,0,0,0.13); border-radius: 100px;
-      padding: 3px 9px; margin-top: 3px; font-family: 'Poppins', sans-serif;
-      transition: color 0.25s, border-color 0.25s;
+      display: inline-flex; font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
+      color: rgba(0,0,0,0.38); border: 1px solid rgba(0,0,0,0.14);
+      border-radius: 100px; padding: 3px 9px; margin-bottom: 14px; width: fit-content;
+      font-family: 'Poppins', sans-serif; transition: color 0.25s, border-color 0.25s;
     }
-    .hw-step-icon {
-      flex-shrink: 0; width: 38px; height: 38px; border-radius: 50%;
-      background: rgba(0,0,0,0.05); display: flex; align-items: center;
-      justify-content: center; transition: background 0.25s;
+    .hw-visual {
+      flex: 1; display: flex; align-items: center; justify-content: center; padding: 8px 0 20px;
     }
-    .hw-step-icon svg { stroke: rgba(0,0,0,0.28); fill: none; transition: stroke 0.25s; }
-    .hw-step-content { flex: 1; min-width: 0; }
-    .hw-step-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; font-family: 'Poppins', sans-serif; }
-    .hw-step-desc  { font-size: 12px; line-height: 1.68; color: var(--text-2); font-family: 'Poppins', sans-serif; }
-
-    /* Active state — per step accent */
-    .hw-step[data-step="1"].active { background: rgba(34,211,238,0.05);  box-shadow: inset 3px 0 0 #22d3ee; }
-    .hw-step[data-step="1"].active .hw-step-num  { color: #0891b2; border-color: rgba(8,145,178,0.32); }
-    .hw-step[data-step="1"].active .hw-step-icon { background: rgba(34,211,238,0.14); }
-    .hw-step[data-step="1"].active .hw-step-icon svg { stroke: #0891b2; }
-
-    .hw-step[data-step="2"].active { background: rgba(129,140,248,0.05); box-shadow: inset 3px 0 0 #818cf8; }
-    .hw-step[data-step="2"].active .hw-step-num  { color: #6366f1; border-color: rgba(99,102,241,0.32); }
-    .hw-step[data-step="2"].active .hw-step-icon { background: rgba(129,140,248,0.14); }
-    .hw-step[data-step="2"].active .hw-step-icon svg { stroke: #6366f1; }
-
-    .hw-step[data-step="3"].active { background: rgba(52,211,153,0.05);  box-shadow: inset 3px 0 0 #34d399; }
-    .hw-step[data-step="3"].active .hw-step-num  { color: #059669; border-color: rgba(5,150,105,0.32); }
-    .hw-step[data-step="3"].active .hw-step-icon { background: rgba(52,211,153,0.14); }
-    .hw-step[data-step="3"].active .hw-step-icon svg { stroke: #059669; }
-
-    .hw-step[data-step="4"].active { background: rgba(96,165,250,0.05);  box-shadow: inset 3px 0 0 #60a5fa; }
-    .hw-step[data-step="4"].active .hw-step-num  { color: #2563eb; border-color: rgba(37,99,235,0.32); }
-    .hw-step[data-step="4"].active .hw-step-icon { background: rgba(96,165,250,0.14); }
-    .hw-step[data-step="4"].active .hw-step-icon svg { stroke: #2563eb; }
-
-    /* ── Canvas (right) ── */
-    .how-canvas {
-      border: 1px solid rgba(0,0,0,0.09); border-radius: 4px; overflow: hidden;
-      background: #f8fafc; display: flex; align-items: center; justify-content: center;
-      padding: 28px; min-height: 440px;
+    .hw-visual svg { max-width: 156px; }
+    .hw-step-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+      color: rgba(0,0,0,0.38); margin-bottom: 5px; font-family: 'Poppins', sans-serif;
     }
-    .hw-canvas-svg { width: 100%; max-width: 380px; height: auto; }
+    .hw-step-title {
+      font-size: 16px; font-weight: 700; color: var(--text);
+      margin-bottom: 8px; font-family: 'Poppins', sans-serif; line-height: 1.25;
+    }
+    .hw-step-desc {
+      font-size: 12.5px; line-height: 1.72; color: var(--text-2);
+      font-family: 'Poppins', sans-serif; margin-bottom: 16px;
+    }
+    .hw-step-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: auto; }
 
-    /* ── SVG node defaults (BNW / grey) ── */
-    .hw-canvas-svg .nd-bg     { fill: rgba(0,0,0,0.05); transition: fill 0.35s; }
-    .hw-canvas-svg .nd-ring   { stroke: rgba(0,0,0,0.15); stroke-width: 1.5; fill: none; transition: stroke 0.35s; }
-    .hw-canvas-svg .nd-bg-lg  { fill: rgba(0,0,0,0.07); transition: fill 0.35s; }
-    .hw-canvas-svg .nd-ring-lg{ stroke: rgba(0,0,0,0.18); stroke-width: 1.5; fill: none; transition: stroke 0.35s; }
-    .hw-canvas-svg .nd-icon   { stroke: rgba(0,0,0,0.28); fill: none; transition: stroke 0.35s; }
-    .hw-canvas-svg .nd-label  { fill: rgba(0,0,0,0.38); font-family: 'Poppins',sans-serif; font-size: 9px; font-weight: 600; letter-spacing: 0.5px; transition: fill 0.35s; }
-    .hw-canvas-svg .nd-title  { fill: rgba(0,0,0,0.45); font-family: 'Poppins',sans-serif; font-size: 9.5px; font-weight: 700; letter-spacing: 0.3px; transition: fill 0.35s; }
-    .hw-canvas-svg .nd-sub    { fill: rgba(0,0,0,0.3);  font-family: 'Poppins',sans-serif; font-size: 7.5px; transition: fill 0.35s; }
-    .hw-canvas-svg .nd-pulse  { fill: rgba(0,0,0,0.025); transition: fill 0.35s; }
-    .hw-canvas-svg .nd-rect   { fill: rgba(0,0,0,0.03); stroke: rgba(0,0,0,0.12); stroke-width: 1.2; transition: fill 0.35s, stroke 0.35s; }
-    .hw-canvas-svg .fp        { stroke: rgba(0,0,0,0.12); stroke-width: 1.5; fill: none; stroke-dasharray: 6 5; transition: stroke 0.35s, opacity 0.35s; }
-    .hw-canvas-svg .cn        { stroke: rgba(0,0,0,0.1); stroke-width: 1; fill: none; transition: stroke 0.35s; }
+    /* Pill defaults (BNW) */
+    .hw-step .pill    { fill: rgba(0,0,0,0.08); transition: fill 0.35s; }
+    .hw-step .pill.hi { fill: rgba(0,0,0,0.18); }
 
-    /* ── Active highlights ── */
-    /* Step 1: Voice */
-    #hw-g-voice.hl .nd-bg   { fill: rgba(34,211,238,0.16); }
-    #hw-g-voice.hl .nd-ring { stroke: #22d3ee; }
-    #hw-g-voice.hl .nd-icon { stroke: #0891b2; }
-    #hw-g-voice.hl .nd-label{ fill: #0891b2; }
-    #hw-g-pv.hl .fp { stroke: #22d3ee; opacity: 1; animation: hwFlow 1.4s linear infinite; }
+    /* Active: agents-section hover style */
+    .hw-step[data-step="1"].active { background: rgba(34,211,238,0.05); }
+    .hw-step[data-step="1"].active .hw-step-num { color: #0891b2; border-color: rgba(8,145,178,0.32); }
+    .hw-step[data-step="1"].active .pill    { fill: rgba(34,211,238,0.35); }
+    .hw-step[data-step="1"].active .pill.hi { fill: #22d3ee; }
 
-    /* Step 2: Gemini */
-    #hw-g-gem.hl .nd-pulse  { fill: rgba(2,132,199,0.08); }
-    #hw-g-gem.hl .nd-bg-lg  { fill: url(#hd-grad); }
-    #hw-g-gem.hl .nd-ring-lg{ stroke: #0284c7; }
-    #hw-g-gem.hl .nd-title  { fill: rgba(255,255,255,0.9); }
-    #hw-g-gem.hl .nd-sub    { fill: rgba(255,255,255,0.65); }
+    .hw-step[data-step="2"].active { background: rgba(129,140,248,0.05); }
+    .hw-step[data-step="2"].active .hw-step-num { color: #6366f1; border-color: rgba(99,102,241,0.32); }
+    .hw-step[data-step="2"].active .pill    { fill: rgba(129,140,248,0.35); }
+    .hw-step[data-step="2"].active .pill.hi { fill: #818cf8; }
 
-    /* Step 3: Routes */
-    #hw-g-rt.hl .fp-ir { stroke: #10b981; opacity: 1; animation: hwFlow 1.6s linear infinite; }
-    #hw-g-rt.hl .fp-iv { stroke: #818cf8; opacity: 1; animation: hwFlow 2.0s linear infinite; }
-    #hw-g-rt.hl .fp-ar { stroke: #f59e0b; opacity: 1; animation: hwFlow 1.8s linear infinite; }
-    #hw-g-rt.hl .fp-pc { stroke: #f472b6; opacity: 1; animation: hwFlow 1.5s linear infinite; }
-    #hw-g-ag.hl .ag-ir .nd-bg  { fill: rgba(16,185,129,0.14); }
-    #hw-g-ag.hl .ag-ir .nd-ring{ stroke: #10b981; }
-    #hw-g-ag.hl .ag-ir .nd-title{ fill: #059669; }
-    #hw-g-ag.hl .ag-ir .nd-sub  { fill: #059669; }
-    #hw-g-ag.hl .ag-iv .nd-bg  { fill: rgba(129,140,248,0.14); }
-    #hw-g-ag.hl .ag-iv .nd-ring{ stroke: #818cf8; }
-    #hw-g-ag.hl .ag-iv .nd-title{ fill: #6d28d9; }
-    #hw-g-ag.hl .ag-iv .nd-sub  { fill: #6d28d9; }
-    #hw-g-ag.hl .ag-ar .nd-bg  { fill: rgba(245,158,11,0.14); }
-    #hw-g-ag.hl .ag-ar .nd-ring{ stroke: #f59e0b; }
-    #hw-g-ag.hl .ag-ar .nd-title{ fill: #b45309; }
-    #hw-g-ag.hl .ag-ar .nd-sub  { fill: #b45309; }
-    #hw-g-ag.hl .ag-pc .nd-bg  { fill: rgba(244,114,182,0.14); }
-    #hw-g-ag.hl .ag-pc .nd-ring{ stroke: #f472b6; }
-    #hw-g-ag.hl .ag-pc .nd-title{ fill: #be185d; }
-    #hw-g-ag.hl .ag-pc .nd-sub  { fill: #be185d; }
+    .hw-step[data-step="3"].active { background: rgba(52,211,153,0.05); }
+    .hw-step[data-step="3"].active .hw-step-num { color: #059669; border-color: rgba(5,150,105,0.32); }
+    .hw-step[data-step="3"].active .pill    { fill: rgba(52,211,153,0.35); }
+    .hw-step[data-step="3"].active .pill.hi { fill: #34d399; }
 
-    /* Step 4: Display */
-    #hw-g-dp.hl .nd-rect  { fill: rgba(2,132,199,0.09); stroke: rgba(2,132,199,0.3); }
+    .hw-step[data-step="4"].active { background: rgba(96,165,250,0.05); }
+    .hw-step[data-step="4"].active .hw-step-num { color: #2563eb; border-color: rgba(37,99,235,0.32); }
+    .hw-step[data-step="4"].active .pill    { fill: rgba(96,165,250,0.35); }
+    .hw-step[data-step="4"].active .pill.hi { fill: #60a5fa; }
+
+    /* ── Pipeline canvas SVG nodes ── */
+    .hw-canvas-svg .nd-rect  { fill: rgba(255,255,255,0.86); stroke: rgba(0,0,0,0.15); stroke-width: 1.2; transition: fill 0.35s, stroke 0.35s; }
+    .hw-canvas-svg .nd-gem   { fill: rgba(255,255,255,0.86); stroke: rgba(0,0,0,0.15); stroke-width: 1.2; transition: fill 0.35s, stroke 0.35s; }
+    .hw-canvas-svg .nd-icon  { stroke: rgba(0,0,0,0.28); fill: none; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.35s; }
+    .hw-canvas-svg .nd-label { fill: rgba(0,0,0,0.38); font-family: 'Poppins',sans-serif; font-size: 10.5px; font-weight: 600; letter-spacing: 0.5px; transition: fill 0.35s; }
+    .hw-canvas-svg .nd-title { fill: rgba(0,0,0,0.52); font-family: 'Poppins',sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.3px; transition: fill 0.35s; }
+    .hw-canvas-svg .nd-sub   { fill: rgba(0,0,0,0.28); font-family: 'Poppins',sans-serif; font-size: 8.5px; transition: fill 0.35s; }
+    .hw-canvas-svg .fp       { stroke: rgba(0,0,0,0.16); stroke-width: 1.5; fill: none; transition: stroke 0.35s; }
+    .hw-canvas-svg .fp-arrow { fill: rgba(0,0,0,0.13); stroke: none; transition: fill 0.35s; }
+    .hw-canvas-svg .cn       { stroke: rgba(0,0,0,0.11); stroke-width: 1.2; fill: none; transition: stroke 0.35s; }
+
+    /* Pipeline canvas active states */
+    #hw-g-voice.hl .nd-rect  { fill: rgba(34,211,238,0.10); stroke: #22d3ee; }
+    #hw-g-voice.hl .nd-label { fill: #0891b2; }
+    #hw-g-voice.hl .nd-icon  { stroke: #0891b2; }
+    #hw-g-pv.hl .fp       { stroke: #22d3ee; stroke-dasharray: 5 4; animation: hwFlow 1.4s linear infinite; }
+    #hw-g-pv.hl .fp-arrow { fill: #22d3ee; }
+    #hw-g-gem.hl .nd-gem   { fill: url(#hd-gem-grad); stroke: #0284c7; }
+    #hw-g-gem.hl .nd-title { fill: rgba(255,255,255,0.92); }
+    #hw-g-gem.hl .nd-sub   { fill: rgba(255,255,255,0.68); }
+    #hw-g-rt.hl .fp-ir { stroke: #10b981; stroke-dasharray: 5 4; animation: hwFlow 1.6s linear infinite; }
+    #hw-g-rt.hl .fp-iv { stroke: #818cf8; stroke-dasharray: 5 4; animation: hwFlow 2.0s linear infinite; }
+    #hw-g-rt.hl .fp-ar { stroke: #f59e0b; stroke-dasharray: 5 4; animation: hwFlow 1.8s linear infinite; }
+    #hw-g-rt.hl .fp-pc { stroke: #f472b6; stroke-dasharray: 5 4; animation: hwFlow 1.5s linear infinite; }
+    #hw-g-ag.hl .ag-ir .nd-rect { fill: rgba(16,185,129,0.10);  stroke: #10b981; }
+    #hw-g-ag.hl .ag-ir .nd-title { fill: #059669; }
+    #hw-g-ag.hl .ag-ir .nd-sub   { fill: #059669; }
+    #hw-g-ag.hl .ag-iv .nd-rect { fill: rgba(129,140,248,0.10); stroke: #818cf8; }
+    #hw-g-ag.hl .ag-iv .nd-title { fill: #6d28d9; }
+    #hw-g-ag.hl .ag-iv .nd-sub   { fill: #6d28d9; }
+    #hw-g-ag.hl .ag-ar .nd-rect { fill: rgba(245,158,11,0.10);  stroke: #f59e0b; }
+    #hw-g-ag.hl .ag-ar .nd-title { fill: #b45309; }
+    #hw-g-ag.hl .ag-ar .nd-sub   { fill: #b45309; }
+    #hw-g-ag.hl .ag-pc .nd-rect { fill: rgba(244,114,182,0.10); stroke: #f472b6; }
+    #hw-g-ag.hl .ag-pc .nd-title { fill: #be185d; }
+    #hw-g-ag.hl .ag-pc .nd-sub   { fill: #be185d; }
+    #hw-g-dp.hl .nd-rect  { fill: rgba(2,132,199,0.08); stroke: rgba(2,132,199,0.32); }
     #hw-g-dp.hl .nd-label { fill: #0369a1; }
-    #hw-g-dp.hl .cn       { stroke: rgba(2,132,199,0.28); }
+    #hw-g-dp.hl .cn       { stroke: rgba(2,132,199,0.26); }
 
     @keyframes hwFlow { from { stroke-dashoffset: 60; } to { stroke-dashoffset: 0; } }
 
@@ -844,158 +861,206 @@
         </h2>
       </div>
 
-      <div class="how-body reveal">
+      <div class="hw-wrap reveal">
 
-        <!-- Step list (left) — agents-section style, interactive -->
+        <!-- Pipeline overview top row (mirrors arch-orch) -->
+        <div class="hw-pipeline">
+          <div class="hw-pipeline-left">
+            <div class="hw-pipeline-badge">PIPELINE</div>
+            <div class="hw-pipeline-title">Voice to Surgical Display</div>
+            <div class="hw-pipeline-sub">Hover any step below to trace its path through the live pipeline.</div>
+          </div>
+          <div class="hw-pipeline-right">
+            <svg id="hw-diagram" class="hw-canvas-svg" viewBox="0 0 440 296" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="hd-gem-grad" x1="16" y1="0" x2="424" y2="0" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%"   stop-color="#0369a1"/>
+                  <stop offset="40%"  stop-color="#0ea5e9"/>
+                  <stop offset="60%"  stop-color="#38bdf8"/>
+                  <stop offset="100%" stop-color="#0369a1"/>
+                </linearGradient>
+              </defs>
+              <g id="hw-g-pv">
+                <line class="fp" x1="220" y1="44" x2="220" y2="62"/>
+                <polygon class="fp-arrow" points="220,64 216,56 224,56"/>
+              </g>
+              <g id="hw-g-rt">
+                <line class="fp fp-ir" x1="70"  y1="102" x2="70"  y2="136"/>
+                <line class="fp fp-iv" x1="170" y1="102" x2="170" y2="136"/>
+                <line class="fp fp-ar" x1="270" y1="102" x2="270" y2="136"/>
+                <line class="fp fp-pc" x1="370" y1="102" x2="370" y2="136"/>
+              </g>
+              <g id="hw-g-dp">
+                <line class="cn" x1="70"  y1="182" x2="70"  y2="220"/>
+                <line class="cn" x1="170" y1="182" x2="170" y2="220"/>
+                <line class="cn" x1="270" y1="182" x2="270" y2="220"/>
+                <line class="cn" x1="370" y1="182" x2="370" y2="220"/>
+                <line class="cn" x1="70"  y1="220" x2="370" y2="220"/>
+                <line class="cn" x1="220" y1="220" x2="220" y2="246"/>
+                <rect class="nd-rect" x="88" y="246" width="264" height="38" rx="5"/>
+                <text class="nd-label" x="220" y="270" text-anchor="middle">SURGICAL DISPLAY</text>
+              </g>
+              <g id="hw-g-voice">
+                <rect class="nd-rect" x="154" y="4" width="132" height="40" rx="5"/>
+                <g class="nd-icon" transform="translate(214,10) scale(0.5)">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" stroke-width="2"/>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke-width="2"/>
+                  <line x1="12" y1="19" x2="12" y2="23" stroke-width="2"/>
+                  <line x1="8"  y1="23" x2="16" y2="23" stroke-width="2"/>
+                </g>
+                <text class="nd-label" x="220" y="38" text-anchor="middle">SURGEON VOICE</text>
+              </g>
+              <g id="hw-g-gem">
+                <rect class="nd-gem" x="16" y="62" width="408" height="40" rx="5"/>
+                <text class="nd-title" x="220" y="79" text-anchor="middle">GEMINI</text>
+                <text class="nd-sub"   x="220" y="93" text-anchor="middle">LIVE API</text>
+              </g>
+              <g id="hw-g-ag">
+                <g class="ag-ir">
+                  <rect class="nd-rect" x="30"  y="136" width="80" height="46" rx="4"/>
+                  <text class="nd-title" x="70"  y="157" text-anchor="middle">IR</text>
+                  <text class="nd-sub"   x="70"  y="171" text-anchor="middle">Clinical</text>
+                </g>
+                <g class="ag-iv">
+                  <rect class="nd-rect" x="130" y="136" width="80" height="46" rx="4"/>
+                  <text class="nd-title" x="170" y="157" text-anchor="middle">IV</text>
+                  <text class="nd-sub"   x="170" y="171" text-anchor="middle">CT Scan</text>
+                </g>
+                <g class="ag-ar">
+                  <rect class="nd-rect" x="230" y="136" width="80" height="46" rx="4"/>
+                  <text class="nd-title" x="270" y="157" text-anchor="middle">AR</text>
+                  <text class="nd-sub"   x="270" y="171" text-anchor="middle">3D Model</text>
+                </g>
+                <g class="ag-pc">
+                  <rect class="nd-rect" x="330" y="136" width="80" height="46" rx="4"/>
+                  <text class="nd-title" x="370" y="157" text-anchor="middle">PC</text>
+                  <text class="nd-sub"   x="370" y="171" text-anchor="middle">Phase</text>
+                </g>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <!-- 4 step panels (mirrors arch-agents) -->
         <div class="hw-steps">
 
           <div class="hw-step" data-step="1">
             <div class="hw-step-num">01</div>
-            <div class="hw-step-icon">
-              <svg width="17" height="17" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
+            <div class="hw-visual">
+              <!-- Voice: 2-cycle sine wave -->
+              <svg viewBox="0 0 156 156" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="4"   y="72"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="18"  y="29"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="32"  y="46"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="46"  y="98"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="60"  y="115" width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="74"  y="72"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="88"  y="29"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="102" y="46"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="116" y="98"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="130" y="115" width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="144" y="72"  width="8" height="20" rx="4" class="pill"/>
               </svg>
             </div>
-            <div class="hw-step-content">
-              <div class="hw-step-title">Voice Command</div>
-              <div class="hw-step-desc">Surgeon speaks. 16kHz PCM audio streams via WebSocket. Wake-word filtering ignores ambient OR noise and staff conversation.</div>
+            <div class="hw-step-label">Voice_Cmd</div>
+            <div class="hw-step-title">Voice Command</div>
+            <div class="hw-step-desc">Surgeon speaks. 16kHz PCM audio streams via WebSocket. Wake-word filtering ignores ambient OR noise and staff conversation.</div>
+            <div class="hw-step-tags">
+              <span class="arch-tag">16kHz PCM</span>
+              <span class="arch-tag">Wake-word</span>
             </div>
           </div>
 
           <div class="hw-step" data-step="2">
             <div class="hw-step-num">02</div>
-            <div class="hw-step-icon">
-              <svg width="17" height="17" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="4" y="4" width="16" height="16" rx="2"/>
-                <rect x="9" y="9" width="6" height="6"/>
-                <line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/>
-                <line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/>
-                <line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/>
-                <line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/>
+            <div class="hw-visual">
+              <!-- Gemini: expanding fan (1 → 5 rows) -->
+              <svg viewBox="0 0 156 156" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="74"  y="10"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="54"  y="40"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="90"  y="40"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="34"  y="70"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="70"  y="70"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="106" y="70"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="14"  y="100" width="8" height="20" rx="4" class="pill"/>
+                <rect x="50"  y="100" width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="86"  y="100" width="8" height="20" rx="4" class="pill"/>
+                <rect x="122" y="100" width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="4"   y="130" width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="38"  y="130" width="8" height="20" rx="4" class="pill"/>
+                <rect x="72"  y="130" width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="106" y="130" width="8" height="20" rx="4" class="pill"/>
+                <rect x="134" y="130" width="8" height="20" rx="4" class="pill hi"/>
               </svg>
             </div>
-            <div class="hw-step-content">
-              <div class="hw-step-title">Gemini Live API</div>
-              <div class="hw-step-desc">Audio and live surgical video (1 fps) processed natively. Full multimodal context — the AI understands the OR environment in real time.</div>
+            <div class="hw-step-label">Gemini</div>
+            <div class="hw-step-title">Gemini Live API</div>
+            <div class="hw-step-desc">Audio and live surgical video (1 fps) processed natively. Full multimodal context — the AI understands the OR environment in real time.</div>
+            <div class="hw-step-tags">
+              <span class="arch-tag">Native audio</span>
+              <span class="arch-tag">Live video</span>
             </div>
           </div>
 
           <div class="hw-step" data-step="3">
             <div class="hw-step-num">03</div>
-            <div class="hw-step-icon">
-              <svg width="17" height="17" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            <div class="hw-visual">
+              <!-- Routing: fork tree (1 → 2 → 4) -->
+              <svg viewBox="0 0 156 156" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="74"  y="8"   width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="38"  y="48"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="110" y="48"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="14"  y="88"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="54"  y="88"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="86"  y="88"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="126" y="88"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="6"   y="120" width="8" height="20" rx="4" class="pill"/>
+                <rect x="46"  y="120" width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="86"  y="120" width="8" height="20" rx="4" class="pill"/>
+                <rect x="126" y="120" width="8" height="20" rx="4" class="pill hi"/>
               </svg>
             </div>
-            <div class="hw-step-content">
-              <div class="hw-step-title">Multi-Agent Routing</div>
-              <div class="hw-step-desc">ADK Orchestrator routes the intent to the right specialist — patient data, CT imaging, 3D anatomy, or surgical phase context.</div>
+            <div class="hw-step-label">Routing</div>
+            <div class="hw-step-title">Multi-Agent Routing</div>
+            <div class="hw-step-desc">ADK Orchestrator routes the intent to the right specialist — patient data, CT imaging, 3D anatomy, or surgical phase context.</div>
+            <div class="hw-step-tags">
+              <span class="arch-tag">ADK AutoFlow</span>
+              <span class="arch-tag">4 specialists</span>
             </div>
           </div>
 
           <div class="hw-step" data-step="4">
             <div class="hw-step-num">04</div>
-            <div class="hw-step-icon">
-              <svg width="17" height="17" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="2" y="3" width="20" height="14" rx="2"/>
-                <line x1="8" y1="21" x2="16" y2="21"/>
-                <line x1="12" y1="17" x2="12" y2="21"/>
+            <div class="hw-visual">
+              <!-- Display: checkerboard tile grid -->
+              <svg viewBox="0 0 156 156" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="10"  y="18"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="46"  y="18"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="82"  y="18"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="118" y="18"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="10"  y="54"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="46"  y="54"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="82"  y="54"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="118" y="54"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="10"  y="90"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="46"  y="90"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="82"  y="90"  width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="118" y="90"  width="8" height="20" rx="4" class="pill"/>
+                <rect x="10"  y="126" width="8" height="20" rx="4" class="pill"/>
+                <rect x="46"  y="126" width="8" height="20" rx="4" class="pill hi"/>
+                <rect x="82"  y="126" width="8" height="20" rx="4" class="pill"/>
+                <rect x="118" y="126" width="8" height="20" rx="4" class="pill hi"/>
               </svg>
             </div>
-            <div class="hw-step-content">
-              <div class="hw-step-title">Visual Overlay</div>
-              <div class="hw-step-desc">Results appear as tiles on the surgical display. ORION speaks a brief confirmation. Hands never leave the controls.</div>
+            <div class="hw-step-label">Render</div>
+            <div class="hw-step-title">Visual Overlay</div>
+            <div class="hw-step-desc">Results appear as tiles on the surgical display. ORION speaks a brief confirmation. Hands never leave the controls.</div>
+            <div class="hw-step-tags">
+              <span class="arch-tag">Tile layout</span>
+              <span class="arch-tag">Hands-free</span>
             </div>
           </div>
 
-        </div>
-
-        <!-- Interactive canvas (right) -->
-        <div class="how-canvas">
-          <svg id="hw-diagram" class="hw-canvas-svg" viewBox="0 0 420 390" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <radialGradient id="hd-grad" cx="38%" cy="32%" r="68%">
-                <stop offset="0%" stop-color="#38bdf8"/>
-                <stop offset="100%" stop-color="#0369a1"/>
-              </radialGradient>
-            </defs>
-
-            <!-- Voice → Gemini path -->
-            <g id="hw-g-pv">
-              <path class="fp" d="M 210 52 L 210 107" stroke-linecap="round"/>
-            </g>
-
-            <!-- Gemini → Agent routing paths -->
-            <g id="hw-g-rt">
-              <path class="fp fp-ir" d="M 210 193 C 180 225 120 248 82 276" stroke-linecap="round"/>
-              <path class="fp fp-iv" d="M 210 193 C 200 228 170 252 155 276" stroke-linecap="round"/>
-              <path class="fp fp-ar" d="M 210 193 C 220 228 248 252 263 276" stroke-linecap="round"/>
-              <path class="fp fp-pc" d="M 210 193 C 240 225 298 248 336 276" stroke-linecap="round"/>
-            </g>
-
-            <!-- Agent → Display connectors -->
-            <g id="hw-g-dp">
-              <line class="cn" x1="155" y1="312" x2="175" y2="338"/>
-              <line class="cn" x1="263" y1="312" x2="243" y2="338"/>
-              <rect class="nd-rect" x="100" y="338" width="218" height="32" rx="6"/>
-              <text class="nd-label" x="209" y="359" text-anchor="middle">SURGICAL DISPLAY</text>
-            </g>
-
-            <!-- Voice node -->
-            <g id="hw-g-voice">
-              <circle class="nd-bg" cx="210" cy="30" r="22"/>
-              <circle class="nd-ring" cx="210" cy="30" r="22"/>
-              <g class="nd-icon" transform="translate(198,18)" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" stroke-width="1.8"/>
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke-width="1.8"/>
-              </g>
-              <text class="nd-label" x="210" y="68" text-anchor="middle">SURGEON VOICE</text>
-            </g>
-
-            <!-- Gemini center node -->
-            <g id="hw-g-gem">
-              <circle class="nd-pulse" cx="210" cy="150" r="48">
-                <animate attributeName="r" values="46;52;46" dur="3.2s" repeatCount="indefinite"/>
-              </circle>
-              <circle class="nd-bg-lg"  cx="210" cy="150" r="38"/>
-              <circle class="nd-ring-lg" cx="210" cy="150" r="38"/>
-              <text class="nd-title" x="210" y="146" text-anchor="middle">GEMINI</text>
-              <text class="nd-sub"   x="210" y="159" text-anchor="middle">LIVE API</text>
-            </g>
-
-            <!-- Agent nodes -->
-            <g id="hw-g-ag">
-              <g class="ag-ir">
-                <circle class="nd-bg"   cx="82" cy="288" r="26"/>
-                <circle class="nd-ring" cx="82" cy="288" r="26"/>
-                <text class="nd-title" x="82" y="284" text-anchor="middle">IR</text>
-                <text class="nd-sub"   x="82" y="296" text-anchor="middle">Clinical</text>
-              </g>
-              <g class="ag-iv">
-                <circle class="nd-bg"   cx="155" cy="298" r="26"/>
-                <circle class="nd-ring" cx="155" cy="298" r="26"/>
-                <text class="nd-title" x="155" y="294" text-anchor="middle">IV</text>
-                <text class="nd-sub"   x="155" y="306" text-anchor="middle">CT Scan</text>
-              </g>
-              <g class="ag-ar">
-                <circle class="nd-bg"   cx="263" cy="298" r="26"/>
-                <circle class="nd-ring" cx="263" cy="298" r="26"/>
-                <text class="nd-title" x="263" y="294" text-anchor="middle">AR</text>
-                <text class="nd-sub"   x="263" y="306" text-anchor="middle">3D Model</text>
-              </g>
-              <g class="ag-pc">
-                <circle class="nd-bg"   cx="336" cy="288" r="26"/>
-                <circle class="nd-ring" cx="336" cy="288" r="26"/>
-                <text class="nd-title" x="336" y="284" text-anchor="middle">PC</text>
-                <text class="nd-sub"   x="336" y="296" text-anchor="middle">Phase</text>
-              </g>
-            </g>
-
-          </svg>
         </div>
 
       </div>
@@ -1410,8 +1475,10 @@
       }
 
       document.querySelectorAll('.hw-step').forEach(step => {
-        step.addEventListener('click', () => activateStep(step.dataset.step));
+        step.addEventListener('mouseenter', () => activateStep(step.dataset.step));
       });
+      // Reset to full pipeline when mouse leaves the step list
+      document.querySelector('.hw-steps')?.addEventListener('mouseleave', () => activateStep('4'));
 
       // Default: all steps active (full pipeline visible)
       activateStep('4');
