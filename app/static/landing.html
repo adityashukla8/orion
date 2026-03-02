@@ -50,7 +50,7 @@
     nav {
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0 48px; height: 64px;
+      padding: 0 32px; height: 64px;
       background: rgba(242,245,249,0.80);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
@@ -94,7 +94,7 @@
 
     /* ── Common layout ── */
     section { position: relative; z-index: 1; }
-    .container { max-width: 1100px; margin: 0 auto; padding: 0 48px; }
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
 
     /* ── Reveal animation ── */
     .reveal {
@@ -361,33 +361,30 @@
     .how-visual { display: flex; align-items: center; justify-content: center; }
     .how-svg { width: 100%; max-width: 420px; height: auto; }
 
-    /* ── Agents — Architecture (dark) ── */
-    #agents { padding: 80px 0; background: #0a0a0a; }
+    /* ── Agents — Architecture (light) ── */
+    #agents { padding: 80px 0; background: #fff; }
     .agents-header { margin-bottom: 48px; }
-    .agents-header .section-tag      { color: rgba(255,255,255,0.35); }
-    .agents-header .section-headline { color: #ffffff; }
-    .agents-header .section-sub      { color: rgba(255,255,255,0.42); }
 
     /* Architecture container */
     .arch-wrap {
-      border: 1px solid rgba(255,255,255,0.09);
+      border: 1px solid rgba(0,0,0,0.09);
       border-radius: 4px; overflow: hidden;
     }
 
     /* ── Orchestrator row (top) ── */
     .arch-orch {
       display: grid; grid-template-columns: 1fr 1.9fr;
-      border-bottom: 1px solid rgba(255,255,255,0.09);
+      border-bottom: 1px solid rgba(0,0,0,0.09);
       min-height: 190px; cursor: default; transition: background 0.3s;
     }
-    .arch-orch:hover { background: rgba(255,255,255,0.025); }
-    .arch-orch .pill    { fill: rgba(255,255,255,0.2);  transition: fill 0.35s; }
-    .arch-orch .pill.hi { fill: rgba(255,255,255,0.42); }
+    .arch-orch:hover { background: rgba(0,0,0,0.018); }
+    .arch-orch .pill    { fill: rgba(0,0,0,0.10); transition: fill 0.35s; }
+    .arch-orch .pill.hi { fill: rgba(0,0,0,0.22); }
     .arch-orch:hover .pill    { fill: rgba(34,211,238,0.32); }
-    .arch-orch:hover .pill.hi { fill: #22d3ee; }
+    .arch-orch:hover .pill.hi { fill: #06b6d4; }
 
     .arch-orch-left {
-      padding: 32px 36px; border-right: 1px solid rgba(255,255,255,0.09);
+      padding: 32px 36px; border-right: 1px solid rgba(0,0,0,0.09);
       display: flex; flex-direction: column; justify-content: space-between;
     }
     .arch-orch-right {
@@ -397,53 +394,53 @@
 
     .arch-orch-badge {
       display: inline-flex; font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
-      color: rgba(255,255,255,0.28); border: 1px solid rgba(255,255,255,0.13);
+      color: rgba(0,0,0,0.38); border: 1px solid rgba(0,0,0,0.14);
       border-radius: 100px; padding: 3px 10px; width: fit-content;
       font-family: 'Poppins', sans-serif; margin-bottom: 10px;
     }
     .arch-orch-title {
-      font-size: 20px; font-weight: 700; color: #fff;
+      font-size: 20px; font-weight: 700; color: var(--text);
       font-family: 'Poppins', sans-serif; margin-bottom: 8px;
     }
     .arch-orch-sub {
-      font-size: 12.5px; line-height: 1.65; color: rgba(255,255,255,0.4);
+      font-size: 12.5px; line-height: 1.65; color: var(--text-2);
       font-family: 'Poppins', sans-serif;
     }
     .arch-orch-tags { display: flex; flex-wrap: wrap; gap: 5px; }
     .arch-tag {
       font-size: 10px; font-weight: 600; padding: 3px 9px;
-      border-radius: 100px; color: rgba(255,255,255,0.38);
-      border: 1px solid rgba(255,255,255,0.11); font-family: 'Poppins', sans-serif;
+      border-radius: 100px; color: rgba(0,0,0,0.44);
+      border: 1px solid rgba(0,0,0,0.12); font-family: 'Poppins', sans-serif;
     }
 
     /* ── Agent panels (bottom row) ── */
     .arch-agents { display: grid; grid-template-columns: repeat(4, 1fr); }
     .arch-agent {
-      border-right: 1px solid rgba(255,255,255,0.09);
+      border-right: 1px solid rgba(0,0,0,0.09);
       padding: 28px 24px 34px; display: flex; flex-direction: column;
       min-height: 340px; cursor: default; transition: background 0.28s;
     }
     .arch-agent:last-child { border-right: none; }
 
     /* Pill fill: default grey; accent on hover */
-    .arch-agent .pill    { fill: rgba(255,255,255,0.17); transition: fill 0.35s; }
-    .arch-agent .pill.hi { fill: rgba(255,255,255,0.38); }
-    .arch-agent.ir:hover { background: rgba(52,211,153,0.04); }
-    .arch-agent.ir:hover .pill    { fill: rgba(52,211,153,0.3); }
-    .arch-agent.ir:hover .pill.hi { fill: #34d399; }
-    .arch-agent.iv:hover { background: rgba(129,140,248,0.04); }
-    .arch-agent.iv:hover .pill    { fill: rgba(129,140,248,0.3); }
+    .arch-agent .pill    { fill: rgba(0,0,0,0.08); transition: fill 0.35s; }
+    .arch-agent .pill.hi { fill: rgba(0,0,0,0.18); }
+    .arch-agent.ir:hover { background: rgba(52,211,153,0.05); }
+    .arch-agent.ir:hover .pill    { fill: rgba(52,211,153,0.35); }
+    .arch-agent.ir:hover .pill.hi { fill: #10b981; }
+    .arch-agent.iv:hover { background: rgba(129,140,248,0.05); }
+    .arch-agent.iv:hover .pill    { fill: rgba(129,140,248,0.35); }
     .arch-agent.iv:hover .pill.hi { fill: #818cf8; }
-    .arch-agent.ar:hover { background: rgba(251,191,36,0.04); }
-    .arch-agent.ar:hover .pill    { fill: rgba(251,191,36,0.3); }
-    .arch-agent.ar:hover .pill.hi { fill: #fbbf24; }
-    .arch-agent.pc:hover { background: rgba(244,114,182,0.04); }
-    .arch-agent.pc:hover .pill    { fill: rgba(244,114,182,0.3); }
-    .arch-agent.pc:hover .pill.hi { fill: #f472b6; }
+    .arch-agent.ar:hover { background: rgba(251,191,36,0.05); }
+    .arch-agent.ar:hover .pill    { fill: rgba(251,191,36,0.35); }
+    .arch-agent.ar:hover .pill.hi { fill: #d97706; }
+    .arch-agent.pc:hover { background: rgba(244,114,182,0.05); }
+    .arch-agent.pc:hover .pill    { fill: rgba(244,114,182,0.35); }
+    .arch-agent.pc:hover .pill.hi { fill: #ec4899; }
 
     .arch-num {
       display: inline-flex; font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
-      color: rgba(255,255,255,0.42); border: 1px solid rgba(255,255,255,0.18);
+      color: rgba(0,0,0,0.38); border: 1px solid rgba(0,0,0,0.14);
       border-radius: 100px; padding: 3px 9px; margin-bottom: 14px; width: fit-content;
       font-family: 'Poppins', sans-serif;
     }
@@ -453,14 +450,14 @@
     .arch-visual svg { max-width: 156px; }
     .arch-agent-label {
       font-size: 10px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
-      color: rgba(255,255,255,0.42); margin-bottom: 5px; font-family: 'Poppins', sans-serif;
+      color: rgba(0,0,0,0.38); margin-bottom: 5px; font-family: 'Poppins', sans-serif;
     }
     .arch-agent-title {
-      font-size: 16px; font-weight: 700; color: #fff;
+      font-size: 16px; font-weight: 700; color: var(--text);
       margin-bottom: 8px; font-family: 'Poppins', sans-serif; line-height: 1.25;
     }
     .arch-agent-desc {
-      font-size: 12.5px; line-height: 1.72; color: rgba(255,255,255,0.54);
+      font-size: 12.5px; line-height: 1.72; color: var(--text-2);
       font-family: 'Poppins', sans-serif; margin-bottom: 16px;
     }
     .arch-agent-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: auto; }
@@ -536,19 +533,19 @@
       .arch-orch-right   { display: none; }
       .arch-agents       { grid-template-columns: repeat(2, 1fr); }
       .arch-agent:nth-child(2) { border-right: none; }
-      .arch-agent:nth-child(3) { border-top: 1px solid rgba(255,255,255,0.09); }
-      .arch-agent:nth-child(4) { border-top: 1px solid rgba(255,255,255,0.09); border-right: none; }
+      .arch-agent:nth-child(3) { border-top: 1px solid rgba(0,0,0,0.09); }
+      .arch-agent:nth-child(4) { border-top: 1px solid rgba(0,0,0,0.09); border-right: none; }
       .tech-grid         { grid-template-columns: repeat(2, 1fr); }
       .cta-inner         { padding: 52px 32px; }
-      nav                { padding: 0 24px; }
-      .container         { padding: 0 24px; }
+      nav                { padding: 0 16px; }
+      .container         { padding: 0 16px; }
       .nav-links         { display: none; }
       footer             { padding: 24px; }
     }
     @media (max-width: 600px) {
       .how-headline  { font-size: 28px; }
       .arch-agents   { grid-template-columns: 1fr; }
-      .arch-agent    { border-right: none; border-top: 1px solid rgba(255,255,255,0.09); }
+      .arch-agent    { border-right: none; border-top: 1px solid rgba(0,0,0,0.09); }
       .arch-agent:first-child { border-top: none; }
       .tech-grid     { grid-template-columns: repeat(2, 1fr); }
     }
