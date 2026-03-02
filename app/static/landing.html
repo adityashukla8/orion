@@ -258,34 +258,34 @@
       50%      { transform: scaleY(1.65); opacity: 1; }
     }
 
-    /* ── Problem (dark) ── */
-    #problem { padding: 110px 0; background: #0c1527; overflow: hidden; }
+    /* ── Problem (light) ── */
+    #problem { padding: 110px 0; background: #fff; overflow: hidden; }
     .problem-inner {
       display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: center;
     }
     .problem-tag {
       display: inline-block; font-size: 11px; font-weight: 700;
       letter-spacing: 0.16em; text-transform: uppercase;
-      color: var(--cyan); margin-bottom: 18px;
+      color: var(--blue); margin-bottom: 18px;
     }
     .problem-headline {
       font-size: clamp(30px, 3.6vw, 46px); font-weight: 800;
-      line-height: 1.14; letter-spacing: -0.026em; color: #fff; margin-bottom: 22px;
+      line-height: 1.14; letter-spacing: -0.026em; color: var(--text); margin-bottom: 22px;
     }
-    .problem-body { font-size: 15px; line-height: 1.78; color: rgba(255,255,255,0.56); }
-    .problem-body strong { color: rgba(255,255,255,0.92); font-weight: 600; }
+    .problem-body { font-size: 15px; line-height: 1.78; color: var(--text-2); }
+    .problem-body strong { color: var(--text); font-weight: 600; }
 
     .problem-stats { display: flex; flex-direction: column; gap: 14px; }
     .stat-card {
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.022); border: 1px solid rgba(0,0,0,0.08);
       border-radius: 14px; padding: 22px 24px;
-      backdrop-filter: blur(8px); transition: transform 0.22s ease, background 0.22s;
+      transition: transform 0.22s ease, background 0.22s;
     }
-    .stat-card:hover { transform: translateX(6px); background: rgba(255,255,255,0.07); }
+    .stat-card:hover { transform: translateX(6px); background: rgba(0,0,0,0.042); }
     .stat-icon { margin-bottom: 10px; }
     .stat-icon svg { display: block; }
-    .stat-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.38); margin-bottom: 5px; }
-    .stat-value { font-size: 16px; font-weight: 600; color: #fff; line-height: 1.4; }
+    .stat-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(0,0,0,0.38); margin-bottom: 5px; }
+    .stat-value { font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.4; }
     .stat-card.sc-blue  { border-left: 3px solid var(--cyan); }
     .stat-card.sc-green { border-left: 3px solid var(--green); }
     .stat-card.sc-pink  { border-left: 3px solid var(--pink); }
