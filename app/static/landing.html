@@ -350,35 +350,118 @@
       display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: center;
     }
 
-    /* Step list */
-    .how-list { display: flex; flex-direction: column; }
-    .how-row {
-      display: flex; align-items: center; gap: 20px;
-      padding: 22px 0; border-bottom: 1px solid rgba(0,0,0,0.07);
+    /* ── Step list (agents-section style) ── */
+    .hw-steps { border: 1px solid rgba(0,0,0,0.09); border-radius: 4px; overflow: hidden; }
+    .hw-step {
+      display: flex; align-items: flex-start; gap: 16px; padding: 20px 22px;
+      border-bottom: 1px solid rgba(0,0,0,0.09); cursor: pointer;
+      box-shadow: inset 3px 0 0 transparent;
+      transition: background 0.25s, box-shadow 0.25s;
     }
-    .how-row:first-child { border-top: 1px solid rgba(0,0,0,0.07); }
+    .hw-step:last-child { border-bottom: none; }
+    .hw-step-num {
+      display: inline-flex; flex-shrink: 0; font-size: 10px; font-weight: 600;
+      letter-spacing: 0.12em; color: rgba(0,0,0,0.35);
+      border: 1px solid rgba(0,0,0,0.13); border-radius: 100px;
+      padding: 3px 9px; margin-top: 3px; font-family: 'Poppins', sans-serif;
+      transition: color 0.25s, border-color 0.25s;
+    }
+    .hw-step-icon {
+      flex-shrink: 0; width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(0,0,0,0.05); display: flex; align-items: center;
+      justify-content: center; transition: background 0.25s;
+    }
+    .hw-step-icon svg { stroke: rgba(0,0,0,0.28); fill: none; transition: stroke 0.25s; }
+    .hw-step-content { flex: 1; min-width: 0; }
+    .hw-step-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; font-family: 'Poppins', sans-serif; }
+    .hw-step-desc  { font-size: 12px; line-height: 1.68; color: var(--text-2); font-family: 'Poppins', sans-serif; }
 
-    .hw-pill {
-      flex-shrink: 0; width: 54px; height: 54px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .hw-pill.p1 { background: #22d3ee; }
-    .hw-pill.p2 { background: #a78bfa; }
-    .hw-pill.p3 { background: #34d399; }
-    .hw-pill.p4 { background: #60a5fa; }
+    /* Active state — per step accent */
+    .hw-step[data-step="1"].active { background: rgba(34,211,238,0.05);  box-shadow: inset 3px 0 0 #22d3ee; }
+    .hw-step[data-step="1"].active .hw-step-num  { color: #0891b2; border-color: rgba(8,145,178,0.32); }
+    .hw-step[data-step="1"].active .hw-step-icon { background: rgba(34,211,238,0.14); }
+    .hw-step[data-step="1"].active .hw-step-icon svg { stroke: #0891b2; }
 
-    .how-row-text {}
-    .how-row-title {
-      font-size: 16px; font-weight: 700; color: #08111f; margin-bottom: 4px;
-      font-family: 'Poppins', sans-serif; line-height: 1.3;
-    }
-    .how-row-desc {
-      font-size: 13px; line-height: 1.67; color: #4a5568; font-family: 'Poppins', sans-serif;
-    }
+    .hw-step[data-step="2"].active { background: rgba(129,140,248,0.05); box-shadow: inset 3px 0 0 #818cf8; }
+    .hw-step[data-step="2"].active .hw-step-num  { color: #6366f1; border-color: rgba(99,102,241,0.32); }
+    .hw-step[data-step="2"].active .hw-step-icon { background: rgba(129,140,248,0.14); }
+    .hw-step[data-step="2"].active .hw-step-icon svg { stroke: #6366f1; }
 
-    /* Right illustration */
-    .how-visual { display: flex; align-items: center; justify-content: center; }
-    .how-svg { width: 100%; max-width: 420px; height: auto; }
+    .hw-step[data-step="3"].active { background: rgba(52,211,153,0.05);  box-shadow: inset 3px 0 0 #34d399; }
+    .hw-step[data-step="3"].active .hw-step-num  { color: #059669; border-color: rgba(5,150,105,0.32); }
+    .hw-step[data-step="3"].active .hw-step-icon { background: rgba(52,211,153,0.14); }
+    .hw-step[data-step="3"].active .hw-step-icon svg { stroke: #059669; }
+
+    .hw-step[data-step="4"].active { background: rgba(96,165,250,0.05);  box-shadow: inset 3px 0 0 #60a5fa; }
+    .hw-step[data-step="4"].active .hw-step-num  { color: #2563eb; border-color: rgba(37,99,235,0.32); }
+    .hw-step[data-step="4"].active .hw-step-icon { background: rgba(96,165,250,0.14); }
+    .hw-step[data-step="4"].active .hw-step-icon svg { stroke: #2563eb; }
+
+    /* ── Canvas (right) ── */
+    .how-canvas {
+      border: 1px solid rgba(0,0,0,0.09); border-radius: 4px; overflow: hidden;
+      background: #f8fafc; display: flex; align-items: center; justify-content: center;
+      padding: 28px; min-height: 440px;
+    }
+    .hw-canvas-svg { width: 100%; max-width: 380px; height: auto; }
+
+    /* ── SVG node defaults (BNW / grey) ── */
+    .hw-canvas-svg .nd-bg     { fill: rgba(0,0,0,0.05); transition: fill 0.35s; }
+    .hw-canvas-svg .nd-ring   { stroke: rgba(0,0,0,0.15); stroke-width: 1.5; fill: none; transition: stroke 0.35s; }
+    .hw-canvas-svg .nd-bg-lg  { fill: rgba(0,0,0,0.07); transition: fill 0.35s; }
+    .hw-canvas-svg .nd-ring-lg{ stroke: rgba(0,0,0,0.18); stroke-width: 1.5; fill: none; transition: stroke 0.35s; }
+    .hw-canvas-svg .nd-icon   { stroke: rgba(0,0,0,0.28); fill: none; transition: stroke 0.35s; }
+    .hw-canvas-svg .nd-label  { fill: rgba(0,0,0,0.38); font-family: 'Poppins',sans-serif; font-size: 9px; font-weight: 600; letter-spacing: 0.5px; transition: fill 0.35s; }
+    .hw-canvas-svg .nd-title  { fill: rgba(0,0,0,0.45); font-family: 'Poppins',sans-serif; font-size: 9.5px; font-weight: 700; letter-spacing: 0.3px; transition: fill 0.35s; }
+    .hw-canvas-svg .nd-sub    { fill: rgba(0,0,0,0.3);  font-family: 'Poppins',sans-serif; font-size: 7.5px; transition: fill 0.35s; }
+    .hw-canvas-svg .nd-pulse  { fill: rgba(0,0,0,0.025); transition: fill 0.35s; }
+    .hw-canvas-svg .nd-rect   { fill: rgba(0,0,0,0.03); stroke: rgba(0,0,0,0.12); stroke-width: 1.2; transition: fill 0.35s, stroke 0.35s; }
+    .hw-canvas-svg .fp        { stroke: rgba(0,0,0,0.12); stroke-width: 1.5; fill: none; stroke-dasharray: 6 5; transition: stroke 0.35s, opacity 0.35s; }
+    .hw-canvas-svg .cn        { stroke: rgba(0,0,0,0.1); stroke-width: 1; fill: none; transition: stroke 0.35s; }
+
+    /* ── Active highlights ── */
+    /* Step 1: Voice */
+    #hw-g-voice.hl .nd-bg   { fill: rgba(34,211,238,0.16); }
+    #hw-g-voice.hl .nd-ring { stroke: #22d3ee; }
+    #hw-g-voice.hl .nd-icon { stroke: #0891b2; }
+    #hw-g-voice.hl .nd-label{ fill: #0891b2; }
+    #hw-g-pv.hl .fp { stroke: #22d3ee; opacity: 1; animation: hwFlow 1.4s linear infinite; }
+
+    /* Step 2: Gemini */
+    #hw-g-gem.hl .nd-pulse  { fill: rgba(2,132,199,0.08); }
+    #hw-g-gem.hl .nd-bg-lg  { fill: url(#hd-grad); }
+    #hw-g-gem.hl .nd-ring-lg{ stroke: #0284c7; }
+    #hw-g-gem.hl .nd-title  { fill: rgba(255,255,255,0.9); }
+    #hw-g-gem.hl .nd-sub    { fill: rgba(255,255,255,0.65); }
+
+    /* Step 3: Routes */
+    #hw-g-rt.hl .fp-ir { stroke: #10b981; opacity: 1; animation: hwFlow 1.6s linear infinite; }
+    #hw-g-rt.hl .fp-iv { stroke: #818cf8; opacity: 1; animation: hwFlow 2.0s linear infinite; }
+    #hw-g-rt.hl .fp-ar { stroke: #f59e0b; opacity: 1; animation: hwFlow 1.8s linear infinite; }
+    #hw-g-rt.hl .fp-pc { stroke: #f472b6; opacity: 1; animation: hwFlow 1.5s linear infinite; }
+    #hw-g-ag.hl .ag-ir .nd-bg  { fill: rgba(16,185,129,0.14); }
+    #hw-g-ag.hl .ag-ir .nd-ring{ stroke: #10b981; }
+    #hw-g-ag.hl .ag-ir .nd-title{ fill: #059669; }
+    #hw-g-ag.hl .ag-ir .nd-sub  { fill: #059669; }
+    #hw-g-ag.hl .ag-iv .nd-bg  { fill: rgba(129,140,248,0.14); }
+    #hw-g-ag.hl .ag-iv .nd-ring{ stroke: #818cf8; }
+    #hw-g-ag.hl .ag-iv .nd-title{ fill: #6d28d9; }
+    #hw-g-ag.hl .ag-iv .nd-sub  { fill: #6d28d9; }
+    #hw-g-ag.hl .ag-ar .nd-bg  { fill: rgba(245,158,11,0.14); }
+    #hw-g-ag.hl .ag-ar .nd-ring{ stroke: #f59e0b; }
+    #hw-g-ag.hl .ag-ar .nd-title{ fill: #b45309; }
+    #hw-g-ag.hl .ag-ar .nd-sub  { fill: #b45309; }
+    #hw-g-ag.hl .ag-pc .nd-bg  { fill: rgba(244,114,182,0.14); }
+    #hw-g-ag.hl .ag-pc .nd-ring{ stroke: #f472b6; }
+    #hw-g-ag.hl .ag-pc .nd-title{ fill: #be185d; }
+    #hw-g-ag.hl .ag-pc .nd-sub  { fill: #be185d; }
+
+    /* Step 4: Display */
+    #hw-g-dp.hl .nd-rect  { fill: rgba(2,132,199,0.09); stroke: rgba(2,132,199,0.3); }
+    #hw-g-dp.hl .nd-label { fill: #0369a1; }
+    #hw-g-dp.hl .cn       { stroke: rgba(2,132,199,0.28); }
+
+    @keyframes hwFlow { from { stroke-dashoffset: 60; } to { stroke-dashoffset: 0; } }
 
     /* ── Agents — Architecture (light) ── */
     #agents { padding: 80px 0; background: #fff; }
@@ -573,7 +656,7 @@
     @media (max-width: 960px) {
       .problem-inner     { grid-template-columns: 1fr; gap: 44px; }
       .how-body          { grid-template-columns: 1fr; gap: 40px; }
-      .how-visual        { display: none; }
+      .how-canvas        { display: none; }
       .how-headline      { font-size: clamp(30px, 5vw, 42px); gap: 10px; }
       .arch-orch         { grid-template-columns: 1fr; }
       .arch-orch-right   { display: none; }
@@ -763,26 +846,28 @@
 
       <div class="how-body reveal">
 
-        <!-- Step list (left) -->
-        <div class="how-list">
+        <!-- Step list (left) — agents-section style, interactive -->
+        <div class="hw-steps">
 
-          <div class="how-row">
-            <div class="hw-pill p1">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <div class="hw-step" data-step="1">
+            <div class="hw-step-num">01</div>
+            <div class="hw-step-icon">
+              <svg width="17" height="17" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
                 <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
                 <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
               </svg>
             </div>
-            <div class="how-row-text">
-              <div class="how-row-title">Voice Command</div>
-              <div class="how-row-desc">Surgeon speaks. 16kHz PCM audio streams via WebSocket. Wake-word filtering ignores ambient OR noise and staff conversation.</div>
+            <div class="hw-step-content">
+              <div class="hw-step-title">Voice Command</div>
+              <div class="hw-step-desc">Surgeon speaks. 16kHz PCM audio streams via WebSocket. Wake-word filtering ignores ambient OR noise and staff conversation.</div>
             </div>
           </div>
 
-          <div class="how-row">
-            <div class="hw-pill p2">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <div class="hw-step" data-step="2">
+            <div class="hw-step-num">02</div>
+            <div class="hw-step-icon">
+              <svg width="17" height="17" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="4" y="4" width="16" height="16" rx="2"/>
                 <rect x="9" y="9" width="6" height="6"/>
                 <line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/>
@@ -791,124 +876,125 @@
                 <line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/>
               </svg>
             </div>
-            <div class="how-row-text">
-              <div class="how-row-title">Gemini Live API</div>
-              <div class="how-row-desc">Audio and live surgical video (1 fps) processed natively. Full multimodal context — the AI understands the OR environment in real time.</div>
+            <div class="hw-step-content">
+              <div class="hw-step-title">Gemini Live API</div>
+              <div class="hw-step-desc">Audio and live surgical video (1 fps) processed natively. Full multimodal context — the AI understands the OR environment in real time.</div>
             </div>
           </div>
 
-          <div class="how-row">
-            <div class="hw-pill p3">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <div class="hw-step" data-step="3">
+            <div class="hw-step-num">03</div>
+            <div class="hw-step-icon">
+              <svg width="17" height="17" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
                 <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
                 <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
               </svg>
             </div>
-            <div class="how-row-text">
-              <div class="how-row-title">Multi-Agent Routing</div>
-              <div class="how-row-desc">ADK Orchestrator routes the intent to the right specialist — patient data, CT imaging, 3D anatomy, or surgical phase context.</div>
+            <div class="hw-step-content">
+              <div class="hw-step-title">Multi-Agent Routing</div>
+              <div class="hw-step-desc">ADK Orchestrator routes the intent to the right specialist — patient data, CT imaging, 3D anatomy, or surgical phase context.</div>
             </div>
           </div>
 
-          <div class="how-row">
-            <div class="hw-pill p4">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <div class="hw-step" data-step="4">
+            <div class="hw-step-num">04</div>
+            <div class="hw-step-icon">
+              <svg width="17" height="17" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="3" width="20" height="14" rx="2"/>
                 <line x1="8" y1="21" x2="16" y2="21"/>
                 <line x1="12" y1="17" x2="12" y2="21"/>
               </svg>
             </div>
-            <div class="how-row-text">
-              <div class="how-row-title">Visual Overlay</div>
-              <div class="how-row-desc">Results appear as glassmorphic tiles on the surgical display. ORION speaks a brief confirmation. Hands never leave the controls.</div>
+            <div class="hw-step-content">
+              <div class="hw-step-title">Visual Overlay</div>
+              <div class="hw-step-desc">Results appear as tiles on the surgical display. ORION speaks a brief confirmation. Hands never leave the controls.</div>
             </div>
           </div>
 
         </div>
 
-        <!-- SVG diagram (right) -->
-        <div class="how-visual">
-          <svg class="how-svg" viewBox="0 0 420 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Interactive canvas (right) -->
+        <div class="how-canvas">
+          <svg id="hw-diagram" class="hw-canvas-svg" viewBox="0 0 420 390" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <radialGradient id="orbGrad" cx="38%" cy="32%" r="68%">
+              <radialGradient id="hd-grad" cx="38%" cy="32%" r="68%">
                 <stop offset="0%" stop-color="#38bdf8"/>
                 <stop offset="100%" stop-color="#0369a1"/>
               </radialGradient>
-              <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
-                <feGaussianBlur stdDeviation="8" result="blur"/>
-                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
             </defs>
 
-            <!-- Ambient halo -->
-            <circle cx="210" cy="155" r="108" fill="rgba(56,189,248,0.055)"/>
-            <circle cx="210" cy="155" r="80"  fill="rgba(56,189,248,0.06)"/>
+            <!-- Voice → Gemini path -->
+            <g id="hw-g-pv">
+              <path class="fp" d="M 210 52 L 210 107" stroke-linecap="round"/>
+            </g>
 
-            <!-- Animated paths: center → agents -->
-            <!-- → IR (bottom-left) -->
-            <path d="M 210 155 C 180 200 120 220 82 262" stroke="#10b981" stroke-width="1.6" stroke-dasharray="7 5" opacity="0.55">
-              <animate attributeName="stroke-dashoffset" from="120" to="0" dur="2.6s" repeatCount="indefinite"/>
-            </path>
-            <!-- → IV -->
-            <path d="M 210 155 C 200 210 170 235 155 272" stroke="#818cf8" stroke-width="1.6" stroke-dasharray="7 5" opacity="0.55">
-              <animate attributeName="stroke-dashoffset" from="120" to="0" dur="2.0s" repeatCount="indefinite"/>
-            </path>
-            <!-- → AR -->
-            <path d="M 210 155 C 220 210 248 235 263 272" stroke="#f59e0b" stroke-width="1.6" stroke-dasharray="7 5" opacity="0.55">
-              <animate attributeName="stroke-dashoffset" from="120" to="0" dur="3.1s" repeatCount="indefinite"/>
-            </path>
-            <!-- → PC (bottom-right) -->
-            <path d="M 210 155 C 240 200 298 220 336 262" stroke="#f472b6" stroke-width="1.6" stroke-dasharray="7 5" opacity="0.55">
-              <animate attributeName="stroke-dashoffset" from="120" to="0" dur="2.4s" repeatCount="indefinite"/>
-            </path>
-            <!-- Voice → center -->
-            <path d="M 210 42 L 210 118" stroke="#22d3ee" stroke-width="1.6" stroke-dasharray="5 4" opacity="0.65">
-              <animate attributeName="stroke-dashoffset" from="50" to="0" dur="1.6s" repeatCount="indefinite"/>
-            </path>
+            <!-- Gemini → Agent routing paths -->
+            <g id="hw-g-rt">
+              <path class="fp fp-ir" d="M 210 193 C 180 225 120 248 82 276" stroke-linecap="round"/>
+              <path class="fp fp-iv" d="M 210 193 C 200 228 170 252 155 276" stroke-linecap="round"/>
+              <path class="fp fp-ar" d="M 210 193 C 220 228 248 252 263 276" stroke-linecap="round"/>
+              <path class="fp fp-pc" d="M 210 193 C 240 225 298 248 336 276" stroke-linecap="round"/>
+            </g>
 
-            <!-- Voice input node (top) -->
-            <circle cx="210" cy="28" r="20" fill="#22d3ee"/>
-            <svg x="198" y="16" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-            </svg>
-            <text x="210" y="62" text-anchor="middle" font-family="Poppins, sans-serif" font-size="9.5" font-weight="600" fill="#4a5568" letter-spacing="0.5">SURGEON VOICE</text>
+            <!-- Agent → Display connectors -->
+            <g id="hw-g-dp">
+              <line class="cn" x1="155" y1="312" x2="175" y2="338"/>
+              <line class="cn" x1="263" y1="312" x2="243" y2="338"/>
+              <rect class="nd-rect" x="100" y="338" width="218" height="32" rx="6"/>
+              <text class="nd-label" x="209" y="359" text-anchor="middle">SURGICAL DISPLAY</text>
+            </g>
 
-            <!-- ORION center node (Gemini) with pulse -->
-            <circle cx="210" cy="155" r="48" fill="rgba(2,132,199,0.09)">
-              <animate attributeName="r" values="46;52;46" dur="3.2s" repeatCount="indefinite"/>
-            </circle>
-            <circle cx="210" cy="155" r="38" fill="url(#orbGrad)" filter="url(#glow)"/>
-            <text x="210" y="151" text-anchor="middle" font-family="Poppins, sans-serif" font-size="8.5" font-weight="700" fill="rgba(255,255,255,0.85)" letter-spacing="1.2">GEMINI</text>
-            <text x="210" y="163" text-anchor="middle" font-family="Poppins, sans-serif" font-size="7" font-weight="500" fill="rgba(255,255,255,0.6)" letter-spacing="0.6">LIVE API</text>
+            <!-- Voice node -->
+            <g id="hw-g-voice">
+              <circle class="nd-bg" cx="210" cy="30" r="22"/>
+              <circle class="nd-ring" cx="210" cy="30" r="22"/>
+              <g class="nd-icon" transform="translate(198,18)" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" stroke-width="1.8"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke-width="1.8"/>
+              </g>
+              <text class="nd-label" x="210" y="68" text-anchor="middle">SURGEON VOICE</text>
+            </g>
 
-            <!-- Agent: IR -->
-            <circle cx="82" cy="272" r="28" fill="#dcfce7" stroke="#bbf7d0" stroke-width="1.2"/>
-            <text x="82" y="268" text-anchor="middle" font-family="Poppins, sans-serif" font-size="10" font-weight="700" fill="#059669">IR</text>
-            <text x="82" y="281" text-anchor="middle" font-family="Poppins, sans-serif" font-size="7.5" font-weight="500" fill="#059669">Clinical</text>
+            <!-- Gemini center node -->
+            <g id="hw-g-gem">
+              <circle class="nd-pulse" cx="210" cy="150" r="48">
+                <animate attributeName="r" values="46;52;46" dur="3.2s" repeatCount="indefinite"/>
+              </circle>
+              <circle class="nd-bg-lg"  cx="210" cy="150" r="38"/>
+              <circle class="nd-ring-lg" cx="210" cy="150" r="38"/>
+              <text class="nd-title" x="210" y="146" text-anchor="middle">GEMINI</text>
+              <text class="nd-sub"   x="210" y="159" text-anchor="middle">LIVE API</text>
+            </g>
 
-            <!-- Agent: IV -->
-            <circle cx="155" cy="284" r="28" fill="#ede9fe" stroke="#ddd6fe" stroke-width="1.2"/>
-            <text x="155" y="280" text-anchor="middle" font-family="Poppins, sans-serif" font-size="10" font-weight="700" fill="#6d28d9">IV</text>
-            <text x="155" y="293" text-anchor="middle" font-family="Poppins, sans-serif" font-size="7.5" font-weight="500" fill="#6d28d9">CT Scan</text>
+            <!-- Agent nodes -->
+            <g id="hw-g-ag">
+              <g class="ag-ir">
+                <circle class="nd-bg"   cx="82" cy="288" r="26"/>
+                <circle class="nd-ring" cx="82" cy="288" r="26"/>
+                <text class="nd-title" x="82" y="284" text-anchor="middle">IR</text>
+                <text class="nd-sub"   x="82" y="296" text-anchor="middle">Clinical</text>
+              </g>
+              <g class="ag-iv">
+                <circle class="nd-bg"   cx="155" cy="298" r="26"/>
+                <circle class="nd-ring" cx="155" cy="298" r="26"/>
+                <text class="nd-title" x="155" y="294" text-anchor="middle">IV</text>
+                <text class="nd-sub"   x="155" y="306" text-anchor="middle">CT Scan</text>
+              </g>
+              <g class="ag-ar">
+                <circle class="nd-bg"   cx="263" cy="298" r="26"/>
+                <circle class="nd-ring" cx="263" cy="298" r="26"/>
+                <text class="nd-title" x="263" y="294" text-anchor="middle">AR</text>
+                <text class="nd-sub"   x="263" y="306" text-anchor="middle">3D Model</text>
+              </g>
+              <g class="ag-pc">
+                <circle class="nd-bg"   cx="336" cy="288" r="26"/>
+                <circle class="nd-ring" cx="336" cy="288" r="26"/>
+                <text class="nd-title" x="336" y="284" text-anchor="middle">PC</text>
+                <text class="nd-sub"   x="336" y="296" text-anchor="middle">Phase</text>
+              </g>
+            </g>
 
-            <!-- Agent: AR -->
-            <circle cx="263" cy="284" r="28" fill="#fef3c7" stroke="#fde68a" stroke-width="1.2"/>
-            <text x="263" y="280" text-anchor="middle" font-family="Poppins, sans-serif" font-size="10" font-weight="700" fill="#b45309">AR</text>
-            <text x="263" y="293" text-anchor="middle" font-family="Poppins, sans-serif" font-size="7.5" font-weight="500" fill="#b45309">3D Model</text>
-
-            <!-- Agent: PC -->
-            <circle cx="336" cy="272" r="28" fill="#fce7f3" stroke="#fbcfe8" stroke-width="1.2"/>
-            <text x="336" y="268" text-anchor="middle" font-family="Poppins, sans-serif" font-size="10" font-weight="700" fill="#be185d">PC</text>
-            <text x="336" y="281" text-anchor="middle" font-family="Poppins, sans-serif" font-size="7.5" font-weight="500" fill="#be185d">Phase</text>
-
-            <!-- Surgical Display output bar -->
-            <rect x="100" y="330" width="218" height="30" rx="8" fill="rgba(2,132,199,0.07)" stroke="rgba(2,132,199,0.2)" stroke-width="1.2"/>
-            <!-- small dot connectors from agents to display -->
-            <line x1="155" y1="312" x2="175" y2="330" stroke="rgba(0,0,0,0.1)" stroke-width="1"/>
-            <line x1="263" y1="312" x2="243" y2="330" stroke="rgba(0,0,0,0.1)" stroke-width="1"/>
-            <text x="209" y="349" text-anchor="middle" font-family="Poppins, sans-serif" font-size="10" font-weight="600" fill="#0369a1" letter-spacing="0.3">Surgical Display</text>
           </svg>
         </div>
 
@@ -1297,6 +1383,38 @@
       window.addEventListener('resize', resize);
       resize();
       requestAnimationFrame(draw);
+    })();
+
+    // ── How It Works — step ↔ canvas interactivity ────────────────────────
+    (function () {
+      const stepMap = {
+        '1': ['hw-g-voice', 'hw-g-pv'],
+        '2': ['hw-g-gem'],
+        '3': ['hw-g-rt', 'hw-g-ag'],
+        '4': ['hw-g-dp'],
+      };
+      const allGroups = [...new Set(Object.values(stepMap).flat())];
+
+      // Highlight steps 1..n cumulatively in list + canvas
+      function activateStep(n) {
+        const max = parseInt(n);
+        // Left list: all steps up to n get active, rest neutral
+        document.querySelectorAll('.hw-step').forEach(step => {
+          step.classList.toggle('active', parseInt(step.dataset.step) <= max);
+        });
+        // Canvas: highlight all SVG groups for steps 1..n
+        allGroups.forEach(id => document.getElementById(id)?.classList.remove('hl'));
+        for (let i = 1; i <= max; i++) {
+          (stepMap[String(i)] || []).forEach(id => document.getElementById(id)?.classList.add('hl'));
+        }
+      }
+
+      document.querySelectorAll('.hw-step').forEach(step => {
+        step.addEventListener('click', () => activateStep(step.dataset.step));
+      });
+
+      // Default: all steps active (full pipeline visible)
+      activateStep('4');
     })();
 
     // ── Scroll reveal ──────────────────────────────────────────────────────
