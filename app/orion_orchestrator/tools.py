@@ -368,6 +368,26 @@ def toggle_structure(structure: str, visible: bool) -> dict:
     }
 
 
+def hide_3d() -> dict:
+    """
+    Use this tool when the surgeon asks to hide, close, dismiss, or remove
+    the 3D anatomy model overlay entirely. Examples:
+      "hide the 3D model"
+      "close the 3D view"
+      "remove the anatomy model"
+      "close the model"
+      "dismiss the 3D"
+      "hide the anatomy"
+    """
+    return {
+        'status': 'success',
+        'render_command': {
+            'layer': 'ar',
+            'action': 'hide',
+        },
+    }
+
+
 def reset_3d_view() -> dict:
     """
     Use this tool when the surgeon asks to reset the 3D model back to the
@@ -531,6 +551,27 @@ def get_surgical_phase(phase: str) -> dict:
 # ---------------------------------------------------------------------------
 # Root Agent Tool — crosses all three display domains
 # ---------------------------------------------------------------------------
+
+def show_only_ar() -> dict:
+    """
+    Use this tool when the surgeon asks to keep ONLY the 3D anatomy model
+    and close or hide everything else (CT scan, patient data, checklists).
+    Examples:
+      "only keep the 3D model"
+      "keep only the anatomy"
+      "close everything except the 3D"
+      "hide everything but the model"
+      "just show me the 3D"
+    Do NOT route this to a sub-agent. Handle it directly at the root level.
+    """
+    return {
+        'status': 'success',
+        'render_command': {
+            'layer': 'all_except_ar',
+            'action': 'hide',
+        },
+    }
+
 
 def hide_all_overlays() -> dict:
     """

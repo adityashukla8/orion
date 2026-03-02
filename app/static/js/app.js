@@ -324,9 +324,17 @@ function dispatchRenderCommand(toolName, args) {
     case 'reset_3d_view':
       Anatomy3D.reset();
       break;
+    case 'hide_3d':
+      Anatomy3D.hide();
+      relayoutTiles();
+      break;
     case 'hide_all_overlays':
       CTViewer.hide(); ClinicalPanel.hide(); Anatomy3D.hide(); ChecklistPanel.hide();
       relayoutTiles();  // belt-and-suspenders: ensure column collapses even if a module's modal ref is stale
+      break;
+    case 'show_only_ar':
+      CTViewer.hide(); ClinicalPanel.hide(); ChecklistPanel.hide();
+      relayoutTiles();
       break;
     default:
       console.warn('[app.js] Unknown tool:', toolName);

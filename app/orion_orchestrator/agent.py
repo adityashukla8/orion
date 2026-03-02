@@ -29,7 +29,9 @@ from .tools import (
     hide_ct,
     rotate_model,
     toggle_structure,
+    hide_3d,
     reset_3d_view,
+    show_only_ar,
     hide_all_overlays,
     get_surgical_phase,
 )
@@ -141,12 +143,13 @@ ar_agent = LlmAgent(
     name='AR_Agent',
     model=_sub_model,
     description=(
-        'Handles all requests to rotate, manipulate, or show/hide structures '
-        'in the 3D anatomy model (lung, tumor, vessels, bronchi, ribs, '
-        'pleura). Route here when the surgeon asks to see the model from a '
-        'different angle (posterior, anterior, superior, lateral), toggle '
-        'visibility of a named structure, or reset the 3D view. Do NOT route '
-        'here for CT scan navigation or clinical data requests.'
+        'Handles all requests to rotate, manipulate, show, hide, or close '
+        'the 3D anatomy model (lung, tumor, vessels, bronchi). Route here '
+        'when the surgeon asks to see the model from a different angle '
+        '(posterior, anterior, superior, lateral), toggle visibility of a '
+        'named structure, reset the 3D view, or hide/close/dismiss the 3D '
+        'model entirely. Do NOT route here for CT scan navigation, clinical '
+        'data requests, or "hide everything" (that goes to root).'
     ),
     instruction=(
         'You are the Anatomy Renderer specialist for ORION. You control a '
@@ -167,8 +170,9 @@ ar_agent = LlmAgent(
         '  rotate_model(axis, degrees)          → rotates the model\n'
         '  toggle_structure(structure, visible) → shows/hides a mesh\n'
         '  reset_3d_view()                      → resets to default view\n'
+        '  hide_3d()                            → hides/closes the 3D model entirely\n'
     ),
-    tools=[rotate_model, toggle_structure, reset_3d_view],
+    tools=[rotate_model, toggle_structure, hide_3d, reset_3d_view],
 )
 
 
@@ -244,17 +248,21 @@ root_agent = LlmAgent(
         'Route to AR_Agent for:\n'
         '  - 3D model rotation: posterior, anterior, superior, lateral view\n'
         '  - Structure visibility: hide ribs, show vessels, toggle tumor\n'
-        '  - Model control: reset 3D view, restore structures\n\n'
+        '  - Model control: reset 3D view, restore structures\n'
+        '  - Hiding ONLY the 3D model: "hide the 3D", "close the model", "close 3D view"\n\n'
         'Route to PC_Agent for:\n'
         '  - Surgical phase questions: "what phase are we in", "what\'s next"\n'
         '  - Contextual checklists: "show me the checklist", "what should I watch for"\n'
         '  - Phase transitions: "we\'re starting the vascular work", "entering the fissure"\n\n'
-        'Handle directly with hide_all_overlays for ANY request to close/hide/clear/dismiss ALL panels at once:\n'
-        '  - "clear everything", "hide everything", "close everything", "remove everything"\n'
-        '  - "hide all", "clear all", "close all", "dismiss all"\n'
-        '  - "close all panels", "close the panels", "clear the screen"\n'
-        '  - "clean up", "go back to just the video", "get rid of everything"\n'
-        '  IMPORTANT: call hide_all_overlays directly — do NOT route to a sub-agent.\n\n'
+        'Handle DIRECTLY (do NOT route to any sub-agent) with these root tools:\n'
+        '  hide_all_overlays() — for ANY request to close/hide ALL panels at once:\n'
+        '    "clear everything", "hide everything", "close everything", "remove everything"\n'
+        '    "hide all", "clear all", "close all", "dismiss all", "clean up",\n'
+        '    "close all panels", "clear the screen", "go back to just the video"\n'
+        '  show_only_ar() — to keep ONLY the 3D model and close everything else:\n'
+        '    "only keep the 3D model", "keep only the anatomy", "just show the model",\n'
+        '    "close everything except the 3D", "hide everything but the model"\n'
+        '  CRITICAL: call these tools yourself — NEVER route them to a sub-agent.\n\n'
 
         '## RESPONSE STYLE\n'
         '- Speak in under 15 words. The surgeon is mid-procedure.\n'
@@ -263,5 +271,5 @@ root_agent = LlmAgent(
         '- Never say you are routing or transferring. Just do it.\n'
     ),
     sub_agents=[ir_agent, iv_agent, ar_agent, pc_agent],
-    tools=[hide_all_overlays],
+    tools=[hide_all_overlays, show_only_ar],
 )
