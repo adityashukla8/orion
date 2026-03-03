@@ -613,6 +613,12 @@
         <div id="checklist-body" class="modal-body"></div>
       </div>
 
+      <!-- Intraoperative documentation / operative event log tile -->
+      <div id="log-modal" class="tile-panel">
+        <div class="modal-title">Operative Log</div>
+        <div id="log-body" class="modal-body"></div>
+      </div>
+
     </div>
 
   </div>
@@ -642,6 +648,7 @@
             <div class="agent-chip" data-agent="IV_Agent">IV — CT Imaging</div>
             <div class="agent-chip" data-agent="AR_Agent">AR — 3D Anatomy</div>
             <div class="agent-chip" data-agent="PC_Agent">PC — Proc. Context</div>
+            <div class="agent-chip" data-agent="DOC_Agent">DOC — Op. Log</div>
           </div>
         </div>
         <div>
@@ -677,6 +684,7 @@
   <script src="/static/js/anatomy-3d.js"></script>
   <script src="/static/js/clinical-panel.js"></script>
   <script src="/static/js/checklist-panel.js"></script>
+  <script src="/static/js/log-panel.js"></script>
 
   <script type="module" src="/static/js/app.js"></script>
 

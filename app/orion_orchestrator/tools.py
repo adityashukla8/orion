@@ -549,6 +549,148 @@ def get_surgical_phase(phase: str) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Session event log — in-memory, lives for the duration of one surgical session.
+# Reset each time the FastAPI server restarts (per-session is correct for demo).
+# ---------------------------------------------------------------------------
+_SESSION_LOG: list[dict] = []
+
+
+# ---------------------------------------------------------------------------
+# DOC Agent Tools — Intraoperative Documentation
+# ---------------------------------------------------------------------------
+
+def log_event(event_type: str, note: str = '') -> dict:
+    """
+    Use this tool when the surgeon voice-logs any intraoperative event.
+    Auto-timestamps the event and appends it to the session operative log.
+
+    event_type — pass exactly one of:
+      cvs_confirmed     — Critical View of Safety confirmed before structure division
+      timeout_complete  — WHO surgical safety timeout completed
+      blood_loss        — Estimated blood loss (put "X mL" in the note)
+      specimen_removed  — Specimen extracted from chest and placed in bag
+      complication      — Unexpected intraoperative event (describe in note)
+      milestone         — Key procedural step completed (describe in note)
+      note              — General surgeon observation (describe in note)
+
+    Examples:
+      "log CVS confirmed"              → event_type='cvs_confirmed'
+      "timeout complete"               → event_type='timeout_complete'
+      "log blood loss 200ml"           → event_type='blood_loss', note='200 mL'
+      "specimen removed"               → event_type='specimen_removed'
+      "note: artery clipped at hilum"  → event_type='milestone', note='Artery clipped at hilum'
+      "log complication — bleeding"    → event_type='complication', note='Bleeding at hilum'
+    """
+    import datetime
+    valid_types = {
+        'cvs_confirmed', 'timeout_complete', 'blood_loss', 'specimen_removed',
+        'complication', 'milestone', 'note',
+    }
+    etype = event_type.lower().strip().replace(' ', '_')
+    if etype not in valid_types:
+        etype = 'note'
+    entry = {
+        'type': etype,
+        'note': note.strip(),
+        'timestamp': datetime.datetime.now().strftime('%H:%M:%S'),
+    }
+    _SESSION_LOG.append(entry)
+    return {
+        'status': 'success',
+        'render_command': {
+            'layer': 'log',
+            'action': 'append',
+            'entry': entry,
+        },
+    }
+
+
+def show_event_log() -> dict:
+    """
+    Use this tool when the surgeon asks to see the operative log or event log.
+    Displays the full session event timeline tile on screen.
+
+    Trigger phrases: "show operative log", "show the log", "show event log",
+    "what have we logged", "display the timeline"
+    """
+    return {
+        'status': 'success',
+        'render_command': {
+            'layer': 'log',
+            'action': 'show_all',
+            'entries': list(_SESSION_LOG),
+        },
+    }
+
+
+def hide_event_log() -> dict:
+    """
+    Use this tool when the surgeon asks to hide or close the operative log panel.
+
+    Trigger phrases: "hide the log", "close the log", "dismiss the log"
+    """
+    return {
+        'status': 'success',
+        'render_command': {
+            'layer': 'log',
+            'action': 'hide',
+        },
+    }
+
+
+def capture_surgical_photo(surgical_step: str, note: str = '') -> dict:
+    """
+    Capture a still frame from the live surgical video feed, timestamp it to the
+    current operative step, and save it to the patient's intraoperative chart.
+
+    Indications — call this tool when the surgeon says any of:
+      "capture this", "take a photo", "screenshot this", "photograph this",
+      "save this image", "document this view", "capture that", "save the image"
+
+    Also call proactively when the surgeon logs:
+      - CVS confirmed   → immediately capture the critical-view image as medicolegal record
+      - Complication    → capture the field at the moment of the unexpected event
+      - Specimen removed → capture the specimen before bag extraction
+
+    Args:
+        surgical_step: Name of the current operative step or event that prompted
+                       the capture (e.g., 'CVS confirmation', 'staple line check',
+                       'unexpected adhesions', 'specimen in bag', 'haemostasis confirmed').
+        note: Optional voice-dictated annotation — anatomy observed, findings,
+              reason for capture (e.g., 'Cystic duct and artery clearly isolated',
+              '50 mL active bleed from inferior pulmonary vein').
+
+    Clinical context:
+      - SAGES guidelines require photographic documentation of CVS in every
+        laparoscopic cholecystectomy as medicolegal protection.
+      - The Joint Commission recommends intraoperative photo documentation of
+        unexpected anatomy and complications for peer-review and QA.
+      - Photos are filed as timestamped attachments to the operative note in the EHR.
+    """
+    import datetime
+    timestamp = datetime.datetime.now().strftime('%H:%M:%S')
+    entry = {
+        'type': 'photo',
+        'surgical_step': surgical_step.strip(),
+        'note': note.strip(),
+        'timestamp': timestamp,
+    }
+    _SESSION_LOG.append(entry)
+    return {
+        'status': 'success',
+        'message': (
+            f'Photo captured at {timestamp} — step: {surgical_step}. '
+            'Saved to patient chart.'
+        ),
+        'render_command': {
+            'layer': 'log',
+            'action': 'capture_photo',
+            'entry': entry,
+        },
+    }
+
+
+# ---------------------------------------------------------------------------
 # Root Agent Tool — crosses all three display domains
 # ---------------------------------------------------------------------------
 

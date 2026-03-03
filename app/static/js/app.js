@@ -37,8 +37,13 @@ let micStream       = null;
 
 // ── WebSocket / capture state ──────────────────────────────────────────────
 let ws            = null;
-let videoInterval = null;
-let offscreenCtx  = null;
+let videoInterval     = null;
+let offscreenCtx      = null;
+let _latestVideoFrame = null;  // most recent JPEG dataURL from startVideoCapture
+
+// Expose to other modules (e.g. LogPanel.capturePhoto) so they can reuse the
+// already-captured frame without re-doing the canvas draw.
+window.ORION_getLatestFrame = () => _latestVideoFrame;
 
 // ── Transcript state ───────────────────────────────────────────────────────
 // Live API streams transcription word-by-word. Track the current in-progress
@@ -84,7 +89,20 @@ orionOrb.addEventListener('click', () => {
   else connect();
 });
 
-surgicalVideo.src = `${GCS_BASE}/${CONFIG.videoPath}`;
+// Load video from same-origin static path first (enables canvas capture for photo feature).
+// Falls back to GCS when the local file isn't present (production / Cloud Run).
+// GCS cross-origin taint blocks toDataURL() — local path avoids this entirely.
+(function loadVideo() {
+  const localSrc = `/static/${CONFIG.videoPath}`;
+  const gcsSrc   = `${GCS_BASE}/${CONFIG.videoPath}`;
+  surgicalVideo.src = localSrc;
+  surgicalVideo.addEventListener('error', function tryGcs() {
+    if (surgicalVideo.src !== gcsSrc) {
+      surgicalVideo.src = gcsSrc;   // GCS fallback (photo thumbnails need CORS)
+    }
+    surgicalVideo.removeEventListener('error', tryGcs);
+  });
+}());
 
 
 async function connect() {
@@ -127,6 +145,7 @@ async function connect() {
     });
     ClinicalPanel.init({ modalId: 'clinical-modal', bodyId: 'vitals-body' });
     ChecklistPanel.init({ modalId: 'checklist-modal', bodyId: 'checklist-body' });
+    LogPanel.init({ modalId: 'log-modal', bodyId: 'log-body' });
   };
 
   ws.onmessage = (event) => {
@@ -182,11 +201,18 @@ function startVideoCapture() {
   offscreenCtx = offscreen.getContext('2d');
 
   videoInterval = setInterval(() => {
-    if (!ws || ws.readyState !== WebSocket.OPEN) return;
     if (surgicalVideo.readyState < 2) return;
-    offscreenCtx.drawImage(surgicalVideo, 0, 0, 320, 240);
-    const b64 = offscreen.toDataURL('image/jpeg', 0.6);
-    ws.send(JSON.stringify({ type: 'image_frame', data: b64 }));
+    try {
+      offscreenCtx.drawImage(surgicalVideo, 0, 0, 320, 240);
+      const b64 = offscreen.toDataURL('image/jpeg', 0.6);
+      _latestVideoFrame = b64;  // stored for photo capture via ORION_getLatestFrame
+      if (!ws || ws.readyState !== WebSocket.OPEN) return;
+      ws.send(JSON.stringify({ type: 'image_frame', data: b64 }));
+    } catch (e) {
+      // Cross-origin taint: GCS video without CORS headers.
+      // Video plays normally; canvas capture is blocked until CORS is configured
+      // on the GCS bucket: gsutil cors set cors.json gs://orion-assets-2026
+    }
   }, 1000);
 }
 
@@ -328,12 +354,23 @@ function dispatchRenderCommand(toolName, args) {
       Anatomy3D.hide();
       relayoutTiles();
       break;
+    case 'log_event':
+      // no loading state — result arrives immediately in handleFunctionResponse
+      break;
+    case 'capture_surgical_photo':
+      break;
+    case 'show_event_log':
+      break;
+    case 'hide_event_log':
+      LogPanel.hide();
+      relayoutTiles();
+      break;
     case 'hide_all_overlays':
-      CTViewer.hide(); ClinicalPanel.hide(); Anatomy3D.hide(); ChecklistPanel.hide();
+      CTViewer.hide(); ClinicalPanel.hide(); Anatomy3D.hide(); ChecklistPanel.hide(); LogPanel.hide();
       relayoutTiles();  // belt-and-suspenders: ensure column collapses even if a module's modal ref is stale
       break;
     case 'show_only_ar':
-      CTViewer.hide(); ClinicalPanel.hide(); ChecklistPanel.hide();
+      CTViewer.hide(); ClinicalPanel.hide(); ChecklistPanel.hide(); LogPanel.hide();
       relayoutTiles();
       break;
     default:
@@ -353,12 +390,27 @@ function handleFunctionResponse(fr) {
   if (cmd.layer === 'checklist' && cmd.action === 'show') {
     ChecklistPanel.show(cmd.phase, cmd.label, cmd.checklist, cmd.warning);
   }
+  if (cmd.layer === 'log') {
+    if (cmd.action === 'append') {
+      LogPanel.append(cmd.entry);
+      relayoutTiles();
+    } else if (cmd.action === 'capture_photo') {
+      LogPanel.capturePhoto(cmd.entry);
+      relayoutTiles();
+    } else if (cmd.action === 'show_all') {
+      LogPanel.showAll(cmd.entries);
+      relayoutTiles();
+    } else if (cmd.action === 'hide') {
+      LogPanel.hide();
+      relayoutTiles();
+    }
+  }
 }
 
 
 // ── Tile layout ────────────────────────────────────────────────────────────
 
-const MODAL_IDS = ['ct-modal', 'ar-modal', 'clinical-modal', 'checklist-modal'];
+const MODAL_IDS = ['ct-modal', 'ar-modal', 'clinical-modal', 'checklist-modal', 'log-modal'];
 
 // When any tile panel becomes visible the tiles column expands to 40% width,
 // pushing the video into the remaining 60%. No position arithmetic needed —

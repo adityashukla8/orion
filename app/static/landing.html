@@ -461,7 +461,8 @@
     #hw-g-rt.hl .fp-ir { stroke: #10b981; stroke-dasharray: 5 4; animation: hwFlow 1.6s linear infinite; }
     #hw-g-rt.hl .fp-iv { stroke: #818cf8; stroke-dasharray: 5 4; animation: hwFlow 2.0s linear infinite; }
     #hw-g-rt.hl .fp-ar { stroke: #f59e0b; stroke-dasharray: 5 4; animation: hwFlow 1.8s linear infinite; }
-    #hw-g-rt.hl .fp-pc { stroke: #f472b6; stroke-dasharray: 5 4; animation: hwFlow 1.5s linear infinite; }
+    #hw-g-rt.hl .fp-pc  { stroke: #f472b6; stroke-dasharray: 5 4; animation: hwFlow 1.5s linear infinite; }
+    #hw-g-rt.hl .fp-doc { stroke: #22d3ee; stroke-dasharray: 5 4; animation: hwFlow 1.7s linear infinite; }
     #hw-g-ag.hl .ag-ir .nd-rect { fill: rgba(16,185,129,0.10);  stroke: #10b981; }
     #hw-g-ag.hl .ag-ir .nd-title { fill: #059669; }
     #hw-g-ag.hl .ag-ir .nd-sub   { fill: #059669; }
@@ -474,6 +475,9 @@
     #hw-g-ag.hl .ag-pc .nd-rect { fill: rgba(244,114,182,0.10); stroke: #f472b6; }
     #hw-g-ag.hl .ag-pc .nd-title { fill: #be185d; }
     #hw-g-ag.hl .ag-pc .nd-sub   { fill: #be185d; }
+    #hw-g-ag.hl .ag-doc .nd-rect { fill: rgba(6,182,212,0.10);  stroke: #0891b2; }
+    #hw-g-ag.hl .ag-doc .nd-title { fill: #0e7490; }
+    #hw-g-ag.hl .ag-doc .nd-sub   { fill: #0e7490; }
     #hw-g-dp.hl .nd-rect  { fill: rgba(2,132,199,0.08); stroke: rgba(2,132,199,0.32); }
     #hw-g-dp.hl .nd-label { fill: #0369a1; }
     #hw-g-dp.hl .cn       { stroke: rgba(2,132,199,0.26); }
@@ -532,14 +536,21 @@
       border: 1px solid rgba(0,0,0,0.12); font-family: 'Poppins', sans-serif;
     }
 
-    /* ── Agent panels (bottom row) ── */
-    .arch-agents { display: grid; grid-template-columns: repeat(4, 1fr); }
+    /* ── Agent panels — 3+2 layout ── */
+    /* 6 phantom columns; each agent spans 2 → 3 per row.
+       Agents 4 & 5 are explicitly placed at columns 2 and 4 to centre them. */
+    .arch-agents { display: grid; grid-template-columns: repeat(6, 1fr); }
     .arch-agent {
+      grid-column: span 2;
       border-right: 1px solid rgba(0,0,0,0.09);
       padding: 28px 24px 34px; display: flex; flex-direction: column;
       min-height: 340px; cursor: default; transition: background 0.28s;
     }
-    .arch-agent:last-child { border-right: none; }
+    /* Row 1: remove trailing border from 3rd card */
+    .arch-agent:nth-child(3) { border-right: none; }
+    /* Row 2: two cards fill the full row (span 3 each = 50% each) */
+    .arch-agent:nth-child(4) { grid-column: 1 / span 3; border-top: 1px solid rgba(0,0,0,0.09); border-right: 1px solid rgba(0,0,0,0.09); }
+    .arch-agent:nth-child(5) { grid-column: 4 / span 3; border-top: 1px solid rgba(0,0,0,0.09); border-right: none; }
 
     /* Pill fill: default grey; accent on hover */
     .arch-agent .pill    { fill: rgba(0,0,0,0.08); transition: fill 0.35s; }
@@ -556,6 +567,9 @@
     .arch-agent.pc:hover { background: rgba(244,114,182,0.05); }
     .arch-agent.pc:hover .pill    { fill: rgba(244,114,182,0.35); }
     .arch-agent.pc:hover .pill.hi { fill: #ec4899; }
+    .arch-agent.doc:hover { background: rgba(6,182,212,0.05); }
+    .arch-agent.doc:hover .pill    { fill: rgba(6,182,212,0.35); }
+    .arch-agent.doc:hover .pill.hi { fill: #0891b2; }
 
     .arch-num {
       display: inline-flex; font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
@@ -564,7 +578,8 @@
       font-family: 'Poppins', sans-serif;
     }
     .arch-visual {
-      flex: 1; display: flex; align-items: center; justify-content: center; padding: 8px 0 20px;
+      height: 160px; flex: 0 0 auto;
+      display: flex; align-items: center; justify-content: center; padding: 8px 0 20px;
     }
     .arch-visual svg { max-width: 156px; }
     .arch-agent-label {
@@ -677,10 +692,20 @@
       .how-headline      { font-size: clamp(30px, 5vw, 42px); gap: 10px; }
       .arch-orch         { grid-template-columns: 1fr; }
       .arch-orch-right   { display: none; }
-      .arch-agents       { grid-template-columns: repeat(2, 1fr); }
-      .arch-agent:nth-child(2) { border-right: none; }
-      .arch-agent:nth-child(3) { border-top: 1px solid rgba(0,0,0,0.09); }
-      .arch-agent:nth-child(4) { border-top: 1px solid rgba(0,0,0,0.09); border-right: none; }
+      /* Reset 6-col spans and explicit placement; reflow to 2-col grid */
+      .arch-agents              { grid-template-columns: repeat(2, 1fr); }
+      .arch-agent               { grid-column: span 1; }
+      .arch-agent:nth-child(3)  { border-right: 1px solid rgba(0,0,0,0.09); }
+      .arch-agent:nth-child(4)  { grid-column: auto; border-right: none; }
+      .arch-agent:nth-child(5)  { grid-column: auto; border-right: none; }
+      .arch-agent:nth-child(even) { border-right: none; }
+      .arch-agent:nth-child(n+3)  { border-top: 1px solid rgba(0,0,0,0.09); }
+      /* How It Works: collapse pipeline, 2-col steps */
+      .hw-pipeline              { grid-template-columns: 1fr; }
+      .hw-pipeline-right        { display: none; }
+      .hw-steps                 { grid-template-columns: repeat(2, 1fr); }
+      .hw-step:nth-child(even)  { border-right: none; }
+      .hw-step:nth-child(n+3)   { border-top: 1px solid rgba(0,0,0,0.09); }
       .tech-grid         { grid-template-columns: repeat(2, 1fr); }
       /* reset 4-col rules, apply 2-col rules */
       .tech-card:nth-child(4n)      { border-right: 1px solid rgba(0,0,0,0.09); }
@@ -694,11 +719,30 @@
       footer             { padding: 24px; }
     }
     @media (max-width: 600px) {
-      .how-headline  { font-size: 28px; }
+      .how-headline  { font-size: 26px; }
+      /* Agents: single column */
       .arch-agents   { grid-template-columns: 1fr; }
-      .arch-agent    { border-right: none; border-top: 1px solid rgba(0,0,0,0.09); }
+      .arch-agent    { grid-column: auto; border-right: none; border-top: 1px solid rgba(0,0,0,0.09); min-height: auto; }
       .arch-agent:first-child { border-top: none; }
+      /* Override 960px nth-child(3) border-right restore */
+      .arch-agent:nth-child(3) { border-right: none; }
+      /* How It Works: single column */
+      .hw-steps      { grid-template-columns: 1fr; }
+      .hw-step       { border-right: none; border-top: 1px solid rgba(0,0,0,0.09); min-height: auto; }
+      .hw-step:first-child { border-top: none; }
+      /* Problem stats: stack vertically, reset diagonal radii */
+      .problem-stats { grid-template-columns: 1fr; }
+      .stat-card:nth-child(1),
+      .stat-card:nth-child(2),
+      .stat-card:nth-child(3) { grid-column: auto; grid-row: auto; border-radius: 4px; min-height: auto; }
+      /* Tech: keep 2-col */
       .tech-grid     { grid-template-columns: repeat(2, 1fr); }
+      /* CTA: tighter padding + smaller radius */
+      .cta-inner     { padding: 44px 24px; border-radius: 20px; }
+      /* Footer: stack vertically */
+      footer         { flex-direction: column; align-items: flex-start; gap: 16px; }
+      /* Hero: reduce vertical padding */
+      .hero-inner    { padding: 48px 0 40px; }
     }
   </style>
 </head>
@@ -885,17 +929,19 @@
                 <polygon class="fp-arrow" points="220,64 216,56 224,56"/>
               </g>
               <g id="hw-g-rt">
-                <line class="fp fp-ir" x1="70"  y1="102" x2="70"  y2="136"/>
-                <line class="fp fp-iv" x1="170" y1="102" x2="170" y2="136"/>
-                <line class="fp fp-ar" x1="270" y1="102" x2="270" y2="136"/>
-                <line class="fp fp-pc" x1="370" y1="102" x2="370" y2="136"/>
+                <line class="fp fp-ir"  x1="44"  y1="102" x2="44"  y2="136"/>
+                <line class="fp fp-iv"  x1="132" y1="102" x2="132" y2="136"/>
+                <line class="fp fp-ar"  x1="220" y1="102" x2="220" y2="136"/>
+                <line class="fp fp-pc"  x1="308" y1="102" x2="308" y2="136"/>
+                <line class="fp fp-doc" x1="396" y1="102" x2="396" y2="136"/>
               </g>
               <g id="hw-g-dp">
-                <line class="cn" x1="70"  y1="182" x2="70"  y2="220"/>
-                <line class="cn" x1="170" y1="182" x2="170" y2="220"/>
-                <line class="cn" x1="270" y1="182" x2="270" y2="220"/>
-                <line class="cn" x1="370" y1="182" x2="370" y2="220"/>
-                <line class="cn" x1="70"  y1="220" x2="370" y2="220"/>
+                <line class="cn" x1="44"  y1="182" x2="44"  y2="220"/>
+                <line class="cn" x1="132" y1="182" x2="132" y2="220"/>
+                <line class="cn" x1="220" y1="182" x2="220" y2="220"/>
+                <line class="cn" x1="308" y1="182" x2="308" y2="220"/>
+                <line class="cn" x1="396" y1="182" x2="396" y2="220"/>
+                <line class="cn" x1="44"  y1="220" x2="396" y2="220"/>
                 <line class="cn" x1="220" y1="220" x2="220" y2="246"/>
                 <rect class="nd-rect" x="88" y="246" width="264" height="38" rx="5"/>
                 <text class="nd-label" x="220" y="270" text-anchor="middle">SURGICAL DISPLAY</text>
@@ -917,24 +963,29 @@
               </g>
               <g id="hw-g-ag">
                 <g class="ag-ir">
-                  <rect class="nd-rect" x="30"  y="136" width="80" height="46" rx="4"/>
-                  <text class="nd-title" x="70"  y="157" text-anchor="middle">IR</text>
-                  <text class="nd-sub"   x="70"  y="171" text-anchor="middle">Clinical</text>
+                  <rect class="nd-rect" x="10"  y="136" width="68" height="46" rx="4"/>
+                  <text class="nd-title" x="44"  y="157" text-anchor="middle">IR</text>
+                  <text class="nd-sub"   x="44"  y="171" text-anchor="middle">Clinical</text>
                 </g>
                 <g class="ag-iv">
-                  <rect class="nd-rect" x="130" y="136" width="80" height="46" rx="4"/>
-                  <text class="nd-title" x="170" y="157" text-anchor="middle">IV</text>
-                  <text class="nd-sub"   x="170" y="171" text-anchor="middle">CT Scan</text>
+                  <rect class="nd-rect" x="98"  y="136" width="68" height="46" rx="4"/>
+                  <text class="nd-title" x="132" y="157" text-anchor="middle">IV</text>
+                  <text class="nd-sub"   x="132" y="171" text-anchor="middle">CT Scan</text>
                 </g>
                 <g class="ag-ar">
-                  <rect class="nd-rect" x="230" y="136" width="80" height="46" rx="4"/>
-                  <text class="nd-title" x="270" y="157" text-anchor="middle">AR</text>
-                  <text class="nd-sub"   x="270" y="171" text-anchor="middle">3D Model</text>
+                  <rect class="nd-rect" x="186" y="136" width="68" height="46" rx="4"/>
+                  <text class="nd-title" x="220" y="157" text-anchor="middle">AR</text>
+                  <text class="nd-sub"   x="220" y="171" text-anchor="middle">3D Model</text>
                 </g>
                 <g class="ag-pc">
-                  <rect class="nd-rect" x="330" y="136" width="80" height="46" rx="4"/>
-                  <text class="nd-title" x="370" y="157" text-anchor="middle">PC</text>
-                  <text class="nd-sub"   x="370" y="171" text-anchor="middle">Phase</text>
+                  <rect class="nd-rect" x="274" y="136" width="68" height="46" rx="4"/>
+                  <text class="nd-title" x="308" y="157" text-anchor="middle">PC</text>
+                  <text class="nd-sub"   x="308" y="171" text-anchor="middle">Phase</text>
+                </g>
+                <g class="ag-doc">
+                  <rect class="nd-rect" x="362" y="136" width="68" height="46" rx="4"/>
+                  <text class="nd-title" x="396" y="157" text-anchor="middle">DOC</text>
+                  <text class="nd-sub"   x="396" y="171" text-anchor="middle">Op.Log</text>
                 </g>
               </g>
             </svg>
@@ -1022,10 +1073,10 @@
             </div>
             <div class="hw-step-label">Routing</div>
             <div class="hw-step-title">Multi-Agent Routing</div>
-            <div class="hw-step-desc">ADK Orchestrator routes the intent to the right specialist — patient data, CT imaging, 3D anatomy, or surgical phase context.</div>
+            <div class="hw-step-desc">ADK Orchestrator routes the intent to the right specialist — patient data, CT imaging, 3D anatomy, surgical phase, or intraoperative documentation.</div>
             <div class="hw-step-tags">
               <span class="arch-tag">ADK AutoFlow</span>
-              <span class="arch-tag">4 specialists</span>
+              <span class="arch-tag">5 specialists</span>
             </div>
           </div>
 
@@ -1072,7 +1123,7 @@
     <div class="container">
       <div class="agents-header reveal">
         <span class="section-tag">Architecture</span>
-        <h2 class="section-headline">One orchestrator.<br>Four specialists.</h2>
+        <h2 class="section-headline">One orchestrator.<br>Five specialists.</h2>
         <p class="section-sub">
           ORION routes every voice command to the right specialist agent — no configuration, no delays, no hands.
         </p>
@@ -1087,7 +1138,7 @@
             <div>
               <div class="arch-orch-badge">ROOT AGENT</div>
               <div class="arch-orch-title">ORION Orchestrator</div>
-              <div class="arch-orch-sub">Always-on. Listens for the wake-word, filters ambient OR noise, and routes each command to the right specialist via ADK AutoFlow. Handles display clearing directly — never announces routing.</div>
+              <div class="arch-orch-sub">Always-on. Listens for the wake-word, filters ambient OR noise, and routes each command to the right specialist via ADK AutoFlow. Handles five specialists — data, imaging, anatomy, procedural context, and documentation. Never announces routing.</div>
             </div>
             <div class="arch-orch-tags">
               <span class="arch-tag">Wake-word filtering</span>
@@ -1296,6 +1347,47 @@
               <span class="arch-tag">Phase detection</span>
               <span class="arch-tag">Checklists</span>
               <span class="arch-tag">Critical warnings</span>
+            </div>
+          </div>
+
+          <!-- DOC_Agent -->
+          <div class="arch-agent doc">
+            <div class="arch-num">005</div>
+            <div class="arch-visual">
+              <!-- Timeline log: vertical rail + timestamped event rows -->
+              <svg viewBox="0 0 156 156" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Vertical timeline rail -->
+                <rect x="34" y="16" width="4" height="124" rx="2" class="pill"/>
+                <!-- Row 1: timestamp + dot + bar -->
+                <rect x="18" y="22" width="12" height="8" rx="2" class="pill hi"/>
+                <circle cx="36" cy="26" r="7" class="pill hi"/>
+                <rect x="50" y="20" width="76" height="12" rx="6" class="pill"/>
+                <!-- Row 2 -->
+                <rect x="18" y="46" width="12" height="8" rx="2" class="pill"/>
+                <circle cx="36" cy="50" r="7" class="pill hi"/>
+                <rect x="50" y="44" width="56" height="12" rx="6" class="pill hi"/>
+                <!-- Row 3 -->
+                <rect x="18" y="70" width="12" height="8" rx="2" class="pill hi"/>
+                <circle cx="36" cy="74" r="7" class="pill"/>
+                <rect x="50" y="68" width="84" height="12" rx="6" class="pill"/>
+                <!-- Row 4 -->
+                <rect x="18" y="94" width="12" height="8" rx="2" class="pill"/>
+                <circle cx="36" cy="98" r="7" class="pill hi"/>
+                <rect x="50" y="92" width="44" height="12" rx="6" class="pill hi"/>
+                <!-- Row 5 -->
+                <rect x="18" y="118" width="12" height="8" rx="2" class="pill hi"/>
+                <circle cx="36" cy="122" r="7" class="pill"/>
+                <rect x="50" y="116" width="68" height="12" rx="6" class="pill"/>
+              </svg>
+            </div>
+            <div class="arch-agent-label">DOC_Agent</div>
+            <div class="arch-agent-title">Intraoperative Log</div>
+            <div class="arch-agent-desc">Voice-triggered event logging with auto-timestamps. WHO timeout, blood loss, specimen removal, complications — logged hands-free as they happen.</div>
+            <div class="arch-agent-tags">
+              <span class="arch-tag">Timestamped events</span>
+              <span class="arch-tag">WHO timeout</span>
+              <span class="arch-tag">EBL tracking</span>
+              <span class="arch-tag">Operative log</span>
             </div>
           </div>
 

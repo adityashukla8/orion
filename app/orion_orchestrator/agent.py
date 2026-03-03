@@ -1,12 +1,14 @@
 """
 ORION Agent Definitions
 ========================
-Defines all four LlmAgent instances in the orchestrator-specialist hierarchy:
+Defines all five LlmAgent instances in the orchestrator-specialist hierarchy:
 
   ORION_Orchestrator (root_agent)
     ├── IR_Agent   — Information Retrieval (clinical data)
     ├── IV_Agent   — Image Viewer (CT navigation)
-    └── AR_Agent   — Anatomy Renderer (3D model)
+    ├── AR_Agent   — Anatomy Renderer (3D model)
+    ├── PC_Agent   — Procedural Context (surgical phase checklists)
+    └── DOC_Agent  — Intraoperative Documentation (event log)
 
 ADK AutoFlow routing: the orchestrator's LLM reads each sub-agent's
 `description` to decide which specialist to hand off to. Descriptions
@@ -34,6 +36,10 @@ from .tools import (
     show_only_ar,
     hide_all_overlays,
     get_surgical_phase,
+    log_event,
+    show_event_log,
+    hide_event_log,
+    capture_surgical_photo,
 )
 
 # The native audio model for real-time voice I/O via runner.run_live().
@@ -213,6 +219,51 @@ pc_agent = LlmAgent(
 
 
 # ---------------------------------------------------------------------------
+# DOC_Agent — Intraoperative Documentation
+# ---------------------------------------------------------------------------
+
+doc_agent = LlmAgent(
+    name='DOC_Agent',
+    model=_sub_model,
+    description=(
+        'Handles all intraoperative documentation and event logging. Route here '
+        'when the surgeon says "log", "note", "record", "mark", "document", '
+        '"CVS confirmed", "critical view confirmed", "timeout complete", '
+        '"blood loss", "specimen removed", "show operative log", '
+        '"show the log", "capture this", "take a photo", "screenshot this", '
+        '"photograph this", "save this image", or "document this view". '
+        'Do NOT route here for CT, 3D model, clinical data, or surgical phase.'
+    ),
+    instruction=(
+        'You are the Documentation specialist for ORION. You maintain a '
+        'timestamped intraoperative event log and capture surgical photos '
+        'that satisfy regulatory documentation requirements.\n\n'
+        'RULES:\n'
+        '- Respond in under 10 words.\n'
+        '- Always call a tool — never acknowledge without logging.\n'
+        '- Infer event_type from context; put clinical details in note.\n'
+        '- For blood loss, extract the number and unit into the note.\n'
+        '- When capturing a photo, infer surgical_step from context; the note '
+        '  should describe what is visually significant.\n\n'
+        'EVENT TYPES (pass exactly to log_event):\n'
+        '  cvs_confirmed    → Critical View of Safety confirmed\n'
+        '  timeout_complete → WHO surgical safety timeout done\n'
+        '  blood_loss       → EBL estimate (put "X mL" in note)\n'
+        '  specimen_removed → Specimen extracted and bagged\n'
+        '  complication     → Unexpected event (describe in note)\n'
+        '  milestone        → Key step completed (describe in note)\n'
+        '  note             → General observation\n\n'
+        'TOOL USE:\n'
+        '  log_event(event_type, note)               → timestamps and logs the event\n'
+        '  capture_surgical_photo(surgical_step, note) → grabs video frame, saves to chart\n'
+        '  show_event_log()                           → displays all logged events\n'
+        '  hide_event_log()                           → hides the log panel\n'
+    ),
+    tools=[log_event, show_event_log, hide_event_log, capture_surgical_photo],
+)
+
+
+# ---------------------------------------------------------------------------
 # ORION_Orchestrator — root agent (exported as root_agent)
 # ---------------------------------------------------------------------------
 
@@ -254,6 +305,10 @@ root_agent = LlmAgent(
         '  - Surgical phase questions: "what phase are we in", "what\'s next"\n'
         '  - Contextual checklists: "show me the checklist", "what should I watch for"\n'
         '  - Phase transitions: "we\'re starting the vascular work", "entering the fissure"\n\n'
+        'Route to DOC_Agent for:\n'
+        '  - Event logging: "log CVS confirmed", "log blood loss", "specimen removed"\n'
+        '  - Timeout: "timeout complete", "time out done", "safety check done"\n'
+        '  - Viewing log: "show operative log", "show the log", "what have we logged"\n\n'
         'Handle DIRECTLY (do NOT route to any sub-agent) with these root tools:\n'
         '  hide_all_overlays() — for ANY request to close/hide ALL panels at once:\n'
         '    "clear everything", "hide everything", "close everything", "remove everything"\n'
@@ -270,6 +325,6 @@ root_agent = LlmAgent(
         '- Example: "Hemoglobin displayed." not "Routing to IR_Agent to show hemoglobin."\n'
         '- Never say you are routing or transferring. Just do it.\n'
     ),
-    sub_agents=[ir_agent, iv_agent, ar_agent, pc_agent],
+    sub_agents=[ir_agent, iv_agent, ar_agent, pc_agent, doc_agent],
     tools=[hide_all_overlays, show_only_ar],
 )
