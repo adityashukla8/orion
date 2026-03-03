@@ -89,19 +89,32 @@ orionOrb.addEventListener('click', () => {
   else connect();
 });
 
-// Load video from same-origin static path first (enables canvas capture for photo feature).
-// Falls back to GCS when the local file isn't present (production / Cloud Run).
-// GCS cross-origin taint blocks toDataURL() — local path avoids this entirely.
+// Three-stage video loading for canvas capture compatibility:
+//   Stage 0 → local /static/ (dev: same-origin, canvas always works)
+//   Stage 1 → GCS + crossorigin="anonymous" (prod: canvas works when CORS configured)
+//   Stage 2 → GCS plain, no crossorigin (CORS not configured: video plays, no thumbnails)
 (function loadVideo() {
   const localSrc = `/static/${CONFIG.videoPath}`;
   const gcsSrc   = `${GCS_BASE}/${CONFIG.videoPath}`;
-  surgicalVideo.src = localSrc;
-  surgicalVideo.addEventListener('error', function tryGcs() {
-    if (surgicalVideo.src !== gcsSrc) {
-      surgicalVideo.src = gcsSrc;   // GCS fallback (photo thumbnails need CORS)
+  let _stage = 0;
+
+  surgicalVideo.addEventListener('error', function onVideoError() {
+    _stage++;
+    if (_stage === 1) {
+      // Local file absent → try GCS with crossorigin (enables canvas if CORS is set)
+      surgicalVideo.crossOrigin = 'anonymous';
+      surgicalVideo.src = gcsSrc;
+    } else if (_stage === 2) {
+      // GCS CORS not configured → strip crossorigin and reload plain so video still plays
+      // Canvas capture won't work but the surgical feed remains visible.
+      // Fix: gsutil cors set cors.json gs://orion-assets-2026
+      surgicalVideo.removeAttribute('crossorigin');
+      surgicalVideo.load();
     }
-    surgicalVideo.removeEventListener('error', tryGcs);
+    // Stage 3+: genuine network error, nothing to do
   });
+
+  surgicalVideo.src = localSrc;
 }());
 
 
