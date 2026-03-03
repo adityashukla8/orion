@@ -1,0 +1,19 @@
+# Secrets — never bake into image; set via Cloud Run env vars instead
+app/.env
+
+# Python cache
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.pytest_cache
+
+# Dev tooling
+.git
+.gitignore
+*.md
+.venv
+venv/
+
+# Assets that live in GCS, not the image
+assets/
