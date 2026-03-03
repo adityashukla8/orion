@@ -32,8 +32,9 @@ const transcriptLog    = document.getElementById('transcript-log');
 const surgicalVideo    = document.getElementById('surgical-video');
 
 // ── Audio state ────────────────────────────────────────────────────────────
-let audioPlayerNode = null;
-let micStream       = null;
+let audioPlayerNode  = null;
+let audioRecorderCtx = null;   // recorder AudioContext — must be closed on disconnect
+let micStream        = null;
 
 // ── WebSocket / capture state ──────────────────────────────────────────────
 let ws            = null;
@@ -136,11 +137,17 @@ async function connect() {
     setStatus('active');
     logRouting('Session established.', 'turn');
 
-    // Start audio output (24kHz playback)
-    [audioPlayerNode] = await startAudioPlayerWorklet();
+    try {
+      // Start audio output (24kHz playback)
+      [audioPlayerNode] = await startAudioPlayerWorklet();
 
-    // Start audio input (16kHz capture) — handler receives ArrayBuffer
-    [, , micStream] = await startAudioRecorderWorklet(audioRecorderHandler);
+      // Start audio input (16kHz capture) — capture context so we can close it on disconnect
+      [, audioRecorderCtx, micStream] = await startAudioRecorderWorklet(audioRecorderHandler);
+    } catch (err) {
+      logRouting(`Audio init failed: ${err.message || err} — refresh if issue persists`, 'error');
+      setStatus('offline');
+      return;
+    }
 
     // Start video frame capture
     startVideoCapture();
@@ -175,6 +182,10 @@ async function connect() {
     updateAgentCard();
     stopVideoCapture();
     if (micStream) { stopMicrophone(micStream); micStream = null; }
+    if (audioRecorderCtx) {         // close recorder AudioContext — prevents browser limit (~6) being hit on repeated reconnects
+      try { audioRecorderCtx.close(); } catch (_) {}
+      audioRecorderCtx = null;
+    }
     if (audioPlayerNode) {          // tear down audio player so reconnect gets a clean context
       try {
         audioPlayerNode.port.postMessage({ command: 'endOfAudio' });
