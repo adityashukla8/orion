@@ -169,9 +169,20 @@ async function connect() {
     setStatus('offline');
     _activeAgent = null;
     _toolMetrics.clear();
+    _dispatchedTools.clear();       // reset dedup cache so reconnect isn't silenced
+    currentOrionEntry   = null;     // drop stale DOM refs from previous session
+    currentSurgeonEntry = null;
     updateAgentCard();
     stopVideoCapture();
     if (micStream) { stopMicrophone(micStream); micStream = null; }
+    if (audioPlayerNode) {          // tear down audio player so reconnect gets a clean context
+      try {
+        audioPlayerNode.port.postMessage({ command: 'endOfAudio' });
+        audioPlayerNode.disconnect();
+        audioPlayerNode.context.close();
+      } catch (_) {}
+      audioPlayerNode = null;
+    }
     logRouting('Connection closed.', 'turn');
   };
 
