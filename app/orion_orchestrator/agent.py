@@ -65,6 +65,60 @@ _sub_model  = MODEL_FLASH if _adk_web else MODEL_NATIVE
 
 
 # ---------------------------------------------------------------------------
+# Grounding Layer — argument whitelists + ADK callbacks
+# ---------------------------------------------------------------------------
+# Whitelists mirror the ground-truth data in tools.py. Any tool call with an
+# argument outside these sets is blocked before execution, preventing the LLM
+# from hallucinating non-existent fields, landmarks, phases, etc.
+
+_VALID_FIELDS    = {'hemoglobin', 'creatinine', 'platelets', 'inr', 'bp', 'weight', 'age', 'diagnosis', 'procedure', 'allergies', 'medications'}
+_VALID_LANDMARKS = {'carina', 'aortic_arch', 'clavicle', 'diaphragm', 'tumor', 'bronchus'}
+_VALID_PHASES    = {'port_placement', 'inspection', 'fissure_development', 'vascular_dissection', 'bronchial_dissection', 'specimen_extraction', 'lymph_node_dissection', 'closure'}
+_VALID_AXES      = {'x', 'y', 'z'}
+_VALID_STRUCTS   = {'lung_right', 'lung_left', 'bronchus', 'tumor', 'parenchyma', 'vessels', 'ribs', 'pleura'}
+_VALID_EVENTS    = {'cvs_confirmed', 'timeout_complete', 'blood_loss', 'specimen_removed', 'complication', 'milestone', 'note'}
+_VALID_DIRS      = {'prev', 'next'}
+
+_ARG_RULES = {
+    'display_patient_data': ('field',      _VALID_FIELDS),
+    'jump_to_landmark':     ('landmark',   _VALID_LANDMARKS),
+    'get_surgical_phase':   ('phase',      _VALID_PHASES),
+    'rotate_model':         ('axis',       _VALID_AXES),
+    'toggle_structure':     ('structure',  _VALID_STRUCTS),
+    'navigate_ct':          ('direction',  _VALID_DIRS),
+    'log_event':            ('event_type', _VALID_EVENTS),
+}
+
+
+def _grounding_before_tool(callback_context, tool_name, args):
+    """Block tool calls with invalid arguments before they execute."""
+    rule = _ARG_RULES.get(tool_name)
+    if not rule:
+        return None  # no rule for this tool → proceed normally
+    arg_name, valid_set = rule
+    value = args.get(arg_name, '')
+    if isinstance(value, str):
+        value = value.lower().strip().replace(' ', '_')
+    if value not in valid_set:
+        return {
+            'status': 'error',
+            'message': f'Invalid {arg_name}: "{value}". Valid: {", ".join(sorted(valid_set))}',
+        }
+    return None  # valid → proceed
+
+
+def _grounding_after_tool(callback_context, tool_name, result):
+    """Validate every tool response has the expected schema."""
+    if not isinstance(result, dict):
+        return {'status': 'error', 'message': 'Tool returned invalid response.'}
+    if result.get('status') == 'error':
+        return None  # error responses pass through as-is
+    if 'render_command' not in result:
+        return {'status': 'error', 'message': f'{tool_name}: missing render_command.'}
+    return None  # valid → pass through
+
+
+# ---------------------------------------------------------------------------
 # IR_Agent — Information Retrieval
 # ---------------------------------------------------------------------------
 
@@ -95,9 +149,17 @@ ir_agent = LlmAgent(
         'TOOL USE:\n'
         '  display_all_patient_data()  → shows ALL fields at once (use for broad requests)\n'
         '  display_patient_data(field) → shows ONE clinical value (use for specific requests)\n'
-        '  hide_patient_data()         → removes all clinical data cards\n'
+        '  hide_patient_data()         → removes all clinical data cards\n\n'
+        'CLINICAL SAFETY:\n'
+        '- NEVER state any clinical value without calling a tool first.\n'
+        '- If the field is not in your list, say "I don\'t have that data" — do NOT guess.\n'
+        '- Available fields ONLY: hemoglobin, creatinine, platelets, inr, bp, weight, age, '
+        'diagnosis, procedure, allergies, medications.\n'
+        '- Any other field (glucose, temperature, O2, heart rate) is UNAVAILABLE — say so.\n'
     ),
     tools=[display_patient_data, display_all_patient_data, hide_patient_data],
+    before_tool_callback=_grounding_before_tool,
+    after_tool_callback=_grounding_after_tool,
 )
 
 
@@ -135,9 +197,14 @@ iv_agent = LlmAgent(
         'TOOL USE:\n'
         '  navigate_ct(direction, count) → scrolls CT slices\n'
         '  jump_to_landmark(landmark)    → jumps to named anatomy\n'
-        '  hide_ct()                     → removes CT overlay\n'
+        '  hide_ct()                     → removes CT overlay\n\n'
+        'CLINICAL SAFETY:\n'
+        '- NEVER describe what a CT slice shows — you navigate, not interpret.\n'
+        '- Only call navigation tools. Do not state imaging findings.\n'
     ),
     tools=[navigate_ct, jump_to_landmark, hide_ct],
+    before_tool_callback=_grounding_before_tool,
+    after_tool_callback=_grounding_after_tool,
 )
 
 
@@ -176,9 +243,14 @@ ar_agent = LlmAgent(
         '  rotate_model(axis, degrees)          → rotates the model\n'
         '  toggle_structure(structure, visible) → shows/hides a mesh\n'
         '  reset_3d_view()                      → resets to default view\n'
-        '  hide_3d()                            → hides/closes the 3D model entirely\n'
+        '  hide_3d()                            → hides/closes the 3D model entirely\n\n'
+        'CLINICAL SAFETY:\n'
+        '- NEVER describe anatomy or pathology — you control the model, not interpret it.\n'
+        '- Only call rotation, toggle, reset, or hide tools.\n'
     ),
     tools=[rotate_model, toggle_structure, hide_3d, reset_3d_view],
+    before_tool_callback=_grounding_before_tool,
+    after_tool_callback=_grounding_after_tool,
 )
 
 
@@ -212,9 +284,14 @@ pc_agent = LlmAgent(
         '  port_placement, inspection, fissure_development, vascular_dissection,\n'
         '  bronchial_dissection, specimen_extraction, lymph_node_dissection, closure\n\n'
         'TOOL USE:\n'
-        '  get_surgical_phase(phase) → displays phase checklist tile on screen\n'
+        '  get_surgical_phase(phase) → displays phase checklist tile on screen\n\n'
+        'CLINICAL SAFETY:\n'
+        '- ONLY use the 8 defined surgical phases. NEVER invent checklist items or warnings.\n'
+        '- If unsure of the phase, ask the surgeon — do not guess.\n'
     ),
     tools=[get_surgical_phase],
+    before_tool_callback=_grounding_before_tool,
+    after_tool_callback=_grounding_after_tool,
 )
 
 
@@ -257,9 +334,14 @@ doc_agent = LlmAgent(
         '  log_event(event_type, note)               → timestamps and logs the event\n'
         '  capture_surgical_photo(surgical_step, note) → grabs video frame, saves to chart\n'
         '  show_event_log()                           → displays all logged events\n'
-        '  hide_event_log()                           → hides the log panel\n'
+        '  hide_event_log()                           → hides the log panel\n\n'
+        'CLINICAL SAFETY:\n'
+        '- Log EXACTLY what the surgeon says. Do not embellish or add clinical interpretation.\n'
+        '- NEVER infer diagnosis, complication severity, or treatment recommendation.\n'
     ),
     tools=[log_event, show_event_log, hide_event_log, capture_surgical_photo],
+    before_tool_callback=_grounding_before_tool,
+    after_tool_callback=_grounding_after_tool,
 )
 
 
@@ -319,6 +401,12 @@ root_agent = LlmAgent(
         '    "close everything except the 3D", "hide everything but the model"\n'
         '  CRITICAL: call these tools yourself — NEVER route them to a sub-agent.\n\n'
 
+        '## CLINICAL SAFETY (CRITICAL)\n'
+        '- You are a ROUTING and DISPLAY system, NOT a medical advisor.\n'
+        '- NEVER give clinical opinions, treatment suggestions, or diagnostic interpretations.\n'
+        '- NEVER state patient data values — always route to IR_Agent.\n'
+        '- If asked something outside your scope, say "I can\'t advise on that."\n\n'
+
         '## RESPONSE STYLE\n'
         '- Speak in under 15 words. The surgeon is mid-procedure.\n'
         '- Confirm the action taken, not the routing decision.\n'
@@ -327,4 +415,6 @@ root_agent = LlmAgent(
     ),
     sub_agents=[ir_agent, iv_agent, ar_agent, pc_agent, doc_agent],
     tools=[hide_all_overlays, show_only_ar],
+    before_tool_callback=_grounding_before_tool,
+    after_tool_callback=_grounding_after_tool,
 )
