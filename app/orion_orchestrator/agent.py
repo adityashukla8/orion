@@ -1,21 +1,20 @@
 """
 ORION Agent Definitions
 ========================
-Defines all five LlmAgent instances in the orchestrator-specialist hierarchy:
+Hybrid architecture: root_agent owns all 18 tools for direct single/multi-
+action commands. Three specialist sub-agents handle complex multi-step
+surgical protocols that require reading multiple data sources and
+synthesizing a structured verbal response:
 
   ORION_Orchestrator (root_agent)
-    ├── IR_Agent   — Information Retrieval (clinical data)
-    ├── IV_Agent   — Image Viewer (CT navigation)
-    ├── AR_Agent   — Anatomy Renderer (3D model)
-    ├── PC_Agent   — Procedural Context (surgical phase checklists)
-    └── DOC_Agent  — Intraoperative Documentation (event log)
+    ├── 18 direct tools (all display, navigation, logging, hide commands)
+    └── sub_agents:
+          ├── Briefing_Agent   — pre-op case briefing (patient + phase synthesis)
+          ├── Timeout_Agent    — WHO surgical safety timeout (guided protocol)
+          └── Report_Agent     — operative report generation (log → narrative)
 
-ADK AutoFlow routing: the orchestrator's LLM reads each sub-agent's
-`description` to decide which specialist to hand off to. Descriptions
-must be specific, distinct, and non-overlapping.
-
-Sub-agents run on gemini-2.5-flash (fast, cheap tool execution).
-root_agent runs on the native audio model for direct voice I/O.
+Root agent runs on the native audio model for direct voice I/O.
+Sub-agents also use the native model in run_live() sessions.
 """
 
 import os
@@ -133,232 +132,115 @@ def _grounding_after_tool(
 
 
 # ---------------------------------------------------------------------------
-# IR_Agent — Information Retrieval
+# Briefing_Agent — Pre-Op Case Briefing
 # ---------------------------------------------------------------------------
+# Clinical basis: Surgeon cognitive load peaks at incision. Studies show
+# 64 tasks/hr with 48% multitasking (PMC6530509). A structured verbal
+# briefing front-loads critical information before the first cut.
 
-ir_agent = LlmAgent(
-    name='IR_Agent',
+briefing_agent = LlmAgent(
+    name='Briefing_Agent',
     model=_sub_model,
     description=(
-        'Handles all requests for patient clinical data: lab results '
-        '(hemoglobin, creatinine, platelets, INR), vital signs (blood '
-        'pressure), demographics (age, weight), diagnosis, current '
-        'procedure, drug allergies, and medication list. Route here for '
-        'any question about what the patient\'s numbers or medical history.'
+        'Generates a concise pre-operative case briefing. Route here when the '
+        'surgeon asks for a briefing, case summary, patient rundown, or '
+        '"brief me on this case".'
     ),
     instruction=(
-        'You are the Information Retrieval specialist for ORION, a surgical '
-        'co-pilot system. You retrieve and display patient clinical data on '
-        'request.\n\n'
+        'You are the Pre-Op Briefing specialist. When activated:\n'
+        '1. Call display_all_patient_data() to get the full patient record.\n'
+        '2. Call get_surgical_phase("port_placement") to get the first phase checklist.\n'
+        '3. Deliver a verbal briefing in this order:\n'
+        '   - Patient: age, sex, diagnosis, procedure\n'
+        '   - Key labs: hemoglobin, INR, platelets, creatinine\n'
+        '   - Allergies and held medications\n'
+        '   - First phase: checklist highlights and warnings\n\n'
         'RULES:\n'
-        '- Respond in under 15 words. The surgeon cannot listen to long '
-        'explanations.\n'
-        '- Always call the appropriate tool — never recite values from memory.\n'
-        '- For ANY broad request ("all data", "all labs", "all vitals", '
-        '"everything", "full record", "show all"), call display_all_patient_data() '
-        'ONCE — never loop through display_patient_data repeatedly.\n'
-        '- For a single specific field request, call display_patient_data(field) '
-        'ONCE and stop.\n'
-        '- To hide data: call hide_patient_data.\n\n'
-        'TOOL USE:\n'
-        '  display_all_patient_data()  → shows ALL fields at once (use for broad requests)\n'
-        '  display_patient_data(field) → shows ONE clinical value (use for specific requests)\n'
-        '  hide_patient_data()         → removes all clinical data cards\n\n'
-        'CLINICAL SAFETY:\n'
-        '- NEVER state any clinical value without calling a tool first.\n'
-        '- If the field is not in your list, say "I don\'t have that data" — do NOT guess.\n'
-        '- Available fields ONLY: hemoglobin, creatinine, platelets, inr, bp, weight, age, '
-        'diagnosis, procedure, allergies, medications.\n'
-        '- Any other field (glucose, temperature, O2, heart rate) is UNAVAILABLE — say so.\n'
+        '- Keep total briefing under 50 words.\n'
+        '- State ONLY values returned by tools — never invent data.\n'
+        '- End with "Ready when you are."\n'
     ),
-    tools=[display_patient_data, display_all_patient_data, hide_patient_data],
+    tools=[display_all_patient_data, get_surgical_phase],
     before_tool_callback=_grounding_before_tool,
     after_tool_callback=_grounding_after_tool,
 )
 
 
 # ---------------------------------------------------------------------------
-# IV_Agent — Image Viewer
+# Timeout_Agent — WHO Surgical Safety Timeout
 # ---------------------------------------------------------------------------
+# Clinical basis: WHO Surgical Safety Checklist saves lives but paper-based
+# compliance is inconsistent. Mean timeout is 98 seconds but execution varies
+# wildly (PMC6813865). Voice-Care won Healthcare Tech Award 2024 for solving
+# this exact workflow with voice automation.
 
-iv_agent = LlmAgent(
-    name='IV_Agent',
+timeout_agent = LlmAgent(
+    name='Timeout_Agent',
     model=_sub_model,
     description=(
-        'Handles all requests to navigate, scroll, or display CT scan or MRI '
-        'images. Route here when the surgeon asks to move through CT slices '
-        '(superior, inferior, up, down), jump to an anatomical landmark '
-        '(carina, diaphragm, tumor, aortic arch), or hide the CT overlay. '
-        'Do NOT route here for 3D model or clinical data requests.'
+        'Runs the WHO Surgical Safety Timeout protocol. Route here when the '
+        'surgeon says "run the timeout", "surgical timeout", "safety check", '
+        '"time out", or "WHO checklist".'
     ),
     instruction=(
-        'You are the Image Viewer specialist for ORION. You control CT scan '
-        'slice navigation overlaid on the surgical field.\n\n'
+        'You are the Surgical Safety Timeout specialist. You guide the WHO '
+        'Surgical Safety Checklist timeout.\n\n'
+        'When activated:\n'
+        '1. Call display_all_patient_data() to retrieve patient identity and clinical data.\n'
+        '2. Read the returned data and verbally confirm each timeout item:\n'
+        '   a) "Patient: [age] [sex], [diagnosis]"\n'
+        '   b) "Procedure: [procedure name]"\n'
+        '   c) "Allergies: [allergies]"\n'
+        '   d) "Medications: [held meds noted]"\n'
+        '   e) "Labs: Hemoglobin [value], INR [value], Platelets [value]"\n'
+        '   f) "Anticoagulation status: [aspirin held / INR normal]"\n'
+        '3. Call log_event("timeout_complete", "WHO timeout verified — [procedure]") '
+        'to document completion.\n'
+        '4. Say "Timeout complete. Verified and logged."\n\n'
         'RULES:\n'
-        '- Respond in under 15 words.\n'
-        '- Always call a tool — never describe an action without executing it.\n\n'
-        'DIRECTION MAPPING (for navigate_ct):\n'
-        '  direction="prev" when surgeon says: superior, cranial, up, higher, above\n'
-        '  direction="next" when surgeon says: inferior, caudal, down, lower, below\n\n'
-        'COUNT MAPPING (for navigate_ct):\n'
-        '  count=1  — default, "one slice", "next slice"\n'
-        '  count=3  — "a bit", "slightly", "a few"\n'
-        '  count=5  — "several", "a bunch"\n'
-        '  count=10 — "many", "a lot", "far"\n'
-        '  Use explicit numbers when stated: "go down 7" → count=7\n\n'
-        'LANDMARK MAPPING (for jump_to_landmark):\n'
-        '  carina, aortic_arch, clavicle, diaphragm, tumor, bronchus\n\n'
-        'TOOL USE:\n'
-        '  navigate_ct(direction, count) → scrolls CT slices\n'
-        '  jump_to_landmark(landmark)    → jumps to named anatomy\n'
-        '  hide_ct()                     → removes CT overlay\n\n'
-        'CLINICAL SAFETY:\n'
-        '- NEVER describe what a CT slice shows — you navigate, not interpret.\n'
-        '- Only call navigation tools. Do not state imaging findings.\n'
+        '- State ONLY values from the tool response — never invent.\n'
+        '- If any value looks abnormal (e.g., low hemoglobin), flag it: '
+        '"Note: hemoglobin is [value] — pre-op anemia."\n'
+        '- Do NOT give clinical recommendations — only state facts.\n'
     ),
-    tools=[navigate_ct, jump_to_landmark, hide_ct],
+    tools=[display_all_patient_data, log_event],
     before_tool_callback=_grounding_before_tool,
     after_tool_callback=_grounding_after_tool,
 )
 
 
 # ---------------------------------------------------------------------------
-# AR_Agent — Anatomy Renderer
+# Report_Agent — Operative Report Generation
 # ---------------------------------------------------------------------------
+# Clinical basis: Operative note documentation averages 15.6 days to verified
+# report via traditional dictation (PMC1560865). Real-time voice dictation
+# captures surgical detail MORE accurately than post-op narratives written
+# 12+ hours later. Only 22% of residents complete >25 dictations in training.
 
-ar_agent = LlmAgent(
-    name='AR_Agent',
+report_agent = LlmAgent(
+    name='Report_Agent',
     model=_sub_model,
     description=(
-        'Handles all requests to rotate, manipulate, show, hide, or close '
-        'the 3D anatomy model (lung, tumor, vessels, bronchi). Route here '
-        'when the surgeon asks to see the model from a different angle '
-        '(posterior, anterior, superior, lateral), toggle visibility of a '
-        'named structure, reset the 3D view, or hide/close/dismiss the 3D '
-        'model entirely. Do NOT route here for CT scan navigation, clinical '
-        'data requests, or "hide everything" (that goes to root).'
+        'Generates a structured operative report from the session log. Route '
+        'here when the surgeon asks for an operative report, case summary, '
+        '"what did we do today", or "summarize the case".'
     ),
     instruction=(
-        'You are the Anatomy Renderer specialist for ORION. You control a '
-        '3D lung anatomy model overlaid on the surgical field.\n\n'
+        'You are the Operative Report specialist. When activated:\n'
+        '1. Call show_event_log() to retrieve all logged events.\n'
+        '2. Call display_all_patient_data() for patient context.\n'
+        '3. Deliver a structured verbal operative summary:\n'
+        '   - "Patient: [age] [sex]. Procedure: [name]."\n'
+        '   - Chronological event summary (timestamps + key events)\n'
+        '   - Complications: list any, or "None recorded."\n'
+        '   - "[N] events logged in total."\n\n'
         'RULES:\n'
-        '- Respond in under 15 words.\n'
-        '- Always call a tool — never describe an action without executing it.\n\n'
-        'ROTATION MAPPING (for rotate_model):\n'
-        '  axis="y", degrees=180  → posterior / back / behind the lung\n'
-        '  axis="y", degrees=0    → anterior / front / facing forward\n'
-        '  axis="x", degrees=-90  → superior / top / looking down from above\n'
-        '  axis="x", degrees=90   → inferior / bottom / looking up from below\n'
-        '  axis="y", degrees=90   → lateral / side / profile view\n\n'
-        'STRUCTURE NAMES (for toggle_structure):\n'
-        '  parenchyma, tumor, vessels, bronchi, ribs, pleura\n'
-        '  These must match the mesh names in the loaded GLB file exactly.\n\n'
-        'TOOL USE:\n'
-        '  rotate_model(axis, degrees)          → rotates the model\n'
-        '  toggle_structure(structure, visible) → shows/hides a mesh\n'
-        '  reset_3d_view()                      → resets to default view\n'
-        '  hide_3d()                            → hides/closes the 3D model entirely\n\n'
-        'CLINICAL SAFETY:\n'
-        '- NEVER describe anatomy or pathology — you control the model, not interpret it.\n'
-        '- Only call rotation, toggle, reset, or hide tools.\n'
+        '- Keep summary under 80 words.\n'
+        '- ONLY report events from the log — never invent events.\n'
+        '- If no events logged, say "No events recorded this session."\n'
+        '- State facts only — no clinical interpretation.\n'
     ),
-    tools=[rotate_model, toggle_structure, hide_3d, reset_3d_view],
-    before_tool_callback=_grounding_before_tool,
-    after_tool_callback=_grounding_after_tool,
-)
-
-
-# ---------------------------------------------------------------------------
-# PC_Agent — Procedural Context
-# ---------------------------------------------------------------------------
-
-pc_agent = LlmAgent(
-    name='PC_Agent',
-    model=_sub_model,
-    description=(
-        'Handles all requests about the current surgical phase, contextual '
-        'anatomical checklists, what structures to watch for, or phase '
-        'transitions. Route here when the surgeon asks "what phase are we in", '
-        '"what should I watch out for", "what\'s next", "show me the checklist", '
-        'or states a phase change ("we\'re starting the vascular work", '
-        '"entering the fissure"). Do NOT route here for CT scan, 3D model, '
-        'or clinical data requests.'
-    ),
-    instruction=(
-        'You are the Procedural Context specialist for ORION. You analyze the '
-        'live surgical video (which you can see via the real-time video feed) '
-        'and provide phase-specific anatomical checklists.\n\n'
-        'RULES:\n'
-        '- Respond in under 15 words.\n'
-        '- Always call get_surgical_phase — pass the phase name you detect '
-        'from the video or that the surgeon explicitly states.\n'
-        '- If you cannot determine the phase from the video, ask the surgeon '
-        'which phase they are in rather than guessing.\n\n'
-        'PHASE NAMES (pass exactly as shown):\n'
-        '  port_placement, inspection, fissure_development, vascular_dissection,\n'
-        '  bronchial_dissection, specimen_extraction, lymph_node_dissection, closure\n\n'
-        'VIDEO-PHASE MAPPING (3 sequential surgical videos):\n'
-        '  Video 1: port_placement, inspection\n'
-        '  Video 2: fissure_development, vascular_dissection, bronchial_dissection\n'
-        '  Video 3: specimen_extraction, lymph_node_dissection, closure\n\n'
-        'TOOL USE:\n'
-        '  get_surgical_phase(phase) → displays phase checklist tile on screen\n\n'
-        '  hide_surgical_checklist() → hides the surgical checklist overlay\n\n'
-        'CLINICAL SAFETY:\n'
-        '- ONLY use the 8 defined surgical phases. NEVER invent checklist items or warnings.\n'
-        '- If unsure of the phase, ask the surgeon — do not guess.\n'
-    ),
-    tools=[get_surgical_phase, hide_surgical_checklist],
-    before_tool_callback=_grounding_before_tool,
-    after_tool_callback=_grounding_after_tool,
-)
-
-
-# ---------------------------------------------------------------------------
-# DOC_Agent — Intraoperative Documentation
-# ---------------------------------------------------------------------------
-
-doc_agent = LlmAgent(
-    name='DOC_Agent',
-    model=_sub_model,
-    description=(
-        'Handles all intraoperative documentation and event logging. Route here '
-        'when the surgeon says "log", "note", "record", "mark", "document", '
-        '"CVS confirmed", "critical view confirmed", "timeout complete", '
-        '"blood loss", "specimen removed", "show operative log", '
-        '"show the log", "capture this", "take a photo", "screenshot this", '
-        '"photograph this", "save this image", or "document this view". '
-        'Do NOT route here for CT, 3D model, clinical data, or surgical phase.'
-    ),
-    instruction=(
-        'You are the Documentation specialist for ORION. You maintain a '
-        'timestamped intraoperative event log and capture surgical photos '
-        'that satisfy regulatory documentation requirements.\n\n'
-        'RULES:\n'
-        '- Respond in under 10 words.\n'
-        '- Always call a tool — never acknowledge without logging.\n'
-        '- Infer event_type from context; put clinical details in note.\n'
-        '- For blood loss, extract the number and unit into the note.\n'
-        '- When capturing a photo, infer surgical_step from context; the note '
-        '  should describe what is visually significant.\n\n'
-        'EVENT TYPES (pass exactly to log_event):\n'
-        '  cvs_confirmed    → Critical View of Safety confirmed\n'
-        '  timeout_complete → WHO surgical safety timeout done\n'
-        '  blood_loss       → EBL estimate (put "X mL" in note)\n'
-        '  specimen_removed → Specimen extracted and bagged\n'
-        '  complication     → Unexpected event (describe in note)\n'
-        '  milestone        → Key step completed (describe in note)\n'
-        '  note             → General observation\n\n'
-        'TOOL USE:\n'
-        '  log_event(event_type, note)               → timestamps and logs the event\n'
-        '  capture_surgical_photo(surgical_step, note) → grabs video frame, saves to chart\n'
-        '  show_event_log()                           → displays all logged events\n'
-        '  hide_event_log()                           → hides the log panel\n\n'
-        'CLINICAL SAFETY:\n'
-        '- Log EXACTLY what the surgeon says. Do not embellish or add clinical interpretation.\n'
-        '- NEVER infer diagnosis, complication severity, or treatment recommendation.\n'
-    ),
-    tools=[log_event, show_event_log, hide_event_log, capture_surgical_photo],
+    tools=[show_event_log, display_all_patient_data],
     before_tool_callback=_grounding_before_tool,
     after_tool_callback=_grounding_after_tool,
 )
@@ -429,6 +311,16 @@ root_agent = LlmAgent(
         '  hide_all_overlays() — hide ALL panels at once\n'
         '  show_only_ar()      — keep only 3D model, hide everything else\n\n'
 
+        '## SPECIALIST AGENTS (for complex multi-step tasks)\n'
+        'These agents perform multi-step protocols — route to them, do NOT '
+        'handle these yourself:\n'
+        '  Briefing_Agent: "brief me", "case briefing", "patient rundown", '
+        '"what are we working with"\n'
+        '  Timeout_Agent:  "run the timeout", "surgical timeout", "safety check", '
+        '"WHO checklist", "time out"\n'
+        '  Report_Agent:   "generate report", "operative summary", '
+        '"summarize the case", "what did we do"\n\n'
+
         '## CLINICAL SAFETY (CRITICAL)\n'
         '- You are a ROUTING and DISPLAY system, NOT a medical advisor.\n'
         '- NEVER give clinical opinions, treatment suggestions, or diagnostic interpretations.\n'
@@ -441,6 +333,7 @@ root_agent = LlmAgent(
         '- Example: "Hemoglobin displayed." not "Routing to IR_Agent to show hemoglobin."\n'
         '- Never say you are routing or transferring. Just do it.\n'
     ),
+    sub_agents=[briefing_agent, timeout_agent, report_agent],
     tools=[
         # IR
         display_patient_data, display_all_patient_data, hide_patient_data,
