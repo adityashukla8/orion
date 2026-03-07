@@ -412,6 +412,10 @@ function dispatchRenderCommand(toolName, args) {
       break;
     case 'show_event_log':
       break;
+    case 'hide_surgical_checklist':
+      ChecklistPanel.hide();
+      relayoutTiles();
+      break;
     case 'hide_event_log':
       LogPanel.hide();
       relayoutTiles();
@@ -440,6 +444,10 @@ function handleFunctionResponse(fr) {
   }
   if (cmd.layer === 'checklist' && cmd.action === 'show') {
     ChecklistPanel.show(cmd.phase, cmd.label, cmd.checklist, cmd.warning);
+  }
+  if (cmd.layer === 'checklist' && cmd.action === 'hide') {
+    ChecklistPanel.hide();
+    relayoutTiles();
   }
   if (cmd.layer === 'log') {
     if (cmd.action === 'append') {
