@@ -39,7 +39,16 @@ const surgicalVideo    = document.getElementById('surgical-video');
 let audioPlayerNode  = null;
 let audioRecorderCtx = null;   // recorder AudioContext — must be closed on disconnect
 let micStream        = null;
-let audioSuppressed  = false;  // true after interrupt — suppresses stale audio chunks
+let audioSuppressed  = false;  // true after barge-in — suppresses stale audio chunks
+let _lastSuppressTime = 0;     // timestamp of last barge-in (debounce unsuppress)
+
+// ── Client-side speech detection (for instant barge-in) ───────────────────
+// Simple energy-based VAD — detects surgeon speech ~200-500ms faster than
+// waiting for inputTranscription events from the server.
+const SPEECH_ENERGY_THRESHOLD = 1200;  // RMS threshold for Int16 PCM (tune for OR noise)
+const SILENCE_FRAMES_NEEDED   = 15;    // ~120ms of silence before activity_end (15 × 8ms chunks)
+let _surgeonSpeaking = false;
+let _silenceFrames   = 0;
 
 // ── WebSocket / capture state ──────────────────────────────────────────────
 let ws            = null;
@@ -227,11 +236,47 @@ function disconnect() {
 
 // ── Audio I/O ──────────────────────────────────────────────────────────────
 
+/** RMS energy of Int16 PCM buffer — cheap speech/silence discriminator. */
+function _detectSpeech(pcmBuffer) {
+  const samples = new Int16Array(pcmBuffer);
+  let sum = 0;
+  for (let i = 0; i < samples.length; i++) sum += samples[i] * samples[i];
+  return Math.sqrt(sum / samples.length) > SPEECH_ENERGY_THRESHOLD;
+}
+
+/** Central barge-in handler — flush audio + suppress + update UI. */
+function _bargeIn() {
+  if (audioSuppressed) return;  // already suppressed
+  audioSuppressed = true;
+  _lastSuppressTime = Date.now();
+  if (audioPlayerNode) audioPlayerNode.port.postMessage({ command: 'endOfAudio' });
+  currentOrionEntry = null;
+  setStatus('interrupted');
+}
+
 /** Called by startAudioRecorderWorklet — receives raw PCM ArrayBuffer. */
 function audioRecorderHandler(pcmData) {
-  if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(pcmData);  // binary frame, direct ArrayBuffer — no JSON wrapping
+  if (!ws || ws.readyState !== WebSocket.OPEN) return;
+
+  // Client-side speech detection → instant barge-in + activity signaling
+  const isSpeech = _detectSpeech(pcmData);
+  if (!_surgeonSpeaking && isSpeech) {
+    _surgeonSpeaking = true;
+    _silenceFrames = 0;
+    _bargeIn();  // suppress audio IMMEDIATELY — don't wait for server
+    ws.send(JSON.stringify({ type: 'activity_start' }));
+  } else if (_surgeonSpeaking && !isSpeech) {
+    _silenceFrames++;
+    if (_silenceFrames > SILENCE_FRAMES_NEEDED) {
+      _surgeonSpeaking = false;
+      _silenceFrames = 0;
+      ws.send(JSON.stringify({ type: 'activity_end' }));
+    }
+  } else if (_surgeonSpeaking) {
+    _silenceFrames = 0;
   }
+
+  ws.send(pcmData);  // always send audio — binary frame, no JSON wrapping
 }
 
 /** Decode base64 PCM audio and send to AudioWorklet player. */
@@ -292,20 +337,24 @@ function handleServerEvent(jsonString) {
   }
 
   // Input transcription (surgeon speech — what Gemini heard).
-  // A new surgeon utterance signals a new conversation exchange: seal the
-  // previous ORION bubble so the next agent response starts a fresh one.
+  // Safety-net barge-in: _bargeIn() was likely already called by speech
+  // detection in audioRecorderHandler, but this catches edge cases.
   const inputText = event.inputTranscription?.text ?? event.input_transcription?.text;
   if (inputText) {
-    audioSuppressed = false;  // new surgeon speech → allow audio for next response
+    _bargeIn();
     setStatus('listening');
-    currentOrionEntry = null;   // surgeon is speaking → seal previous ORION bubble
     _upsertTranscript('surgeon', inputText);
   }
 
-  // Output transcription (ORION spoken response) — also streams in chunks.
-  // Update current ORION bubble in place so words don't flood as separate cards.
+  // Output transcription (ORION spoken response) — streams in chunks.
+  // Unsuppress audio: a new outputTranscription means the model is responding
+  // to the surgeon's latest input. Debounce to avoid unsuppressing from stale
+  // output that overlaps with a fresh barge-in.
   const outputText = event.outputTranscription?.text ?? event.output_transcription?.text;
-  if (outputText) _upsertTranscript('orion', outputText);
+  if (outputText) {
+    if (Date.now() - _lastSuppressTime > 300) audioSuppressed = false;
+    _upsertTranscript('orion', outputText);
+  }
 
   // Agent routing visibility + metrics card
   if (event.author) {
@@ -360,13 +409,9 @@ function handleServerEvent(jsonString) {
     if (fr) handleFunctionResponse(fr);
   }
 
-  // Interrupt — ORION was cut off; suppress stale in-flight audio chunks
-  if (event.interrupted && audioPlayerNode) {
-    audioSuppressed = true;
-    audioPlayerNode.port.postMessage({ command: 'endOfAudio' });
-    currentOrionEntry = null;
-    if (ws && ws.readyState === WebSocket.OPEN) setStatus('interrupted');
-  }
+  // Interrupt — server-side VAD detected barge-in (root agent audio).
+  // _bargeIn() is idempotent — safe to call even if already suppressed.
+  if (event.interrupted) _bargeIn();
 
   // Turn complete — multi-agent flow fires turnComplete after each sub-agent.
   // Only seal the surgeon bubble (their utterance is fully received).

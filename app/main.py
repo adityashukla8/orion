@@ -184,6 +184,15 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str, session_id: str
                             )
                         )
 
+                elif msg_type == 'activity_start':
+                    # Client-side speech detection → signal Live API to
+                    # interrupt model generation (critical for sub-agent audio)
+                    live_request_queue.send_activity_start()
+
+                elif msg_type == 'activity_end':
+                    # Surgeon stopped speaking → signal Live API
+                    live_request_queue.send_activity_end()
+
                 elif msg_type == 'image_frame':
                     # JPEG frame from the surgical video (sent at ~1 fps)
                     b64_data = payload.get('data', '')
