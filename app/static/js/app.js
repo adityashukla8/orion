@@ -42,14 +42,6 @@ let micStream        = null;
 let audioSuppressed  = false;  // true after barge-in — suppresses stale audio chunks
 let _lastSuppressTime = 0;     // timestamp of last barge-in (debounce unsuppress)
 
-// ── Client-side speech detection (for instant barge-in) ───────────────────
-// Simple energy-based VAD — detects surgeon speech ~200-500ms faster than
-// waiting for inputTranscription events from the server.
-const SPEECH_ENERGY_THRESHOLD = 1200;  // RMS threshold for Int16 PCM (tune for OR noise)
-const SILENCE_FRAMES_NEEDED   = 15;    // ~120ms of silence before activity_end (15 × 8ms chunks)
-let _surgeonSpeaking = false;
-let _silenceFrames   = 0;
-
 // ── WebSocket / capture state ──────────────────────────────────────────────
 let ws            = null;
 let videoInterval     = null;
@@ -236,17 +228,13 @@ function disconnect() {
 
 // ── Audio I/O ──────────────────────────────────────────────────────────────
 
-/** RMS energy of Int16 PCM buffer — cheap speech/silence discriminator. */
-function _detectSpeech(pcmBuffer) {
-  const samples = new Int16Array(pcmBuffer);
-  let sum = 0;
-  for (let i = 0; i < samples.length; i++) sum += samples[i] * samples[i];
-  return Math.sqrt(sum / samples.length) > SPEECH_ENERGY_THRESHOLD;
-}
-
-/** Central barge-in handler — flush audio + suppress + update UI. */
+/**
+ * Barge-in handler — flush audio player + suppress stale chunks + update UI.
+ * Idempotent: safe to call from multiple triggers (interrupted, inputTranscription).
+ * This is the ADK-standard pattern: react to server events, don't predict locally.
+ */
 function _bargeIn() {
-  if (audioSuppressed) return;  // already suppressed
+  if (audioSuppressed) return;
   audioSuppressed = true;
   _lastSuppressTime = Date.now();
   if (audioPlayerNode) audioPlayerNode.port.postMessage({ command: 'endOfAudio' });
@@ -256,27 +244,9 @@ function _bargeIn() {
 
 /** Called by startAudioRecorderWorklet — receives raw PCM ArrayBuffer. */
 function audioRecorderHandler(pcmData) {
-  if (!ws || ws.readyState !== WebSocket.OPEN) return;
-
-  // Client-side speech detection → instant barge-in + activity signaling
-  const isSpeech = _detectSpeech(pcmData);
-  if (!_surgeonSpeaking && isSpeech) {
-    _surgeonSpeaking = true;
-    _silenceFrames = 0;
-    _bargeIn();  // suppress audio IMMEDIATELY — don't wait for server
-    ws.send(JSON.stringify({ type: 'activity_start' }));
-  } else if (_surgeonSpeaking && !isSpeech) {
-    _silenceFrames++;
-    if (_silenceFrames > SILENCE_FRAMES_NEEDED) {
-      _surgeonSpeaking = false;
-      _silenceFrames = 0;
-      ws.send(JSON.stringify({ type: 'activity_end' }));
-    }
-  } else if (_surgeonSpeaking) {
-    _silenceFrames = 0;
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(pcmData);  // binary frame — server handles VAD via Live API
   }
-
-  ws.send(pcmData);  // always send audio — binary frame, no JSON wrapping
 }
 
 /** Decode base64 PCM audio and send to AudioWorklet player. */
@@ -337,8 +307,9 @@ function handleServerEvent(jsonString) {
   }
 
   // Input transcription (surgeon speech — what Gemini heard).
-  // Safety-net barge-in: _bargeIn() was likely already called by speech
-  // detection in audioRecorderHandler, but this catches edge cases.
+  // Barge-in: surgeon is speaking → flush any playing audio and suppress
+  // stale chunks. The Live API's automatic VAD also sends `interrupted`
+  // (handled below), but inputTranscription often arrives first.
   const inputText = event.inputTranscription?.text ?? event.input_transcription?.text;
   if (inputText) {
     _bargeIn();
