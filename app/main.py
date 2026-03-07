@@ -37,7 +37,7 @@ from google.adk.agents.run_config import RunConfig, StreamingMode
 from google.adk.agents.live_request_queue import LiveRequestQueue
 from google.genai import types
 
-from orion_orchestrator import root_agent
+from orion_orchestrator import root_agent, log_ai_interaction
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('orion')
@@ -204,7 +204,16 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str, session_id: str
 
         by_alias=True outputs camelCase field names (e.g. turnComplete, inlineData)
         consistent with the ADK Dev UI frontend convention.
+
+        AI interaction transparency: accumulates input/output transcriptions per
+        turn and auto-logs them to _SESSION_LOG on turnComplete.
         """
+        # Per-turn transcription state for AI interaction logging.
+        # Transcription events are cumulative (each contains the full text
+        # so far), so we keep only the latest value — not a list of chunks.
+        _surgeon_said = ''
+        _orion_said = ''
+
         async with aclosing(runner.run_live(
             session=session,
             live_request_queue=live_request_queue,
@@ -213,6 +222,36 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str, session_id: str
             async for event in live_events:
                 event_json = event.model_dump_json(exclude_none=True, by_alias=True)
                 await websocket.send_text(event_json)
+
+                # Parse the event once for transcription tracking
+                event_dict = json.loads(event_json)
+
+                # Latest surgeon speech (inputTranscription is cumulative)
+                input_text = (
+                    event_dict.get('inputTranscription', {}).get('text')
+                    or event_dict.get('input_transcription', {}).get('text')
+                )
+                if input_text:
+                    _surgeon_said = input_text
+
+                # Latest ORION response (outputTranscription is cumulative)
+                output_text = (
+                    event_dict.get('outputTranscription', {}).get('text')
+                    or event_dict.get('output_transcription', {}).get('text')
+                )
+                if output_text:
+                    _orion_said = output_text
+
+                # On turnComplete, log the exchange and send to browser
+                if event_dict.get('turnComplete') or event_dict.get('turn_complete'):
+                    entry = log_ai_interaction(_surgeon_said, _orion_said)
+                    if entry:
+                        await websocket.send_text(json.dumps({
+                            'type': 'ai_log',
+                            'entry': entry,
+                        }))
+                    _surgeon_said = ''
+                    _orion_said = ''
 
     # ---------------------------------------------------------------------------
     # Run both tasks — mirrors adk_web_server.py's /run_live implementation:

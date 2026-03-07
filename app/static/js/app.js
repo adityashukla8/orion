@@ -39,6 +39,7 @@ const surgicalVideo    = document.getElementById('surgical-video');
 let audioPlayerNode  = null;
 let audioRecorderCtx = null;   // recorder AudioContext — must be closed on disconnect
 let micStream        = null;
+let audioSuppressed  = false;  // true after interrupt — suppresses stale audio chunks
 
 // ── WebSocket / capture state ──────────────────────────────────────────────
 let ws            = null;
@@ -284,11 +285,18 @@ function handleServerEvent(jsonString) {
   try { event = JSON.parse(jsonString); }
   catch { return; }
 
+  // AI interaction transparency log — sent by main.py on turnComplete
+  if (event.type === 'ai_log' && event.entry) {
+    LogPanel.append(event.entry);
+    return;
+  }
+
   // Input transcription (surgeon speech — what Gemini heard).
   // A new surgeon utterance signals a new conversation exchange: seal the
   // previous ORION bubble so the next agent response starts a fresh one.
   const inputText = event.inputTranscription?.text ?? event.input_transcription?.text;
   if (inputText) {
+    audioSuppressed = false;  // new surgeon speech → allow audio for next response
     setStatus('listening');
     currentOrionEntry = null;   // surgeon is speaking → seal previous ORION bubble
     _upsertTranscript('surgeon', inputText);
@@ -318,7 +326,7 @@ function handleServerEvent(jsonString) {
     // multi-agent live flow has sub-agents generate the audio response.
     const inlineData = part.inlineData ?? part.inline_data;
     const mimeType   = inlineData?.mimeType ?? inlineData?.mime_type ?? '';
-    if (inlineData && mimeType.startsWith('audio/pcm') && audioPlayerNode) {
+    if (inlineData && mimeType.startsWith('audio/pcm') && audioPlayerNode && !audioSuppressed) {
       setStatus('speaking');
       audioPlayerNode.port.postMessage(base64ToArray(inlineData.data));
     }
@@ -352,8 +360,9 @@ function handleServerEvent(jsonString) {
     if (fr) handleFunctionResponse(fr);
   }
 
-  // Interrupt — ORION was cut off; next ORION speech starts a fresh bubble
+  // Interrupt — ORION was cut off; suppress stale in-flight audio chunks
   if (event.interrupted && audioPlayerNode) {
+    audioSuppressed = true;
     audioPlayerNode.port.postMessage({ command: 'endOfAudio' });
     currentOrionEntry = null;
     if (ws && ws.readyState === WebSocket.OPEN) setStatus('interrupted');

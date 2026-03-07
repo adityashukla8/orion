@@ -159,6 +159,9 @@ briefing_agent = LlmAgent(
         '- Keep total briefing under 50 words.\n'
         '- State ONLY values returned by tools — never invent data.\n'
         '- End with "Ready when you are."\n'
+        '- After delivering the briefing, IMMEDIATELY transfer back to '
+        'ORION_Orchestrator. You handle ONLY briefings — all other commands '
+        'belong to the orchestrator.\n'
     ),
     tools=[display_all_patient_data, get_surgical_phase],
     before_tool_callback=_grounding_before_tool,
@@ -202,6 +205,9 @@ timeout_agent = LlmAgent(
         '- If any value looks abnormal (e.g., low hemoglobin), flag it: '
         '"Note: hemoglobin is [value] — pre-op anemia."\n'
         '- Do NOT give clinical recommendations — only state facts.\n'
+        '- After completing the timeout, IMMEDIATELY transfer back to '
+        'ORION_Orchestrator. You handle ONLY timeouts — all other commands '
+        'belong to the orchestrator.\n'
     ),
     tools=[display_all_patient_data, log_event],
     before_tool_callback=_grounding_before_tool,
@@ -239,6 +245,9 @@ report_agent = LlmAgent(
         '- ONLY report events from the log — never invent events.\n'
         '- If no events logged, say "No events recorded this session."\n'
         '- State facts only — no clinical interpretation.\n'
+        '- After delivering the report, IMMEDIATELY transfer back to '
+        'ORION_Orchestrator. You handle ONLY reports — all other commands '
+        'belong to the orchestrator.\n'
     ),
     tools=[show_event_log, display_all_patient_data],
     before_tool_callback=_grounding_before_tool,

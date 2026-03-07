@@ -14,6 +14,7 @@ const LogPanel = (() => {
     complication:     { label: 'COMPL.',   color: '#c62828' },
     milestone:        { label: 'STEP',     color: '#00695c' },
     note:             { label: 'NOTE',     color: '#546e7a' },
+    ai_interaction:   { label: 'AI LOG',   color: '#7c3aed' },
     photo:            { label: 'PHOTO',    color: '#4f46e5' },
   };
 
@@ -145,7 +146,11 @@ const LogPanel = (() => {
     if (empty) empty.remove();
     body.insertAdjacentHTML('beforeend', _entryHtml(entry));
     body.scrollTop = body.scrollHeight;
-    if (modal) { modal.classList.add('visible'); window.ORION_relayoutModals?.(); }
+    // AI interaction logs are silent — don't force the panel open
+    if (entry.type !== 'ai_interaction' && modal) {
+      modal.classList.add('visible');
+      window.ORION_relayoutModals?.();
+    }
   }
 
   // Called by app.js for the 'capture_photo' render_command.

@@ -577,6 +577,33 @@ def hide_surgical_checklist() -> dict:
 _SESSION_LOG: list[dict] = []
 
 
+def log_ai_interaction(surgeon_said: str, orion_said: str) -> dict | None:
+    """Server-side helper (NOT an agent tool). Called by main.py on turnComplete
+    to auto-log every surgeon↔ORION exchange for conversation transparency.
+    Returns the entry dict, or None if the turn had no meaningful content."""
+    import datetime
+    surgeon_said = (surgeon_said or '').strip()
+    orion_said = (orion_said or '').strip()
+    if not surgeon_said and not orion_said:
+        return None
+    # Truncate each side to keep log entries concise
+    def _trunc(s, maxlen=80):
+        return (s[:maxlen] + '…') if len(s) > maxlen else s
+    parts = []
+    if surgeon_said:
+        parts.append(f'Q: {_trunc(surgeon_said)}')
+    if orion_said:
+        parts.append(f'A: {_trunc(orion_said)}')
+    timestamp = datetime.datetime.now().strftime('%H:%M:%S')
+    entry = {
+        'type': 'ai_interaction',
+        'note': ' | '.join(parts),
+        'timestamp': timestamp,
+    }
+    _SESSION_LOG.append(entry)
+    return entry
+
+
 # ---------------------------------------------------------------------------
 # DOC Agent Tools — Intraoperative Documentation
 # ---------------------------------------------------------------------------
