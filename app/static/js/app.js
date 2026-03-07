@@ -19,7 +19,11 @@ const CONFIG = Object.assign({
   ctPath:        'ct/case_demo_001',
   ctTotalSlices: 133,
   modelPath:     'models/lung_model.glb',
-  videoPath:     'video/surgical_video.mp4',
+  videoPaths:    [
+    'video/surgical_video.mp4',  // mmc6:  port_placement, inspection
+    'video/mmc11.mp4',           // mmc11: fissure → vascular → bronchial
+    'video/mmc12.mp4',           // mmc12: extraction → lymph nodes → closure
+  ],
 }, window.ORION_CONFIG || {});
 
 const GCS_BASE = `https://storage.googleapis.com/${CONFIG.gcsBucket}`;
@@ -90,32 +94,44 @@ orionOrb.addEventListener('click', () => {
   else connect();
 });
 
-// Three-stage video loading for canvas capture compatibility:
+// Sequential video playlist with 3-stage fallback per video:
 //   Stage 0 → local /static/ (dev: same-origin, canvas always works)
 //   Stage 1 → GCS + crossorigin="anonymous" (prod: canvas works when CORS configured)
 //   Stage 2 → GCS plain, no crossorigin (CORS not configured: video plays, no thumbnails)
+let currentVideoIndex = 0;
+
 (function loadVideo() {
-  const localSrc = `/static/${CONFIG.videoPath}`;
-  const gcsSrc   = `${GCS_BASE}/${CONFIG.videoPath}`;
   let _stage = 0;
 
+  function playIndex(idx) {
+    currentVideoIndex = idx;
+    _stage = 0;
+    const path = CONFIG.videoPaths[idx];
+    surgicalVideo.removeAttribute('crossorigin');
+    surgicalVideo.src = `/static/${path}`;
+  }
+
   surgicalVideo.addEventListener('error', function onVideoError() {
+    const path = CONFIG.videoPaths[currentVideoIndex];
     _stage++;
     if (_stage === 1) {
-      // Local file absent → try GCS with crossorigin (enables canvas if CORS is set)
       surgicalVideo.crossOrigin = 'anonymous';
-      surgicalVideo.src = gcsSrc;
+      surgicalVideo.src = `${GCS_BASE}/${path}`;
     } else if (_stage === 2) {
-      // GCS CORS not configured → strip crossorigin and reload plain so video still plays
-      // Canvas capture won't work but the surgical feed remains visible.
-      // Fix: gsutil cors set cors.json gs://orion-assets-2026
       surgicalVideo.removeAttribute('crossorigin');
       surgicalVideo.load();
     }
-    // Stage 3+: genuine network error, nothing to do
+    // Stage 3+: skip to next video if this one can't load at all
+    else if (_stage === 3 && CONFIG.videoPaths.length > 1) {
+      playIndex((currentVideoIndex + 1) % CONFIG.videoPaths.length);
+    }
   });
 
-  surgicalVideo.src = localSrc;
+  surgicalVideo.addEventListener('ended', () => {
+    playIndex((currentVideoIndex + 1) % CONFIG.videoPaths.length);
+  });
+
+  playIndex(0);
 }());
 
 

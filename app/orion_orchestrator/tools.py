@@ -414,6 +414,11 @@ def reset_3d_view() -> dict:
 # Surgical phases for VATS left upper lobectomy (the demo procedure).
 # Each phase has a label, 4-point checklist, and optional critical warning.
 # Values are calibrated to standard robotic-assisted thoracic surgery protocol.
+#
+# Video-to-phase mapping (3 sequential surgical videos):
+#   Video 1 (surgical_video.mp4 / mmc6):  port_placement, inspection
+#   Video 2 (mmc11.mp4):                  fissure_development, vascular_dissection, bronchial_dissection
+#   Video 3 (mmc12.mp4):                  specimen_extraction, lymph_node_dissection, closure
 SURGICAL_PHASES: dict[str, dict] = {
     'port_placement': {
         'label': 'Port Placement & Access',
