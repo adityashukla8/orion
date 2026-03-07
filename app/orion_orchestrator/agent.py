@@ -429,15 +429,6 @@ root_agent = LlmAgent(
         '  hide_all_overlays() — hide ALL panels at once\n'
         '  show_only_ar()      — keep only 3D model, hide everything else\n\n'
 
-        '## ROUTING RULES\n'
-        'For SINGLE-action commands, you may route to a specialist sub-agent OR '
-        'call the tool directly — either works:\n'
-        '  IR_Agent  — patient data\n'
-        '  IV_Agent  — CT navigation\n'
-        '  AR_Agent  — 3D model control\n'
-        '  PC_Agent  — surgical phase checklists\n'
-        '  DOC_Agent — event logging and photos\n\n'
-
         '## CLINICAL SAFETY (CRITICAL)\n'
         '- You are a ROUTING and DISPLAY system, NOT a medical advisor.\n'
         '- NEVER give clinical opinions, treatment suggestions, or diagnostic interpretations.\n'
@@ -450,7 +441,6 @@ root_agent = LlmAgent(
         '- Example: "Hemoglobin displayed." not "Routing to IR_Agent to show hemoglobin."\n'
         '- Never say you are routing or transferring. Just do it.\n'
     ),
-    sub_agents=[ir_agent, iv_agent, ar_agent, pc_agent, doc_agent],
     tools=[
         # IR
         display_patient_data, display_all_patient_data, hide_patient_data,
