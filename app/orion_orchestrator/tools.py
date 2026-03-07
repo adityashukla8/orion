@@ -547,6 +547,23 @@ def get_surgical_phase(phase: str) -> dict:
         },
     }
 
+# hide surgical checklist
+def hide_surgical_checklist() -> dict:
+    """
+    Use this tool when the surgeon asks to hide, clear, or dismiss the surgical
+    checklist overlay. Examples:
+      "hide the checklist"
+      "clear the surgical checklist"
+      "remove the checklist"
+      "close the checklist panel"
+    """
+    return {
+        'status': 'success',
+        'render_command': {
+            'layer': 'checklist',
+            'action': 'hide',
+        },
+    }
 
 # ---------------------------------------------------------------------------
 # Session event log — in-memory, lives for the duration of one surgical session.

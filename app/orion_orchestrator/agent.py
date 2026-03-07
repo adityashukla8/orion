@@ -21,6 +21,9 @@ root_agent runs on the native audio model for direct voice I/O.
 import os
 
 from google.adk.agents import LlmAgent
+from google.adk.tools import BaseTool
+from google.adk.tools.tool_context import ToolContext
+from typing import Any, Dict, Optional
 
 from .tools import (
     display_patient_data,
@@ -36,6 +39,7 @@ from .tools import (
     show_only_ar,
     hide_all_overlays,
     get_surgical_phase,
+    hide_surgical_checklist,
     log_event,
     show_event_log,
     hide_event_log,
@@ -90,8 +94,13 @@ _ARG_RULES = {
 }
 
 
-def _grounding_before_tool(callback_context, tool_name, args):
+def _grounding_before_tool(
+    tool: BaseTool,
+    args: Dict[str, Any],
+    tool_context: ToolContext,
+) -> Optional[Dict]:
     """Block tool calls with invalid arguments before they execute."""
+    tool_name = tool.name  # ← get the name from the tool object
     rule = _ARG_RULES.get(tool_name)
     if not rule:
         return None  # no rule for this tool → proceed normally
@@ -107,14 +116,19 @@ def _grounding_before_tool(callback_context, tool_name, args):
     return None  # valid → proceed
 
 
-def _grounding_after_tool(callback_context, tool_name, result):
+def _grounding_after_tool(
+    tool: BaseTool,
+    args: Dict[str, Any],
+    tool_context: ToolContext,
+    tool_response: Dict,
+) -> Optional[Dict]:
     """Validate every tool response has the expected schema."""
-    if not isinstance(result, dict):
+    if not isinstance(tool_response, dict):
         return {'status': 'error', 'message': 'Tool returned invalid response.'}
-    if result.get('status') == 'error':
+    if tool_response.get('status') == 'error':
         return None  # error responses pass through as-is
-    if 'render_command' not in result:
-        return {'status': 'error', 'message': f'{tool_name}: missing render_command.'}
+    if 'render_command' not in tool_response:
+        return {'status': 'error', 'message': f'{tool.name}: missing render_command.'}
     return None  # valid → pass through
 
 
@@ -285,11 +299,12 @@ pc_agent = LlmAgent(
         '  bronchial_dissection, specimen_extraction, lymph_node_dissection, closure\n\n'
         'TOOL USE:\n'
         '  get_surgical_phase(phase) → displays phase checklist tile on screen\n\n'
+        '  hide_surgical_checklist() → hides the surgical checklist overlay\n\n'
         'CLINICAL SAFETY:\n'
         '- ONLY use the 8 defined surgical phases. NEVER invent checklist items or warnings.\n'
         '- If unsure of the phase, ask the surgeon — do not guess.\n'
     ),
-    tools=[get_surgical_phase],
+    tools=[get_surgical_phase, hide_surgical_checklist],
     before_tool_callback=_grounding_before_tool,
     after_tool_callback=_grounding_after_tool,
 )
