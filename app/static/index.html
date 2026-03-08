@@ -12,13 +12,13 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: #dde3ec;
+      background: #f4f6f9;
       color: #1a1a2e;
       font-family: 'Poppins', sans-serif;
       height: 100vh;
       display: flex;
-      gap: 10px;
-      padding: 10px;
+      gap: 8px;
+      padding: 8px;
       overflow: hidden;
     }
 
@@ -28,7 +28,7 @@
       display: flex;
       flex-direction: row;
       background: #000;
-      border-radius: 18px;
+      border-radius: 0;
       overflow: hidden;
     }
 
@@ -70,14 +70,10 @@
       flex-direction: column;
       flex: 1;
       min-height: 0;
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.62);
-      backdrop-filter: blur(32px);
-      -webkit-backdrop-filter: blur(32px);
-      border: 1px solid rgba(255, 255, 255, 0.72);
-      box-shadow:
-        0 4px 24px rgba(100, 140, 210, 0.12),
-        inset 0 1px 0 rgba(255, 255, 255, 0.85);
+      border-radius: 0;
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.09);
+      box-shadow: none;
       overflow: hidden;
     }
 
@@ -128,14 +124,10 @@
 
     /* Shared glass card style */
     .side-card {
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.58);
-      backdrop-filter: blur(28px);
-      -webkit-backdrop-filter: blur(28px);
-      border: 1px solid rgba(255, 255, 255, 0.75);
-      box-shadow:
-        0 6px 32px rgba(100, 140, 210, 0.12),
-        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      border-radius: 0;
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.09);
+      box-shadow: none;
       overflow: hidden;
     }
 
@@ -437,7 +429,7 @@
       letter-spacing: 0.03em;
       text-transform: uppercase;
       padding: 4px 7px;
-      border-radius: 6px;
+      border-radius: 3px;
       background: rgba(180, 195, 220, 0.2);
       border: 1px solid rgba(180, 195, 220, 0.3);
       color: #a8b2c4;
@@ -633,7 +625,7 @@
       font-size: 13px;
       line-height: 1.5;
       padding: 7px 10px;
-      border-radius: 10px;
+      border-radius: 4px;
       max-width: 100%;
       word-break: break-word;
     }
