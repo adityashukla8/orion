@@ -759,7 +759,127 @@
       footer         { flex-direction: column; align-items: flex-start; gap: 16px; }
       /* Hero: reduce vertical padding */
       .hero-inner    { padding: 48px 0 40px; }
+      /* Implementation: stack zones */
+      .impl-zones { grid-template-columns: repeat(3, 1fr); }
+      .impl-features { grid-template-columns: 1fr; }
+      .impl-feat-col { border-right: none; border-bottom: 1px solid rgba(0,0,0,0.08); }
+      .impl-feat-col:last-child { border-bottom: none; }
     }
+    @media (max-width: 640px) {
+      .impl-zones { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+
+  <style>
+    /* ── Implementation Architecture ───────────────────────────────────────── */
+    #implementation { padding: 96px 0; background: #f8fafc; }
+    .impl-header { text-align: center; margin-bottom: 48px; }
+
+    .impl-canvas-wrap {
+      position: relative;
+      background: #ffffff;
+      background-image: radial-gradient(circle, rgba(0,0,0,0.09) 1px, transparent 1px);
+      background-size: 22px 22px;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 16px;
+      padding: 36px 28px 40px;
+      overflow: hidden;
+      margin-bottom: 32px;
+    }
+    .impl-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: visible;
+    }
+    .impl-zones {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 20px;
+      position: relative;
+      z-index: 1;
+    }
+    .impl-zone { display: flex; flex-direction: column; gap: 10px; }
+    .impl-zone-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      margin-bottom: 2px;
+    }
+    .rnode {
+      background: #ffffff;
+      border: 1px solid rgba(0,0,0,0.09);
+      border-left-width: 3px;
+      border-radius: 8px;
+      padding: 11px 13px;
+      transition: box-shadow 0.18s;
+    }
+    .rnode:hover { box-shadow: 0 2px 14px rgba(0,0,0,0.07); }
+    [data-zone="client"] .rnode { border-left-color: #0d9488; }
+    [data-zone="server"] .rnode { border-left-color: #3b82f6; }
+    [data-zone="adk"]    .rnode { border-left-color: #8b5cf6; }
+    [data-zone="gemini"] .rnode { border-left-color: #f59e0b; }
+    [data-zone="agents"] .rnode { border-left-color: #10b981; }
+    .rnode-header { font-size: 12px; font-weight: 600; color: #0f172a; margin-bottom: 4px; }
+    .rnode-body   { font-size: 11px; color: #64748b; line-height: 1.5; }
+    .rnode-tags   { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+    .rnode-tags span {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    [data-zone="client"] .rnode-tags span { background: rgba(13,148,136,0.07); border: 1px solid rgba(13,148,136,0.22); color: #0d9488; }
+    [data-zone="server"] .rnode-tags span { background: rgba(59,130,246,0.07); border: 1px solid rgba(59,130,246,0.22); color: #3b82f6; }
+    [data-zone="adk"]    .rnode-tags span { background: rgba(139,92,246,0.07); border: 1px solid rgba(139,92,246,0.22); color: #8b5cf6; }
+    [data-zone="gemini"] .rnode-tags span { background: rgba(245,158,11,0.07);  border: 1px solid rgba(245,158,11,0.22);  color: #d97706; }
+    [data-zone="agents"] .rnode-tags span { background: rgba(16,185,129,0.07);  border: 1px solid rgba(16,185,129,0.22);  color: #059669; }
+
+    /* Feature highlight grid */
+    .impl-features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .impl-feat-col {
+      padding: 24px 26px;
+      border-right: 1px solid rgba(0,0,0,0.08);
+      background: #ffffff;
+    }
+    .impl-feat-col:last-child { border-right: none; }
+    .impl-feat-heading {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #0f172a;
+      margin-bottom: 14px;
+    }
+    .impl-feat-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 12px;
+      color: #475569;
+      padding: 4px 0;
+    }
+    .impl-feat-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .impl-feat-dot.adk    { background: #8b5cf6; }
+    .impl-feat-dot.gemini { background: #f59e0b; }
+    .impl-feat-dot.arch   { background: #3b82f6; }
   </style>
 </head>
 <body>
@@ -776,6 +896,7 @@
       <li><a href="#problem">Problem</a></li>
       <li><a href="#how">How It Works</a></li>
       <li><a href="#agents">Agents</a></li>
+      <li><a href="#implementation">Architecture</a></li>
       <li><a href="#tech">Tech Stack</a></li>
     </ul>
     <a href="/console" class="nav-cta">
@@ -1502,6 +1623,162 @@
     </div>
   </section>
 
+  <!-- Implementation Architecture -->
+  <section id="implementation">
+    <div class="container">
+
+      <div class="impl-header reveal">
+        <span class="section-tag">Architecture</span>
+        <h2 class="section-headline">How ORION Works Under the Hood</h2>
+        <p class="section-sub">
+          End-to-end flow from surgeon's voice to real-time surgical intelligence —
+          built on Google ADK multi-agent framework, Gemini Live API, and a high-performance
+          async WebSocket pipeline.
+        </p>
+      </div>
+
+      <!-- Architecture Canvas -->
+      <div class="impl-canvas-wrap reveal">
+        <svg class="impl-svg" id="implSvg" aria-hidden="true"></svg>
+
+        <div class="impl-zones">
+
+          <!-- Zone 1: Client -->
+          <div class="impl-zone" data-zone="client">
+            <div class="impl-zone-label">Browser / Client</div>
+            <div class="rnode" id="rn-ui">
+              <div class="rnode-header">Surgical Console UI</div>
+              <div class="rnode-body">HTML/CSS · WebSocket client<br>Three.js · Canvas renderer</div>
+            </div>
+            <div class="rnode" id="rn-audio-in">
+              <div class="rnode-header">AudioWorklet</div>
+              <div class="rnode-body">Mic → 16kHz PCM<br>128-sample worklet frames</div>
+              <div class="rnode-tags"><span>audio/pcm</span><span>16kHz s16le</span></div>
+            </div>
+            <div class="rnode" id="rn-ws-client">
+              <div class="rnode-header">WebSocket Client</div>
+              <div class="rnode-body">Sends binary audio<br>Receives JSON events</div>
+              <div class="rnode-tags"><span>binary frames</span><span>JSON events</span></div>
+            </div>
+          </div>
+
+          <!-- Zone 2: Server -->
+          <div class="impl-zone" data-zone="server">
+            <div class="impl-zone-label">FastAPI Server</div>
+            <div class="rnode" id="rn-ws-server">
+              <div class="rnode-header">WS Handler</div>
+              <div class="rnode-body">Async duplex<br>Per-connection session</div>
+              <div class="rnode-tags"><span>FastAPI</span><span>asyncio</span></div>
+            </div>
+            <div class="rnode" id="rn-buffer">
+              <div class="rnode-header">Audio Buffer</div>
+              <div class="rnode-body">3200-byte chunks<br>→ send_realtime() at 100ms</div>
+              <div class="rnode-tags"><span>100ms cadence</span></div>
+            </div>
+            <div class="rnode" id="rn-dispatch">
+              <div class="rnode-header">Event Dispatcher</div>
+              <div class="rnode-body">Serializes ADK events<br>→ JSON to browser</div>
+              <div class="rnode-tags"><span>model_dump_json</span><span>by_alias</span></div>
+            </div>
+          </div>
+
+          <!-- Zone 3: ADK Runtime -->
+          <div class="impl-zone" data-zone="adk">
+            <div class="impl-zone-label">Google ADK Runtime</div>
+            <div class="rnode" id="rn-lrq">
+              <div class="rnode-header">LiveRequestQueue</div>
+              <div class="rnode-body">Per-session queue<br>Thread-safe audio feed</div>
+              <div class="rnode-tags"><span>close() on finally</span></div>
+            </div>
+            <div class="rnode" id="rn-runner">
+              <div class="rnode-header">Runner.run_live()</div>
+              <div class="rnode-body">Async event generator<br>aclosing() wrapper</div>
+              <div class="rnode-tags"><span>BIDI streaming</span><span>StreamingMode</span></div>
+            </div>
+            <div class="rnode" id="rn-callbacks">
+              <div class="rnode-header">Tool Callbacks</div>
+              <div class="rnode-body">before_tool_callback<br>after_tool_callback</div>
+              <div class="rnode-tags"><span>log_ai_interaction</span></div>
+            </div>
+          </div>
+
+          <!-- Zone 4: Gemini Live -->
+          <div class="impl-zone" data-zone="gemini">
+            <div class="impl-zone-label">Gemini Live API</div>
+            <div class="rnode" id="rn-model">
+              <div class="rnode-header">Gemini 2.5 Flash</div>
+              <div class="rnode-body">native-audio-dialog<br>Real-time multimodal</div>
+              <div class="rnode-tags"><span>Vertex AI</span><span>ADC auth</span></div>
+            </div>
+            <div class="rnode" id="rn-speech">
+              <div class="rnode-header">Speech Config</div>
+              <div class="rnode-body">Voice: Sadaltager<br>24kHz PCM output</div>
+              <div class="rnode-tags"><span>PrebuiltVoiceConfig</span></div>
+            </div>
+            <div class="rnode" id="rn-transcription">
+              <div class="rnode-header">Audio Transcription</div>
+              <div class="rnode-body">Input + output<br>Real-time text stream</div>
+              <div class="rnode-tags"><span>AudioTranscriptionConfig</span></div>
+            </div>
+          </div>
+
+          <!-- Zone 5: Agents & Tools -->
+          <div class="impl-zone" data-zone="agents">
+            <div class="impl-zone-label">Agents &amp; Tools</div>
+            <div class="rnode" id="rn-orchestrator">
+              <div class="rnode-header">ORION Orchestrator</div>
+              <div class="rnode-body">Root LlmAgent<br>Routes to 8 specialists</div>
+              <div class="rnode-tags"><span>transfer_to_agent</span></div>
+            </div>
+            <div class="rnode" id="rn-agents">
+              <div class="rnode-header">8 Specialist Agents</div>
+              <div class="rnode-body">Briefing · Timeout · Report<br>Complication · EBL · Drug<br>Anatomy · Handoff</div>
+              <div class="rnode-tags"><span>LlmAgent</span><span>sub_agents</span></div>
+            </div>
+            <div class="rnode" id="rn-tools">
+              <div class="rnode-header">24 Tools</div>
+              <div class="rnode-body">IR · IV · AR · PC · DOC<br>Decision Support · Global</div>
+              <div class="rnode-tags"><span>FunctionTool</span><span>Python</span></div>
+            </div>
+          </div>
+
+        </div><!-- /impl-zones -->
+      </div><!-- /impl-canvas-wrap -->
+
+      <!-- Feature highlight grid -->
+      <div class="impl-features reveal">
+        <div class="impl-feat-col">
+          <div class="impl-feat-heading">ADK Features Used</div>
+          <div class="impl-feat-item"><span class="impl-feat-dot adk"></span>LlmAgent with sub_agents</div>
+          <div class="impl-feat-item"><span class="impl-feat-dot adk"></span>transfer_to_agent routing</div>
+          <div class="impl-feat-item"><span class="impl-feat-dot adk"></span>before / after tool callbacks</div>
+          <div class="impl-feat-item"><span class="impl-feat-dot adk"></span>Runner.run_live() BIDI</div>
+          <div class="impl-feat-item"><span class="impl-feat-dot adk"></span>LiveRequestQueue</div>
+          <div class="impl-feat-item"><span class="impl-feat-dot adk"></span>aclosing() cleanup</div>
+        </div>
+        <div class="impl-feat-col">
+          <div class="impl-feat-heading">Gemini Live Features</div>
+          <div class="impl-feat-item"><span class="impl-feat-dot gemini"></span>Native audio dialog model</div>
+          <div class="impl-feat-item"><span class="impl-feat-dot gemini"></span>BIDI streaming (2-way)</div>
+          <div class="impl-feat-item"><span class="impl-feat-dot gemini"></span>Real-time audio transcription</div>
+          <div class="impl-feat-item"><span class="impl-feat-dot gemini"></span>PrebuiltVoiceConfig</div>
+          <div class="impl-feat-item"><span class="impl-feat-dot gemini"></span>Function calling in live</div>
+          <div class="impl-feat-item"><span class="impl-feat-dot gemini"></span>Multi-agent audio generation</div>
+        </div>
+        <div class="impl-feat-col">
+          <div class="impl-feat-heading">Architecture Patterns</div>
+          <div class="impl-feat-item"><span class="impl-feat-dot arch"></span>Per-session async WS proxy</div>
+          <div class="impl-feat-item"><span class="impl-feat-dot arch"></span>AudioWorklet → PCM pipeline</div>
+          <div class="impl-feat-item"><span class="impl-feat-dot arch"></span>100ms audio chunking</div>
+          <div class="impl-feat-item"><span class="impl-feat-dot arch"></span>asyncio.wait FIRST_EXCEPTION</div>
+          <div class="impl-feat-item"><span class="impl-feat-dot arch"></span>camelCase JSON aliasing</div>
+          <div class="impl-feat-item"><span class="impl-feat-dot arch"></span>Real-time event streaming</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
   <!-- Tech Stack -->
   <section id="tech">
     <div class="container">
@@ -1696,6 +1973,93 @@
         });
       }, { threshold: 0.1 });
       els.forEach(el => io.observe(el));
+    })();
+  </script>
+
+  <script>
+    // ── Implementation Architecture — bezier edge drawing ──────────────────
+    (function () {
+      const edges = [
+        // forward flow (solid)
+        { from: 'rn-audio-in',     to: 'rn-buffer',       color: '#0d9488', dashed: false },
+        { from: 'rn-ws-client',    to: 'rn-ws-server',    color: '#3b82f6', dashed: false },
+        { from: 'rn-buffer',       to: 'rn-lrq',          color: '#3b82f6', dashed: false },
+        { from: 'rn-runner',       to: 'rn-model',        color: '#8b5cf6', dashed: false },
+        { from: 'rn-model',        to: 'rn-orchestrator', color: '#f59e0b', dashed: false },
+        { from: 'rn-orchestrator', to: 'rn-agents',       color: '#10b981', dashed: false },
+        // return / response path (dashed)
+        { from: 'rn-transcription',to: 'rn-dispatch',     color: '#f59e0b', dashed: true  },
+        { from: 'rn-dispatch',     to: 'rn-ws-client',    color: '#3b82f6', dashed: true  },
+      ];
+
+      let markerId = 0;
+
+      function draw() {
+        const wrap = document.querySelector('.impl-canvas-wrap');
+        const svg  = document.getElementById('implSvg');
+        if (!wrap || !svg) return;
+
+        svg.innerHTML = '';
+        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        svg.appendChild(defs);
+
+        const wRect = wrap.getBoundingClientRect();
+
+        function center(id) {
+          const el = document.getElementById(id);
+          if (!el) return null;
+          const r = el.getBoundingClientRect();
+          return {
+            left:  r.left  - wRect.left,
+            right: r.right - wRect.left,
+            cy:    r.top   - wRect.top + r.height / 2,
+          };
+        }
+
+        edges.forEach(({ from, to, color, dashed }) => {
+          const a = center(from);
+          const b = center(to);
+          if (!a || !b) return;
+
+          const goingRight = a.right < b.left;
+          const x1 = goingRight ? a.right : a.left;
+          const x2 = goingRight ? b.left  : b.right;
+          const y1 = a.cy, y2 = b.cy;
+          const cpx = Math.abs(x2 - x1) * 0.45;
+          const cp1x = goingRight ? x1 + cpx : x1 - cpx;
+          const cp2x = goingRight ? x2 - cpx : x2 + cpx;
+
+          // Arrow marker
+          const mid = `impl-arrow-${markerId++}`;
+          const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+          marker.setAttribute('id', mid);
+          marker.setAttribute('markerWidth', '7');
+          marker.setAttribute('markerHeight', '7');
+          marker.setAttribute('refX', '3.5');
+          marker.setAttribute('refY', '3.5');
+          marker.setAttribute('orient', 'auto');
+          const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          arrow.setAttribute('d', 'M 0 0.5 L 6 3.5 L 0 6.5 z');
+          arrow.setAttribute('fill', color);
+          arrow.setAttribute('fill-opacity', '0.55');
+          marker.appendChild(arrow);
+          defs.appendChild(marker);
+
+          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          path.setAttribute('d', `M ${x1} ${y1} C ${cp1x} ${y1} ${cp2x} ${y2} ${x2} ${y2}`);
+          path.setAttribute('fill', 'none');
+          path.setAttribute('stroke', color);
+          path.setAttribute('stroke-width', '1.5');
+          path.setAttribute('stroke-opacity', dashed ? '0.38' : '0.52');
+          if (dashed) path.setAttribute('stroke-dasharray', '4 3');
+          path.setAttribute('marker-end', `url(#${mid})`);
+          svg.appendChild(path);
+        });
+      }
+
+      window.addEventListener('load',   draw);
+      window.addEventListener('resize', draw);
+      setTimeout(draw, 400);
     })();
   </script>
 
