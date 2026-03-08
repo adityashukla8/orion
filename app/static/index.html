@@ -7,18 +7,18 @@
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: #f4f6f9;
-      color: #1a1a2e;
-      font-family: 'Poppins', sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      font-family: 'Inter', sans-serif;
       height: 100vh;
       display: flex;
-      gap: 8px;
-      padding: 8px;
+      gap: 0;
+      padding: 0;
       overflow: hidden;
     }
 
@@ -30,6 +30,7 @@
       background: #000;
       border-radius: 0;
       overflow: hidden;
+      border-right: 1px solid rgba(0, 0, 0, 0.08);
     }
 
     /* Video fills the left portion of display-area */
@@ -54,7 +55,7 @@
       flex-direction: column;
       gap: 0;
       padding: 0;
-      background: #dde3ec;
+      background: #f8fafc;
       /* No transition — column expands/collapses instantly so canvas        dimensions are valid on the very next rAF after tile is shown.       Visual polish comes from the per-tile tile-in animation instead. */
     }
 
@@ -70,9 +71,9 @@
       flex-direction: column;
       flex: 1;
       min-height: 0;
-      border-radius: 8px;
+      border-radius: 0;
       background: #ffffff;
-      border: 1px solid rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(0, 0, 0, 0.08);
       box-shadow: none;
       overflow: hidden;
     }
@@ -92,10 +93,10 @@
       padding: 10px 14px 8px;
       font-size: 11px;
       font-weight: 600;
-      letter-spacing: 0.13em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: rgba(60, 90, 155, 0.7);
-      border-bottom: 1px solid rgba(180, 200, 235, 0.4);
+      color: #475569;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
     }
 
     .modal-body {
@@ -116,29 +117,31 @@
       flex: 0 0 15%;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 0;
       overflow-y: auto;
       overflow-x: hidden;
       min-width: 160px;
+      background: #ffffff;
     }
 
     /* Shared glass card style */
     .side-card {
-      border-radius: 8px;
+      border-radius: 0;
       background: #ffffff;
-      border: 1px solid rgba(0, 0, 0, 0.15);
+      border: none;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
       box-shadow: none;
       overflow: hidden;
     }
 
     .card-label {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.14em;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: #b0b8c8;
-      padding: 10px 12px 6px;
-      border-bottom: 1px solid rgba(180, 200, 235, 0.3);
+      color: #0f172a;
+      padding: 12px 14px 10px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
       flex-shrink: 0;
       display: flex;
       align-items: center;
@@ -148,8 +151,8 @@
     }
 
     .card-label .card-toggle {
-      font-size: 10px;
-      color: #b0b8c8;
+      font-size: 14px;
+      color: #94a3b8;
       transition: transform 0.2s ease;
       flex-shrink: 0;
     }
@@ -379,11 +382,11 @@
 
     /* ── Status label colours per state ── */
     #orion-status-label {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.1em;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: #9aa3b5;
+      color: #94a3b8;
       text-align: center;
     }
     #orion-status-label.lbl-connecting  { color: #94a3b8; }
@@ -398,19 +401,19 @@
     }
 
     #agents-tools-body {
-      padding: 8px 12px 10px;
+      padding: 12px 14px 14px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
     }
 
     .at-section-label {
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.13em;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: #b0b8c8;
-      margin-bottom: 3px;
+      color: #475569;
+      margin-bottom: 4px;
     }
 
     #agents-row {
@@ -424,15 +427,15 @@
     }
 
     .agent-chip {
-      font-size: 9.5px;
-      font-weight: 600;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-      padding: 4px 7px;
-      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      text-transform: none;
+      padding: 5px 8px;
+      border-radius: 4px;
       background: transparent;
-      border: 1px solid rgba(0, 0, 0, 0.18);
-      color: #a8b2c4;
+      border: 1px solid rgba(0, 0, 0, 0.14);
+      color: #475569;
       text-align: center;
       transition: background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
     }
@@ -451,9 +454,9 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 5px 0;
-      border-bottom: 1px solid rgba(180, 200, 235, 0.18);
-      color: #8a94a8;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      color: #475569;
       transition: color 0.2s ease;
     }
 
@@ -463,10 +466,10 @@
 
     .tool-chip-count {
       flex-shrink: 0;
-      font-size: 10px;
-      font-weight: 700;
-      color: #5a9fd4;
-      min-width: 18px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #0d9488;
+      min-width: 20px;
       text-align: right;
       opacity: 0;
     }
@@ -476,20 +479,21 @@
     }
 
     .tool-chip-name {
-      font-size: 9.5px;
-      font-weight: 500;
-      letter-spacing: 0.02em;
-      font-family: 'Poppins', sans-serif;
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0;
+      font-family: 'Inter', sans-serif;
       line-height: 1.3;
+      color: #475569;
     }
 
     .tool-chip.active .tool-chip-name {
-      color: #5a9fd4;
-      font-weight: 700;
+      color: #0f172a;
+      font-weight: 600;
     }
 
     .tool-chip.called .tool-chip-name {
-      color: #6a7a96;
+      color: #0f172a;
     }
 
     /* Per-agent active colours */
@@ -586,18 +590,18 @@
 
     #routing-log {
       overflow-y: auto;
-      max-height: 220px;
-      padding: 8px 12px 10px;
+      max-height: 240px;
+      padding: 10px 12px 12px;
       display: flex;
       flex-direction: column;
       gap: 2px;
     }
 
     .routing-event {
-      font-size: 12px;
+      font-size: 11px;
       padding: 3px 0 3px 8px;
-      border-left: 2px solid #d8dde8;
-      color: #7b8299;
+      border-left: 2px solid #e2e8f0;
+      color: #64748b;
       line-height: 1.4;
       word-break: break-word;
     }
@@ -614,49 +618,49 @@
 
     #transcript-log {
       overflow-y: auto;
-      max-height: 300px;
-      padding: 8px 10px 10px;
+      max-height: 320px;
+      padding: 10px 12px 12px;
       display: flex;
       flex-direction: column;
-      gap: 7px;
+      gap: 6px;
     }
 
     .transcript-entry {
       font-size: 13px;
       line-height: 1.5;
       padding: 7px 10px;
-      border-radius: 4px;
+      border-radius: 6px;
       max-width: 100%;
       word-break: break-word;
     }
 
     .transcript-entry .speaker {
       font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.1em;
+      font-weight: 600;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       margin-bottom: 3px;
-      opacity: 0.5;
+      opacity: 0.55;
     }
 
     .transcript-entry.surgeon {
-      background: rgba(58, 130, 212, 0.08);
-      border: 1px solid rgba(58, 130, 212, 0.18);
-      color: #1a4e80;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e3a8a;
       align-self: flex-end;
     }
 
     .transcript-entry.orion {
-      background: rgba(100, 170, 240, 0.07);
-      border: 1px solid rgba(100, 170, 240, 0.16);
-      color: #1e5c96;
+      background: #f0fdfa;
+      border: 1px solid #99f6e4;
+      color: #134e4a;
       align-self: flex-start;
     }
 
     /* Scrollbar */
-    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.1); border-radius: 2px; }
+    ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.12); border-radius: 2px; }
   </style>
 </head>
 <body>
