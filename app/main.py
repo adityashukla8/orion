@@ -107,7 +107,7 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str, session_id: str
             speech_config=types.SpeechConfig(
                 voice_config=types.VoiceConfig(
                     prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                        voice_name='Kore',
+                        voice_name='Sadaltager',
                     )
                 )
             ),
