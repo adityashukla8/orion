@@ -445,60 +445,59 @@
       transition: background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
     }
 
-    /* ── Tools grid ── */
+    /* ── Tools list ── */
     #tools-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 4px;
+      display: flex;
+      flex-direction: column;
     }
 
     .tools-row-span {
-      grid-column: 1 / -1;
+      width: 100%;
     }
 
     .tool-chip {
       display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 2px;
-      font-size: 9px;
-      font-weight: 600;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-      padding: 4px 7px;
-      border-radius: 6px;
-      background: rgba(180, 195, 220, 0.15);
-      border: 1px solid rgba(180, 195, 220, 0.25);
-      color: #a8b2c4;
-      word-break: break-word;
-      hyphens: auto;
-      min-width: 0;
-      transition: background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(180, 200, 235, 0.18);
+      color: #8a94a8;
+      transition: color 0.2s ease;
     }
 
-    .tool-chip-name {
-      line-height: 1.3;
+    .tool-chip:last-child {
+      border-bottom: none;
     }
 
     .tool-chip-count {
-      font-size: 9px;
+      flex-shrink: 0;
+      font-size: 10px;
       font-weight: 700;
       color: #5a9fd4;
-      background: rgba(90, 159, 212, 0.18);
-      border-radius: 3px;
-      padding: 0 4px;
-      display: none;
+      min-width: 18px;
+      text-align: right;
+      opacity: 0;
     }
 
     .tool-chip.called .tool-chip-count {
-      display: inline;
+      opacity: 1;
     }
 
-    .tool-chip.active {
-      background: rgba(90, 159, 212, 0.18);
-      border-color: rgba(90, 159, 212, 0.55);
+    .tool-chip-name {
+      font-size: 9.5px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      font-family: 'Poppins', sans-serif;
+      line-height: 1.3;
+    }
+
+    .tool-chip.active .tool-chip-name {
       color: #5a9fd4;
-      box-shadow: 0 0 7px rgba(90, 159, 212, 0.25);
+      font-weight: 700;
+    }
+
+    .tool-chip.called .tool-chip-name {
+      color: #6a7a96;
     }
 
     /* Per-agent active colours */
@@ -760,36 +759,36 @@
           <div>
             <div class="at-section-label" style="margin-top:6px;">Tools</div>
             <div id="tools-row">
-              <div class="at-section-label tools-row-span" style="margin-top:2px;">Patient Data</div>
-              <div class="tool-chip" data-tool="display_patient_data"><span class="tool-chip-name">display_patient_data</span><span class="tool-chip-count"></span></div>
-              <div class="tool-chip" data-tool="display_all_patient_data"><span class="tool-chip-name">display_all_patient_data</span><span class="tool-chip-count"></span></div>
-              <div class="tool-chip" data-tool="hide_patient_data"><span class="tool-chip-name">hide_patient_data</span><span class="tool-chip-count"></span></div>
-              <div class="at-section-label tools-row-span" style="margin-top:4px;">CT Imaging</div>
-              <div class="tool-chip" data-tool="navigate_ct"><span class="tool-chip-name">navigate_ct</span><span class="tool-chip-count"></span></div>
-              <div class="tool-chip" data-tool="jump_to_landmark"><span class="tool-chip-name">jump_to_landmark</span><span class="tool-chip-count"></span></div>
-              <div class="tool-chip" data-tool="hide_ct"><span class="tool-chip-name">hide_ct</span><span class="tool-chip-count"></span></div>
-              <div class="at-section-label tools-row-span" style="margin-top:4px;">3D Anatomy</div>
-              <div class="tool-chip" data-tool="rotate_model"><span class="tool-chip-name">rotate_model</span><span class="tool-chip-count"></span></div>
-              <div class="tool-chip" data-tool="toggle_structure"><span class="tool-chip-name">toggle_structure</span><span class="tool-chip-count"></span></div>
-              <div class="tool-chip" data-tool="hide_3d"><span class="tool-chip-name">hide_3d</span><span class="tool-chip-count"></span></div>
-              <div class="tool-chip" data-tool="reset_3d_view"><span class="tool-chip-name">reset_3d_view</span><span class="tool-chip-count"></span></div>
-              <div class="at-section-label tools-row-span" style="margin-top:4px;">Procedure</div>
-              <div class="tool-chip" data-tool="get_surgical_phase"><span class="tool-chip-name">get_surgical_phase</span><span class="tool-chip-count"></span></div>
-              <div class="tool-chip" data-tool="hide_surgical_checklist"><span class="tool-chip-name">hide_surgical_checklist</span><span class="tool-chip-count"></span></div>
-              <div class="at-section-label tools-row-span" style="margin-top:4px;">Op. Log</div>
-              <div class="tool-chip" data-tool="log_event"><span class="tool-chip-name">log_event</span><span class="tool-chip-count"></span></div>
-              <div class="tool-chip" data-tool="show_event_log"><span class="tool-chip-name">show_event_log</span><span class="tool-chip-count"></span></div>
-              <div class="tool-chip" data-tool="hide_event_log"><span class="tool-chip-name">hide_event_log</span><span class="tool-chip-count"></span></div>
-              <div class="tool-chip" data-tool="capture_surgical_photo"><span class="tool-chip-name">capture_surgical_photo</span><span class="tool-chip-count"></span></div>
-              <div class="at-section-label tools-row-span" style="margin-top:4px;">Decision Support</div>
-              <div class="tool-chip" data-tool="get_complication_protocol"><span class="tool-chip-name">get_complication_protocol</span><span class="tool-chip-count"></span></div>
-              <div class="tool-chip" data-tool="update_ebl"><span class="tool-chip-name">update_ebl</span><span class="tool-chip-count"></span></div>
-              <div class="tool-chip" data-tool="get_ebl_summary"><span class="tool-chip-name">get_ebl_summary</span><span class="tool-chip-count"></span></div>
-              <div class="tool-chip" data-tool="check_drug_safety"><span class="tool-chip-name">check_drug_safety</span><span class="tool-chip-count"></span></div>
-              <div class="tool-chip" data-tool="get_anatomy_context"><span class="tool-chip-name">get_anatomy_context</span><span class="tool-chip-count"></span></div>
-              <div class="at-section-label tools-row-span" style="margin-top:4px;">Global</div>
-              <div class="tool-chip" data-tool="hide_all_overlays"><span class="tool-chip-name">hide_all_overlays</span><span class="tool-chip-count"></span></div>
-              <div class="tool-chip" data-tool="show_only_ar"><span class="tool-chip-name">show_only_ar</span><span class="tool-chip-count"></span></div>
+              <div class="at-section-label" style="margin-top:2px;">Patient Data</div>
+              <div class="tool-chip" data-tool="display_patient_data"><span class="tool-chip-count"></span><span class="tool-chip-name">display_patient_data</span></div>
+              <div class="tool-chip" data-tool="display_all_patient_data"><span class="tool-chip-count"></span><span class="tool-chip-name">display_all_patient_data</span></div>
+              <div class="tool-chip" data-tool="hide_patient_data"><span class="tool-chip-count"></span><span class="tool-chip-name">hide_patient_data</span></div>
+              <div class="at-section-label" style="margin-top:4px;">CT Imaging</div>
+              <div class="tool-chip" data-tool="navigate_ct"><span class="tool-chip-count"></span><span class="tool-chip-name">navigate_ct</span></div>
+              <div class="tool-chip" data-tool="jump_to_landmark"><span class="tool-chip-count"></span><span class="tool-chip-name">jump_to_landmark</span></div>
+              <div class="tool-chip" data-tool="hide_ct"><span class="tool-chip-count"></span><span class="tool-chip-name">hide_ct</span></div>
+              <div class="at-section-label" style="margin-top:4px;">3D Anatomy</div>
+              <div class="tool-chip" data-tool="rotate_model"><span class="tool-chip-count"></span><span class="tool-chip-name">rotate_model</span></div>
+              <div class="tool-chip" data-tool="toggle_structure"><span class="tool-chip-count"></span><span class="tool-chip-name">toggle_structure</span></div>
+              <div class="tool-chip" data-tool="hide_3d"><span class="tool-chip-count"></span><span class="tool-chip-name">hide_3d</span></div>
+              <div class="tool-chip" data-tool="reset_3d_view"><span class="tool-chip-count"></span><span class="tool-chip-name">reset_3d_view</span></div>
+              <div class="at-section-label" style="margin-top:4px;">Procedure</div>
+              <div class="tool-chip" data-tool="get_surgical_phase"><span class="tool-chip-count"></span><span class="tool-chip-name">get_surgical_phase</span></div>
+              <div class="tool-chip" data-tool="hide_surgical_checklist"><span class="tool-chip-count"></span><span class="tool-chip-name">hide_surgical_checklist</span></div>
+              <div class="at-section-label" style="margin-top:4px;">Op. Log</div>
+              <div class="tool-chip" data-tool="log_event"><span class="tool-chip-count"></span><span class="tool-chip-name">log_event</span></div>
+              <div class="tool-chip" data-tool="show_event_log"><span class="tool-chip-count"></span><span class="tool-chip-name">show_event_log</span></div>
+              <div class="tool-chip" data-tool="hide_event_log"><span class="tool-chip-count"></span><span class="tool-chip-name">hide_event_log</span></div>
+              <div class="tool-chip" data-tool="capture_surgical_photo"><span class="tool-chip-count"></span><span class="tool-chip-name">capture_surgical_photo</span></div>
+              <div class="at-section-label" style="margin-top:4px;">Decision Support</div>
+              <div class="tool-chip" data-tool="get_complication_protocol"><span class="tool-chip-count"></span><span class="tool-chip-name">get_complication_protocol</span></div>
+              <div class="tool-chip" data-tool="update_ebl"><span class="tool-chip-count"></span><span class="tool-chip-name">update_ebl</span></div>
+              <div class="tool-chip" data-tool="get_ebl_summary"><span class="tool-chip-count"></span><span class="tool-chip-name">get_ebl_summary</span></div>
+              <div class="tool-chip" data-tool="check_drug_safety"><span class="tool-chip-count"></span><span class="tool-chip-name">check_drug_safety</span></div>
+              <div class="tool-chip" data-tool="get_anatomy_context"><span class="tool-chip-count"></span><span class="tool-chip-name">get_anatomy_context</span></div>
+              <div class="at-section-label" style="margin-top:4px;">Global</div>
+              <div class="tool-chip" data-tool="hide_all_overlays"><span class="tool-chip-count"></span><span class="tool-chip-name">hide_all_overlays</span></div>
+              <div class="tool-chip" data-tool="show_only_ar"><span class="tool-chip-count"></span><span class="tool-chip-name">show_only_ar</span></div>
             </div>
           </div>
 
