@@ -48,6 +48,7 @@ from .tools import (
     get_ebl_summary,
     check_drug_safety,
     get_anatomy_context,
+    show_agent_summary,
 )
 
 # The native audio model for real-time voice I/O via runner.run_live().
@@ -194,17 +195,22 @@ timeout_agent = LlmAgent(
         'You are the Surgical Safety Timeout specialist. You guide the WHO '
         'Surgical Safety Checklist timeout.\n\n'
         'When activated:\n'
-        '1. Call display_all_patient_data() to retrieve patient identity and clinical data.\n'
-        '2. Read the returned data and verbally confirm each timeout item:\n'
+        '1. Call hide_all_overlays() to clear the display.\n'
+        '2. Call display_all_patient_data() to retrieve patient identity and clinical data.\n'
+        '3. Call get_surgical_phase() with the current phase to show the phase checklist tile.\n'
+        '4. Read the returned data and verbally confirm each timeout item:\n'
         '   a) "Patient: [age] [sex], [diagnosis]"\n'
         '   b) "Procedure: [procedure name]"\n'
         '   c) "Allergies: [allergies]"\n'
         '   d) "Medications: [held meds noted]"\n'
         '   e) "Labs: Hemoglobin [value], INR [value], Platelets [value]"\n'
         '   f) "Anticoagulation status: [aspirin held / INR normal]"\n'
-        '3. Call log_event("timeout_complete", "WHO timeout verified — [procedure]") '
+        '5. Call log_event("timeout_complete", "WHO timeout verified — [procedure]") '
         'to document completion.\n'
-        '4. Say "Timeout complete. Verified and logged."\n\n'
+        '6. Call show_agent_summary with title="WHO Surgical Safety Checklist" and '
+        'bullets listing each confirmed timeout item (patient, procedure, allergies, '
+        'medications, labs, anticoagulation status).\n'
+        '7. Say "Timeout complete. Verified and logged."\n\n'
         'RULES:\n'
         '- State ONLY values from the tool response — never invent.\n'
         '- If any value looks abnormal (e.g., low hemoglobin), flag it: '
@@ -214,7 +220,7 @@ timeout_agent = LlmAgent(
         'ORION_Orchestrator. You handle ONLY timeouts — all other commands '
         'belong to the orchestrator.\n'
     ),
-    tools=[display_all_patient_data, log_event],
+    tools=[display_all_patient_data, get_surgical_phase, log_event, hide_all_overlays, show_agent_summary],
     before_tool_callback=_grounding_before_tool,
     after_tool_callback=_grounding_after_tool,
 )
@@ -238,13 +244,17 @@ report_agent = LlmAgent(
     ),
     instruction=(
         'You are the Operative Report specialist. When activated:\n'
-        '1. Call show_event_log() to retrieve all logged events.\n'
-        '2. Call display_all_patient_data() for patient context.\n'
-        '3. Deliver a structured verbal operative summary:\n'
+        '1. Call hide_all_overlays() to clear the display.\n'
+        '2. Call show_event_log() to retrieve all logged events (shows the log tile).\n'
+        '3. Call display_all_patient_data() for patient context (shows the vitals tile).\n'
+        '4. Deliver a structured verbal operative summary:\n'
         '   - "Patient: [age] [sex]. Procedure: [name]."\n'
         '   - Chronological event summary (timestamps + key events)\n'
         '   - Complications: list any, or "None recorded."\n'
-        '   - "[N] events logged in total."\n\n'
+        '   - "[N] events logged in total."\n'
+        '5. Call show_agent_summary with title="Operative Report", content with the '
+        'patient and procedure line, and bullets listing each key event with timestamp '
+        '(and a final "Complications: None" or list of complications).\n\n'
         'RULES:\n'
         '- Keep summary under 80 words.\n'
         '- ONLY report events from the log — never invent events.\n'
@@ -254,7 +264,7 @@ report_agent = LlmAgent(
         'ORION_Orchestrator. You handle ONLY reports — all other commands '
         'belong to the orchestrator.\n'
     ),
-    tools=[show_event_log, display_all_patient_data],
+    tools=[show_event_log, display_all_patient_data, hide_all_overlays, show_agent_summary],
     before_tool_callback=_grounding_before_tool,
     after_tool_callback=_grounding_after_tool,
 )
@@ -278,14 +288,17 @@ complication_advisor = LlmAgent(
     ),
     instruction=(
         'You are the Complication Management specialist. When activated:\n'
-        '1. Call get_surgical_phase() with the most recently mentioned phase '
-        '(or ask the surgeon which phase they are in).\n'
-        '2. Call get_complication_protocol(complication_type, current_phase) '
-        'with the reported complication type.\n'
-        '3. Call toggle_structure() to highlight the relevant anatomy.\n'
-        '4. Read the protocol steps aloud, one by one, clearly and calmly.\n'
-        '5. Call log_event("complication", description) to document it.\n'
-        '6. Call capture_surgical_photo() to capture the field.\n\n'
+        '1. Call hide_all_overlays() to clear the display.\n'
+        '2. Call get_surgical_phase() with the most recently mentioned phase '
+        '(or ask the surgeon which phase they are in) — shows the phase checklist tile.\n'
+        '3. Call get_complication_protocol(complication_type, current_phase) '
+        'with the reported complication type — shows the protocol steps tile.\n'
+        '4. Call toggle_structure() to highlight the relevant anatomy.\n'
+        '5. Read the protocol steps aloud, one by one, clearly and calmly.\n'
+        '6. Call log_event("complication", description) to document it.\n'
+        '7. Call capture_surgical_photo() to capture the field.\n'
+        '8. Call show_agent_summary with title="Complication Protocol — [type]" and '
+        'bullets listing each numbered protocol step from the tool response.\n\n'
         'RULES:\n'
         '- Speak CALMLY and CLEARLY — the surgeon is under stress.\n'
         '- State each step as a numbered instruction.\n'
@@ -295,7 +308,7 @@ complication_advisor = LlmAgent(
     ),
     tools=[
         get_complication_protocol, get_surgical_phase, toggle_structure,
-        log_event, capture_surgical_photo,
+        log_event, capture_surgical_photo, hide_all_overlays, show_agent_summary,
     ],
     before_tool_callback=_grounding_before_tool,
     after_tool_callback=_grounding_after_tool,
@@ -422,23 +435,26 @@ handoff_agent = LlmAgent(
     ),
     instruction=(
         'You are the Surgical Handoff specialist. When activated:\n'
-        '1. Call show_event_log() to get all logged events.\n'
-        '2. Call display_all_patient_data() for patient context.\n'
-        '3. Call get_surgical_phase() for the current phase (use the most '
-        'recent phase if known, or ask the surgeon).\n'
-        '4. Deliver a structured verbal handoff in SBAR format:\n'
+        '1. Call hide_all_overlays() to clear the display.\n'
+        '2. Call show_event_log() to get all logged events (shows the log tile).\n'
+        '3. Call display_all_patient_data() for patient context (shows vitals tile).\n'
+        '4. Call get_surgical_phase() for the current phase (shows checklist tile).\n'
+        '5. Deliver a structured verbal handoff in SBAR format:\n'
         '   S (Situation): Patient demographics, procedure, current phase.\n'
         '   B (Background): Diagnosis, key labs, allergies, held medications.\n'
         '   A (Assessment): Summary of logged events, any complications, EBL.\n'
         '   R (Recommendation): Next phase, key warnings, pending items.\n'
-        '5. Call log_event("milestone", "Handoff completed — SBAR delivered").\n\n'
+        '6. Call show_agent_summary with title="Handoff — SBAR" and bullets for each '
+        'SBAR section: "S: [situation]", "B: [background]", "A: [assessment]", '
+        '"R: [recommendation]".\n'
+        '7. Call log_event("milestone", "Handoff completed — SBAR delivered").\n\n'
         'RULES:\n'
         '- Keep the handoff under 80 words total.\n'
         '- State ONLY data from tool responses — never invent.\n'
         '- After delivering the handoff, IMMEDIATELY transfer back to '
         'ORION_Orchestrator. You handle ONLY handoffs.\n'
     ),
-    tools=[show_event_log, display_all_patient_data, get_surgical_phase, log_event],
+    tools=[show_event_log, display_all_patient_data, get_surgical_phase, log_event, hide_all_overlays, show_agent_summary],
     before_tool_callback=_grounding_before_tool,
     after_tool_callback=_grounding_after_tool,
 )

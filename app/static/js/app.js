@@ -192,6 +192,7 @@ async function connect() {
     ClinicalPanel.init({ modalId: 'clinical-modal', bodyId: 'vitals-body' });
     ChecklistPanel.init({ modalId: 'checklist-modal', bodyId: 'checklist-body' });
     LogPanel.init({ modalId: 'log-modal', bodyId: 'log-body' });
+    SummaryPanel.init({ modalId: 'summary-modal', bodyId: 'summary-body' });
   };
 
   ws.onmessage = (event) => {
@@ -207,6 +208,7 @@ async function connect() {
     currentSurgeonEntry = null;
     updateAgentCard();
     setActiveToolChip(null);
+    SummaryPanel.hide();
     document.querySelectorAll('.tool-chip').forEach((chip) => {
       chip.classList.remove('called', 'active');
       const countEl = chip.querySelector('.tool-chip-count');
@@ -526,12 +528,15 @@ function handleFunctionResponse(fr) {
       relayoutTiles();
     }
   }
+  if (cmd.layer === 'summary' && cmd.action === 'show') {
+    SummaryPanel.show(cmd.title, cmd.content, cmd.bullets);
+  }
 }
 
 
 // ── Tile layout ────────────────────────────────────────────────────────────
 
-const MODAL_IDS = ['ct-modal', 'ar-modal', 'clinical-modal', 'checklist-modal', 'log-modal'];
+const MODAL_IDS = ['ct-modal', 'ar-modal', 'clinical-modal', 'checklist-modal', 'log-modal', 'summary-modal'];
 
 // When any tile panel becomes visible the tiles column expands to 40% width,
 // pushing the video into the remaining 60%. No position arithmetic needed —

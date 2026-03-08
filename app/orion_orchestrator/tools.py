@@ -1210,6 +1210,29 @@ def show_only_ar() -> dict:
     }
 
 
+def show_agent_summary(title: str, content: str, bullets: list = None) -> dict:
+    """
+    Display a formatted text summary tile on the surgical console.
+    Call this as the FINAL step after all other display tools to surface
+    the agent's key output as a readable tile for the surgeon.
+
+    Args:
+        title:   Tile header (e.g. 'WHO Surgical Safety Checklist', 'Handoff — SBAR')
+        content: Introductory paragraph or free-form text (can be empty string '')
+        bullets: Optional list of numbered/bulleted items (protocol steps, SBAR sections, etc.)
+    """
+    return {
+        'status': 'displayed',
+        'render_command': {
+            'layer': 'summary',
+            'action': 'show',
+            'title': title,
+            'content': content,
+            'bullets': bullets or [],
+        },
+    }
+
+
 def hide_all_overlays() -> dict:
     """
     Use this tool when the surgeon asks to clear, hide, close, or dismiss ALL
