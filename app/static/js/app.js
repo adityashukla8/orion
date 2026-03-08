@@ -66,6 +66,7 @@ const TOOL_DEDUP_MS    = 4000;  // ignore identical call within 4 s
 
 // ── Agent & tool metrics ───────────────────────────────────────────────────
 let   _activeAgent  = null;                // current event.author
+let   _activeTool   = null;               // tool name being called right now
 const _toolMetrics  = new Map();           // toolName → { count, lastCalled }
 
 function updateAgentCard() {
@@ -73,20 +74,27 @@ function updateAgentCard() {
   document.querySelectorAll('.agent-chip').forEach((chip) => {
     chip.classList.toggle('active', chip.dataset.agent === _activeAgent);
   });
+}
 
-  // Re-render tool call list, sorted by most recently called
-  const metricsEl = document.getElementById('tool-metrics');
-  if (!metricsEl) return;
-  const sorted = [..._toolMetrics.entries()]
-    .sort((a, b) => b[1].lastCalled - a[1].lastCalled);
-  if (sorted.length === 0) {
-    metricsEl.innerHTML = '<span class="tool-metrics-empty">No tools called yet</span>';
-  } else {
-    metricsEl.innerHTML = sorted.map(([name, { count }]) => `
-      <div class="tool-metric-row">
-        <span class="tool-metric-name">${name.replace(/_/g, '\u00a0')}</span>
-        <span class="tool-metric-count">×${count}</span>
-      </div>`).join('');
+function updateToolChip(toolName) {
+  const metric = _toolMetrics.get(toolName);
+  const chip = document.querySelector(`.tool-chip[data-tool="${toolName}"]`);
+  if (!chip) return;
+  chip.classList.add('called');
+  const countEl = chip.querySelector('.tool-chip-count');
+  if (countEl && metric) countEl.textContent = `×${metric.count}`;
+}
+
+function setActiveToolChip(toolName) {
+  // Clear previous active
+  if (_activeTool) {
+    const prev = document.querySelector(`.tool-chip[data-tool="${_activeTool}"]`);
+    if (prev) prev.classList.remove('active');
+  }
+  _activeTool = toolName;
+  if (toolName) {
+    const chip = document.querySelector(`.tool-chip[data-tool="${toolName}"]`);
+    if (chip) chip.classList.add('active');
   }
 }
 
@@ -198,6 +206,12 @@ async function connect() {
     currentOrionEntry   = null;     // drop stale DOM refs from previous session
     currentSurgeonEntry = null;
     updateAgentCard();
+    setActiveToolChip(null);
+    document.querySelectorAll('.tool-chip').forEach((chip) => {
+      chip.classList.remove('called', 'active');
+      const countEl = chip.querySelector('.tool-chip-count');
+      if (countEl) countEl.textContent = '';
+    });
     stopVideoCapture();
     if (micStream) { stopMicrophone(micStream); micStream = null; }
     if (audioRecorderCtx) {         // close recorder AudioContext — prevents browser limit (~6) being hit on repeated reconnects
@@ -306,6 +320,13 @@ function handleServerEvent(jsonString) {
     return;
   }
 
+  // Recoverable server error — log it and keep the session alive
+  if (event.type === 'error') {
+    logRouting(`⚠ ${event.message || 'Unknown error'}`, 'error');
+    _upsertTranscript('orion', 'Sorry, please try that again.');
+    return;
+  }
+
   // Input transcription (surgeon speech — what Gemini heard).
   // Barge-in: surgeon is speaking → flush any playing audio and suppress
   // stale chunks. The Live API's automatic VAD also sends `interrupted`
@@ -364,10 +385,11 @@ function handleServerEvent(jsonString) {
       const last = _dispatchedTools.get(key) ?? 0;
       if (now - last > TOOL_DEDUP_MS) {
         _dispatchedTools.set(key, now);
-        // Track tool call count for the metrics card
+        // Track tool call count and highlight chip
         const prev = _toolMetrics.get(fc.name) ?? { count: 0, lastCalled: 0 };
         _toolMetrics.set(fc.name, { count: prev.count + 1, lastCalled: Date.now() });
-        updateAgentCard();
+        setActiveToolChip(fc.name);
+        updateToolChip(fc.name);
         logRouting(`▶ ${fc.name}(${JSON.stringify(fc.args)})`, 'tool-call');
         dispatchRenderCommand(fc.name, fc.args ?? fc.arguments ?? {});
       } else {
@@ -390,6 +412,7 @@ function handleServerEvent(jsonString) {
   // request accumulate into a single ORION bubble.
   if (event.turnComplete ?? event.turn_complete) {
     currentSurgeonEntry = null;
+    setActiveToolChip(null);
     if (ws && ws.readyState === WebSocket.OPEN) setStatus('active');
   }
 }
@@ -462,7 +485,21 @@ function handleFunctionResponse(fr) {
   const cmd = fr.response?.render_command;
   if (!cmd) return;
   if (cmd.layer === 'clinical' && cmd.action === 'show') {
-    ClinicalPanel.show(cmd.field, cmd.label, cmd.value, cmd.note);
+    const d = cmd.data;
+    if (cmd.field === 'ebl' && d) {
+      const note = d.alert || '';
+      ClinicalPanel.show('ebl', 'Est. Blood Loss', `${d.total_ml} mL (${d.pct}% BV)`, note);
+    } else if (cmd.field === 'drug_check' && d) {
+      const label = d.status === 'safe' ? 'DRUG: SAFE' : 'DRUG: CAUTION';
+      ClinicalPanel.show('drug_check', label, d.drug, d.summary);
+    } else if (cmd.field === 'complication_protocol' && d) {
+      const steps = (d.steps || []).join(' → ');
+      ClinicalPanel.show('complication', 'COMPLICATION', d.type, steps);
+    } else if (cmd.field === 'anatomy_context' && d) {
+      ClinicalPanel.show('anatomy', 'ANATOMY', d.phase || '', d.pearl || '');
+    } else {
+      ClinicalPanel.show(cmd.field, cmd.label, cmd.value, cmd.note);
+    }
   }
   if (cmd.layer === 'clinical' && cmd.action === 'show_all') {
     (cmd.fields || []).forEach(f => ClinicalPanel.show(f.field, f.label, f.value, f.note));

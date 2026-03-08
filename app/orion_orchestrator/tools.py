@@ -740,6 +740,452 @@ def capture_surgical_photo(surgical_step: str, note: str = '') -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Complication Advisor Tools
+# ---------------------------------------------------------------------------
+# Phase-aware complication management protocols for VATS lobectomy.
+# Each complication type maps to a dict of phase → protocol steps.
+
+_COMPLICATION_PROTOCOLS: dict[str, dict] = {
+    'bleeding': {
+        '_default': [
+            'Apply direct pressure with sponge stick.',
+            'Identify source vessel.',
+            'Clip proximal and distal to injury if accessible.',
+            'If uncontrolled — call for blood products and prepare for conversion.',
+        ],
+        'vascular_dissection': [
+            'Immediate suction-compression on the PA injury site.',
+            'Do NOT remove the sponge — maintain tamponade.',
+            'Identify if PA branch or trunk is involved.',
+            'Branch: proximal clip + suture repair with 5-0 prolene.',
+            'Trunk: pack tightly and convert to thoracotomy immediately.',
+        ],
+        'fissure_development': [
+            'Compress the fissure with a sponge stick.',
+            'Identify posterior PA branches hidden in the fissure.',
+            'Clip-and-compress technique — do NOT chase the bleeder blindly.',
+            'If >200 mL in 60 seconds, convert to open.',
+        ],
+    },
+    'air_leak': {
+        '_default': [
+            'Irrigate with warm saline and ventilate to identify leak.',
+            'Check all staple lines for incomplete closure.',
+            'Small leak: oversew with 4-0 prolene figure-of-eight.',
+            'Large parenchymal leak: consider buttressed re-stapling.',
+        ],
+        'bronchial_dissection': [
+            'Test bronchial stump with warm saline under ventilation.',
+            'Look for bubbles at the staple line.',
+            'If positive: reinforce with 4-0 prolene interrupted sutures.',
+            'If stump is necrotic: re-staple 5 mm proximal.',
+        ],
+    },
+    'nerve_injury': {
+        '_default': [
+            'Stop all dissection in the area immediately.',
+            'Identify the injured nerve — recurrent laryngeal or phrenic.',
+            'Do NOT cauterize near the nerve — ischemic injury worsens.',
+            'Document the injury and notify the team.',
+        ],
+    },
+    'conversion': {
+        '_default': [
+            'Inform anesthesia — prepare for single-lung ventilation adjustment.',
+            'Extend the anterior utility incision to 8-10 cm.',
+            'Place a rib spreader and convert to anterolateral thoracotomy.',
+            'Maintain vascular control throughout conversion.',
+        ],
+    },
+}
+
+# Structure highlights for each complication type (for 3D viewer)
+_COMPLICATION_STRUCTURES: dict[str, list[str]] = {
+    'bleeding': ['vessels'],
+    'air_leak': ['bronchus', 'lung_left'],
+    'nerve_injury': ['vessels'],  # nerves run alongside vessels in the model
+    'conversion': ['ribs', 'lung_left'],
+}
+
+
+def get_complication_protocol(complication_type: str, current_phase: str = '') -> dict:
+    """
+    Use this tool when the surgeon reports a complication and needs a management
+    protocol. Returns step-by-step instructions tailored to the complication
+    type and current surgical phase.
+
+    complication_type — one of: bleeding, air_leak, nerve_injury, conversion
+    current_phase — optional, the current surgical phase for phase-specific advice
+
+    Examples:
+      "I have bleeding"           → complication_type='bleeding'
+      "there's an air leak"       → complication_type='air_leak'
+      "nerve injury"              → complication_type='nerve_injury'
+      "we need to convert"        → complication_type='conversion'
+    """
+    ctype = complication_type.lower().strip().replace(' ', '_')
+    protocols = _COMPLICATION_PROTOCOLS.get(ctype)
+    if not protocols:
+        valid = ', '.join(sorted(_COMPLICATION_PROTOCOLS.keys()))
+        return {'status': 'error', 'message': f'Unknown complication: "{ctype}". Valid: {valid}'}
+
+    phase = current_phase.lower().strip().replace(' ', '_')
+    steps = protocols.get(phase, protocols['_default'])
+    structures = _COMPLICATION_STRUCTURES.get(ctype, [])
+
+    return {
+        'status': 'success',
+        'complication': ctype,
+        'phase': phase or 'general',
+        'steps': steps,
+        'highlight_structures': structures,
+        'render_command': {
+            'layer': 'clinical',
+            'action': 'show',
+            'field': 'complication_protocol',
+            'data': {'type': ctype, 'steps': steps},
+        },
+    }
+
+
+# ---------------------------------------------------------------------------
+# EBL Tracker Tools
+# ---------------------------------------------------------------------------
+
+_EBL_TOTAL_ML: int = 0  # Running cumulative estimated blood loss
+
+
+def update_ebl(amount_ml: int) -> dict:
+    """
+    Use this tool when the surgeon reports blood loss to add to the running
+    estimated blood loss (EBL) total.
+
+    amount_ml — blood loss in millilitres for this event
+
+    Examples:
+      "blood loss 200 mL"         → amount_ml=200
+      "another 150 of blood loss" → amount_ml=150
+      "50 mL bleed"               → amount_ml=50
+    """
+    import datetime
+    global _EBL_TOTAL_ML
+    try:
+        amount = int(amount_ml)
+    except (ValueError, TypeError):
+        return {'status': 'error', 'message': f'Invalid amount: {amount_ml}. Provide a number in mL.'}
+    if amount <= 0:
+        return {'status': 'error', 'message': 'Amount must be positive.'}
+
+    _EBL_TOTAL_ML += amount
+    timestamp = datetime.datetime.now().strftime('%H:%M:%S')
+
+    # Also log as a blood_loss event in session log
+    _SESSION_LOG.append({
+        'type': 'blood_loss',
+        'note': f'{amount} mL (total: {_EBL_TOTAL_ML} mL)',
+        'timestamp': timestamp,
+    })
+
+    # Estimate blood volume from patient weight (70 mL/kg)
+    weight_str = _PATIENT_DATA.get('weight', {}).get('value', '70 kg')
+    weight_kg = int(''.join(c for c in weight_str if c.isdigit()) or '70')
+    ebv = weight_kg * 70  # estimated blood volume in mL
+    pct = round(_EBL_TOTAL_ML / ebv * 100, 1) if ebv > 0 else 0
+
+    alert = ''
+    if pct >= 40:
+        alert = 'CRITICAL: Massive transfusion protocol recommended.'
+    elif pct >= 25:
+        alert = 'WARNING: Check hemoglobin and prepare transfusion.'
+    elif pct >= 15:
+        alert = 'CAUTION: Consider type and screen.'
+
+    return {
+        'status': 'success',
+        'ebl_total_ml': _EBL_TOTAL_ML,
+        'ebl_pct': pct,
+        'alert': alert,
+        'render_command': {
+            'layer': 'clinical',
+            'action': 'show',
+            'field': 'ebl',
+            'data': {
+                'total_ml': _EBL_TOTAL_ML,
+                'pct': pct,
+                'alert': alert,
+            },
+        },
+    }
+
+
+def get_ebl_summary() -> dict:
+    """
+    Use this tool when the surgeon asks for the current estimated blood loss
+    total or fluid status.
+
+    Examples:
+      "what's the total blood loss"   → call get_ebl_summary()
+      "EBL status"                    → call get_ebl_summary()
+      "how much have we lost"         → call get_ebl_summary()
+    """
+    weight_str = _PATIENT_DATA.get('weight', {}).get('value', '70 kg')
+    weight_kg = int(''.join(c for c in weight_str if c.isdigit()) or '70')
+    ebv = weight_kg * 70
+    pct = round(_EBL_TOTAL_ML / ebv * 100, 1) if ebv > 0 else 0
+    hgb = _PATIENT_DATA.get('hemoglobin', {}).get('value', 'unknown')
+
+    return {
+        'status': 'success',
+        'ebl_total_ml': _EBL_TOTAL_ML,
+        'ebl_pct': pct,
+        'estimated_blood_volume_ml': ebv,
+        'pre_op_hemoglobin': hgb,
+        'render_command': {
+            'layer': 'clinical',
+            'action': 'show',
+            'field': 'ebl',
+            'data': {'total_ml': _EBL_TOTAL_ML, 'pct': pct, 'alert': ''},
+        },
+    }
+
+
+# ---------------------------------------------------------------------------
+# Drug Safety Checker Tools
+# ---------------------------------------------------------------------------
+
+# Common intraoperative drugs with allergy cross-reactivity and interaction flags.
+# Each entry: { 'class': ..., 'cross_allergies': [...], 'interactions': {...}, 'note': ... }
+_DRUG_DB: dict[str, dict] = {
+    'cefazolin': {
+        'class': 'Cephalosporin antibiotic',
+        'cross_allergies': ['penicillin'],
+        'cross_allergy_note': '1-2% cross-reactivity with penicillin allergy',
+        'interactions': {},
+        'alternative': 'vancomycin',
+    },
+    'heparin': {
+        'class': 'Anticoagulant',
+        'cross_allergies': [],
+        'cross_allergy_note': '',
+        'interactions': {'aspirin': 'Increased bleeding risk when combined with aspirin'},
+        'alternative': None,
+    },
+    'ketorolac': {
+        'class': 'NSAID analgesic',
+        'cross_allergies': ['aspirin', 'nsaid'],
+        'cross_allergy_note': 'Cross-reactivity with aspirin/NSAID allergy',
+        'interactions': {'low_platelets': 'Risk with platelets <100K', 'anticoagulant': 'Increased bleeding risk'},
+        'alternative': 'acetaminophen IV',
+    },
+    'vancomycin': {
+        'class': 'Glycopeptide antibiotic',
+        'cross_allergies': [],
+        'cross_allergy_note': '',
+        'interactions': {},
+        'alternative': None,
+    },
+    'ondansetron': {
+        'class': 'Antiemetic (5-HT3 antagonist)',
+        'cross_allergies': [],
+        'cross_allergy_note': '',
+        'interactions': {},
+        'alternative': None,
+    },
+    'fentanyl': {
+        'class': 'Opioid analgesic',
+        'cross_allergies': ['codeine', 'morphine'],
+        'cross_allergy_note': 'Partial cross-reactivity within opioid class',
+        'interactions': {},
+        'alternative': 'hydromorphone',
+    },
+    'morphine': {
+        'class': 'Opioid analgesic',
+        'cross_allergies': ['codeine'],
+        'cross_allergy_note': 'Cross-reactivity with codeine allergy',
+        'interactions': {},
+        'alternative': 'fentanyl or hydromorphone',
+    },
+    'epinephrine': {
+        'class': 'Vasopressor / anaphylaxis rescue',
+        'cross_allergies': [],
+        'cross_allergy_note': '',
+        'interactions': {},
+        'alternative': None,
+    },
+    'sugammadex': {
+        'class': 'Neuromuscular reversal agent',
+        'cross_allergies': [],
+        'cross_allergy_note': '',
+        'interactions': {'oral_contraceptive': 'May reduce efficacy of hormonal contraceptives'},
+        'alternative': None,
+    },
+    'tranexamic_acid': {
+        'class': 'Antifibrinolytic',
+        'cross_allergies': [],
+        'cross_allergy_note': '',
+        'interactions': {},
+        'alternative': None,
+    },
+}
+
+
+def check_drug_safety(drug_name: str) -> dict:
+    """
+    Use this tool when the surgeon asks whether a medication is safe to give.
+    Cross-checks the drug against the patient's allergies, current medications,
+    and lab values.
+
+    drug_name — the medication to check (e.g. heparin, cefazolin, ketorolac)
+
+    Examples:
+      "can I give heparin?"         → drug_name='heparin'
+      "is cefazolin safe?"          → drug_name='cefazolin'
+      "check ketorolac"             → drug_name='ketorolac'
+      "can we use morphine?"        → drug_name='morphine'
+    """
+    name = drug_name.lower().strip().replace(' ', '_')
+    drug = _DRUG_DB.get(name)
+    if not drug:
+        known = ', '.join(sorted(_DRUG_DB.keys()))
+        return {'status': 'error', 'message': f'Drug "{name}" not in database. Known drugs: {known}'}
+
+    allergies_raw = _PATIENT_DATA.get('allergies', {}).get('value', '').lower()
+    meds_raw = _PATIENT_DATA.get('medications', {}).get('value', '').lower()
+    platelets_raw = _PATIENT_DATA.get('platelets', {}).get('value', '')
+
+    warnings = []
+
+    # Check cross-allergies
+    for allergen in drug['cross_allergies']:
+        if allergen in allergies_raw:
+            warnings.append(
+                f'ALLERGY WARNING: Patient has {allergen} allergy. '
+                f'{drug["cross_allergy_note"]}.'
+                + (f' Consider {drug["alternative"]} instead.' if drug['alternative'] else '')
+            )
+
+    # Check medication interactions
+    for trigger, msg in drug['interactions'].items():
+        if trigger == 'aspirin' and 'aspirin' in meds_raw:
+            warnings.append(f'INTERACTION: {msg}. Note: aspirin may be held — check status.')
+        elif trigger == 'low_platelets':
+            plat_num = int(''.join(c for c in platelets_raw if c.isdigit()) or '999')
+            if plat_num < 100:
+                warnings.append(f'LAB WARNING: {msg}. Current platelets: {platelets_raw}.')
+        elif trigger == 'anticoagulant' and ('heparin' in meds_raw or 'warfarin' in meds_raw):
+            warnings.append(f'INTERACTION: {msg}.')
+
+    status = 'caution' if warnings else 'safe'
+    summary = '; '.join(warnings) if warnings else f'{name} — no allergy conflicts or interactions detected. Safe to administer.'
+
+    return {
+        'status': 'success',
+        'drug': name,
+        'drug_class': drug['class'],
+        'safety_status': status,
+        'summary': summary,
+        'warnings': warnings,
+        'render_command': {
+            'layer': 'clinical',
+            'action': 'show',
+            'field': 'drug_check',
+            'data': {'drug': name, 'status': status, 'summary': summary},
+        },
+    }
+
+
+# ---------------------------------------------------------------------------
+# Anatomy Spotter Tools
+# ---------------------------------------------------------------------------
+
+# Phase → relevant anatomy with clinical pearls and associated structures/landmarks
+_PHASE_ANATOMY: dict[str, dict] = {
+    'port_placement': {
+        'structures': ['ribs', 'lung_left'],
+        'landmark': 'diaphragm',
+        'pearl': 'Intercostal vessels run along the inferior rib border. Insert trocars above the rib to avoid them.',
+    },
+    'inspection': {
+        'structures': ['lung_left', 'pleura'],
+        'landmark': 'tumor',
+        'pearl': 'Survey the pleural cavity for unexpected metastases before committing to resection.',
+    },
+    'fissure_development': {
+        'structures': ['vessels', 'lung_left'],
+        'landmark': 'bronchus',
+        'pearl': 'Posterior PA branches are hidden in the fissure. Stay lateral to avoid injury. Incomplete fissure is common — use blunt dissection.',
+    },
+    'vascular_dissection': {
+        'structures': ['vessels', 'bronchus'],
+        'landmark': 'carina',
+        'pearl': 'Left phrenic nerve runs anterior to the hilum. Identify lingular PA branch before upper division PA. Superior PV — confirm no common trunk with lower lobe vein.',
+    },
+    'bronchial_dissection': {
+        'structures': ['bronchus', 'lung_left'],
+        'landmark': 'bronchus',
+        'pearl': 'Left upper bronchus — division point must be ≥5 mm from carina. Avoid injury to B6 (superior segment of lower lobe).',
+    },
+    'specimen_extraction': {
+        'structures': ['tumor', 'lung_left'],
+        'landmark': 'tumor',
+        'pearl': 'Bag the specimen before extraction. Confirm all vascular pedicles are secured. Send for frozen section margin analysis.',
+    },
+    'lymph_node_dissection': {
+        'structures': ['vessels'],
+        'landmark': 'aortic_arch',
+        'pearl': 'Level 5 (subaortic): recurrent laryngeal nerve at risk. Level 7 (subcarinal): retract lung downward. Hemostasis at each station before moving on.',
+    },
+    'closure': {
+        'structures': ['ribs', 'lung_left', 'pleura'],
+        'landmark': 'diaphragm',
+        'pearl': 'Irrigate with warm saline and check for air leaks under ventilation. Verify lung re-expansion. Place chest tube through inferior port.',
+    },
+}
+
+
+def get_anatomy_context(query: str = '', current_phase: str = '') -> dict:
+    """
+    Use this tool when the surgeon asks about nearby anatomy, danger zones,
+    structures at risk, or wants a clinical pearl for the current phase.
+
+    query — the surgeon's question (e.g. "what's near the hilum", "danger zone")
+    current_phase — the current surgical phase for context
+
+    Examples:
+      "what structure is at risk?"    → call get_anatomy_context()
+      "show me the danger zone"       → call get_anatomy_context()
+      "what's near the hilum?"        → call get_anatomy_context(query='hilum')
+      "anatomy check"                 → call get_anatomy_context()
+    """
+    phase = current_phase.lower().strip().replace(' ', '_')
+    context = _PHASE_ANATOMY.get(phase)
+    if not context:
+        # Return a general response with all phases listed
+        return {
+            'status': 'success',
+            'phase': 'unknown',
+            'pearl': 'Specify a surgical phase for anatomy context.',
+            'available_phases': list(_PHASE_ANATOMY.keys()),
+            'render_command': {'layer': 'clinical', 'action': 'show', 'field': 'anatomy_context',
+                               'data': {'pearl': 'Phase not specified.'}},
+        }
+
+    return {
+        'status': 'success',
+        'phase': phase,
+        'structures': context['structures'],
+        'landmark': context['landmark'],
+        'pearl': context['pearl'],
+        'render_command': {
+            'layer': 'clinical',
+            'action': 'show',
+            'field': 'anatomy_context',
+            'data': {'phase': phase, 'pearl': context['pearl']},
+        },
+    }
+
+
+# ---------------------------------------------------------------------------
 # Root Agent Tool — crosses all three display domains
 # ---------------------------------------------------------------------------
 

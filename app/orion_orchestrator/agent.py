@@ -43,6 +43,11 @@ from .tools import (
     show_event_log,
     hide_event_log,
     capture_surgical_photo,
+    get_complication_protocol,
+    update_ebl,
+    get_ebl_summary,
+    check_drug_safety,
+    get_anatomy_context,
 )
 
 # The native audio model for real-time voice I/O via runner.run_live().
@@ -256,6 +261,190 @@ report_agent = LlmAgent(
 
 
 # ---------------------------------------------------------------------------
+# Complication_Advisor — Real-time crisis management
+# ---------------------------------------------------------------------------
+# Clinical basis: Vascular injury is the most dreaded VATS complication.
+# SCAT technique (suction-compression angiorrhaphy) is standard but under
+# stress surgeons experience tunnel vision. Verbal step-by-step protocols
+# reduce errors (PMC8794303).
+
+complication_advisor = LlmAgent(
+    name='Complication_Advisor',
+    model=_sub_model,
+    description=(
+        'Provides real-time complication management protocols. Route here when '
+        'the surgeon reports bleeding, vascular injury, air leak, nerve injury, '
+        'or needs to convert to open surgery.'
+    ),
+    instruction=(
+        'You are the Complication Management specialist. When activated:\n'
+        '1. Call get_surgical_phase() with the most recently mentioned phase '
+        '(or ask the surgeon which phase they are in).\n'
+        '2. Call get_complication_protocol(complication_type, current_phase) '
+        'with the reported complication type.\n'
+        '3. Call toggle_structure() to highlight the relevant anatomy.\n'
+        '4. Read the protocol steps aloud, one by one, clearly and calmly.\n'
+        '5. Call log_event("complication", description) to document it.\n'
+        '6. Call capture_surgical_photo() to capture the field.\n\n'
+        'RULES:\n'
+        '- Speak CALMLY and CLEARLY — the surgeon is under stress.\n'
+        '- State each step as a numbered instruction.\n'
+        '- Do NOT give opinions — only state the protocol steps returned by the tool.\n'
+        '- After delivering the protocol, IMMEDIATELY transfer back to '
+        'ORION_Orchestrator. You handle ONLY complications.\n'
+    ),
+    tools=[
+        get_complication_protocol, get_surgical_phase, toggle_structure,
+        log_event, capture_surgical_photo,
+    ],
+    before_tool_callback=_grounding_before_tool,
+    after_tool_callback=_grounding_after_tool,
+)
+
+
+# ---------------------------------------------------------------------------
+# EBL_Tracker — Estimated Blood Loss monitoring
+# ---------------------------------------------------------------------------
+# Clinical basis: Visual EBL estimation errors average 30-50% (Surgery 2005).
+# NEJM AI (2024) identified AI-assisted EBL tracking as a key opportunity.
+
+ebl_tracker = LlmAgent(
+    name='EBL_Tracker',
+    model=_sub_model,
+    description=(
+        'Tracks cumulative estimated blood loss. Route here when the surgeon '
+        'reports blood loss amounts, asks for EBL total, or says "update EBL", '
+        '"blood loss", or "how much have we lost".'
+    ),
+    instruction=(
+        'You are the Blood Loss Tracker. When activated:\n'
+        '1. If the surgeon reports a blood loss amount, call update_ebl(amount_ml).\n'
+        '2. If the surgeon asks for a summary, call get_ebl_summary().\n'
+        '3. Read the returned data aloud:\n'
+        '   - Total EBL in mL and percentage of blood volume.\n'
+        '   - Any threshold alerts (15%, 25%, 40%).\n'
+        '   - Pre-op hemoglobin if relevant.\n\n'
+        'RULES:\n'
+        '- State ONLY values from tool responses.\n'
+        '- If an alert is returned, state it with appropriate urgency.\n'
+        '- After responding, IMMEDIATELY transfer back to '
+        'ORION_Orchestrator. You handle ONLY blood loss tracking.\n'
+    ),
+    tools=[update_ebl, get_ebl_summary, display_patient_data],
+    before_tool_callback=_grounding_before_tool,
+    after_tool_callback=_grounding_after_tool,
+)
+
+
+# ---------------------------------------------------------------------------
+# Drug_Checker — Intraoperative drug safety
+# ---------------------------------------------------------------------------
+# Clinical basis: 27% of surgical adverse drug events are preventable
+# (JAMA Surgery). Voice-based checking avoids breaking sterile field.
+
+drug_checker = LlmAgent(
+    name='Drug_Checker',
+    model=_sub_model,
+    description=(
+        'Checks drug safety against patient allergies and medications. Route '
+        'here when the surgeon asks "can I give [drug]?", "is [drug] safe?", '
+        '"check [drug]", or any medication safety query.'
+    ),
+    instruction=(
+        'You are the Drug Safety Checker. When activated:\n'
+        '1. Call check_drug_safety(drug_name) with the requested medication.\n'
+        '2. Read the safety result aloud:\n'
+        '   - If safe: state the drug name and "safe to administer".\n'
+        '   - If warnings: state each warning clearly.\n'
+        '   - If allergy conflict: state the allergy AND the alternative.\n\n'
+        'RULES:\n'
+        '- State ONLY information from the tool response.\n'
+        '- NEVER recommend dosages — only safety status.\n'
+        '- After responding, IMMEDIATELY transfer back to '
+        'ORION_Orchestrator. You handle ONLY drug checks.\n'
+    ),
+    tools=[check_drug_safety, display_patient_data],
+    before_tool_callback=_grounding_before_tool,
+    after_tool_callback=_grounding_after_tool,
+)
+
+
+# ---------------------------------------------------------------------------
+# Anatomy_Spotter — Phase-aware anatomical context
+# ---------------------------------------------------------------------------
+# Clinical basis: Surgeon cognitive load peaks at 64 tasks/hr (PMC6530509).
+# Contextual anatomy reminders reduce inadvertent structure injury.
+
+anatomy_spotter = LlmAgent(
+    name='Anatomy_Spotter',
+    model=_sub_model,
+    description=(
+        'Provides phase-aware anatomical context and clinical pearls. Route '
+        'here when the surgeon asks "what structure is at risk?", "danger zone", '
+        '"what\'s near here?", "anatomy check", or "show me what to watch for".'
+    ),
+    instruction=(
+        'You are the Anatomy Spotter. When activated:\n'
+        '1. Call get_surgical_phase() to identify the current phase (or use '
+        'the phase the surgeon mentioned).\n'
+        '2. Call get_anatomy_context(query, current_phase) for the phase.\n'
+        '3. Call toggle_structure() to highlight each relevant structure.\n'
+        '4. Call jump_to_landmark() if a CT landmark is relevant.\n'
+        '5. Deliver the clinical pearl verbally.\n\n'
+        'RULES:\n'
+        '- Keep pearls under 30 words — the surgeon is mid-procedure.\n'
+        '- State ONLY information from the tool response.\n'
+        '- After responding, IMMEDIATELY transfer back to '
+        'ORION_Orchestrator. You handle ONLY anatomy queries.\n'
+    ),
+    tools=[
+        get_anatomy_context, get_surgical_phase, toggle_structure,
+        jump_to_landmark, rotate_model, navigate_ct,
+    ],
+    before_tool_callback=_grounding_before_tool,
+    after_tool_callback=_grounding_after_tool,
+)
+
+
+# ---------------------------------------------------------------------------
+# Handoff_Agent — Structured SBAR surgical sign-out
+# ---------------------------------------------------------------------------
+# Clinical basis: Surgical handoffs cause 30% of adverse events (Joint
+# Commission). SBAR format standardizes communication and reduces errors.
+
+handoff_agent = LlmAgent(
+    name='Handoff_Agent',
+    model=_sub_model,
+    description=(
+        'Generates a structured SBAR handoff for shift changes or sign-out. '
+        'Route here when the surgeon says "prepare handoff", "sign out", '
+        '"shift change", "I\'m scrubbing out", or "hand over".'
+    ),
+    instruction=(
+        'You are the Surgical Handoff specialist. When activated:\n'
+        '1. Call show_event_log() to get all logged events.\n'
+        '2. Call display_all_patient_data() for patient context.\n'
+        '3. Call get_surgical_phase() for the current phase (use the most '
+        'recent phase if known, or ask the surgeon).\n'
+        '4. Deliver a structured verbal handoff in SBAR format:\n'
+        '   S (Situation): Patient demographics, procedure, current phase.\n'
+        '   B (Background): Diagnosis, key labs, allergies, held medications.\n'
+        '   A (Assessment): Summary of logged events, any complications, EBL.\n'
+        '   R (Recommendation): Next phase, key warnings, pending items.\n'
+        '5. Call log_event("milestone", "Handoff completed — SBAR delivered").\n\n'
+        'RULES:\n'
+        '- Keep the handoff under 80 words total.\n'
+        '- State ONLY data from tool responses — never invent.\n'
+        '- After delivering the handoff, IMMEDIATELY transfer back to '
+        'ORION_Orchestrator. You handle ONLY handoffs.\n'
+    ),
+    tools=[show_event_log, display_all_patient_data, get_surgical_phase, log_event],
+    before_tool_callback=_grounding_before_tool,
+    after_tool_callback=_grounding_after_tool,
+)
+
+
+# ---------------------------------------------------------------------------
 # ORION_Orchestrator — root agent (exported as root_agent)
 # ---------------------------------------------------------------------------
 
@@ -323,12 +512,20 @@ root_agent = LlmAgent(
         '## SPECIALIST AGENTS (for complex multi-step tasks)\n'
         'These agents perform multi-step protocols — route to them, do NOT '
         'handle these yourself:\n'
-        '  Briefing_Agent: "brief me", "case briefing", "patient rundown", '
-        '"what are we working with"\n'
-        '  Timeout_Agent:  "run the timeout", "surgical timeout", "safety check", '
-        '"WHO checklist", "time out"\n'
-        '  Report_Agent:   "generate report", "operative summary", '
-        '"summarize the case", "what did we do"\n\n'
+        '  Briefing_Agent:        "brief me", "case briefing", "patient rundown"\n'
+        '  Timeout_Agent:         "run the timeout", "surgical timeout", "safety check"\n'
+        '  Report_Agent:          "generate report", "operative summary", "what did we do"\n'
+        '  Complication_Advisor:  "I have bleeding", "vascular injury", "air leak", '
+        '"nerve injury", "we need to convert"\n'
+        '  EBL_Tracker:           "blood loss [amount]", "update EBL", "total blood loss", '
+        '"how much have we lost"\n'
+        '  Drug_Checker:          "can I give [drug]?", "is [drug] safe?", "check [drug]"\n'
+        '  Anatomy_Spotter:       "what structure is at risk?", "danger zone", '
+        '"anatomy check", "what\'s near here?"\n'
+        '  Handoff_Agent:         "prepare handoff", "sign out", "shift change", '
+        '"I\'m scrubbing out"\n'
+        'To route to an agent, call transfer_to_agent(agent_name="AgentName"). '
+        'Do NOT call the agent name as a function — it is not a tool.\n\n'
 
         '## CLINICAL SAFETY (CRITICAL)\n'
         '- You are a ROUTING and DISPLAY system, NOT a medical advisor.\n'
@@ -342,7 +539,11 @@ root_agent = LlmAgent(
         '- Example: "Hemoglobin displayed." not "Routing to IR_Agent to show hemoglobin."\n'
         '- Never say you are routing or transferring. Just do it.\n'
     ),
-    sub_agents=[briefing_agent, timeout_agent, report_agent],
+    sub_agents=[
+        briefing_agent, timeout_agent, report_agent,
+        complication_advisor, ebl_tracker, drug_checker,
+        anatomy_spotter, handoff_agent,
+    ],
     tools=[
         # IR
         display_patient_data, display_all_patient_data, hide_patient_data,

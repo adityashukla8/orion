@@ -121,7 +121,8 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
-      overflow: hidden;
+      overflow-y: auto;
+      overflow-x: hidden;
       min-width: 160px;
     }
 
@@ -147,6 +148,32 @@
       padding: 10px 12px 6px;
       border-bottom: 1px solid rgba(180, 200, 235, 0.3);
       flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .card-label .card-toggle {
+      font-size: 10px;
+      color: #b0b8c8;
+      transition: transform 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .side-card.collapsed .card-label .card-toggle {
+      transform: rotate(-90deg);
+    }
+
+    .card-body {
+      overflow: hidden;
+      max-height: 2000px;
+      transition: max-height 0.3s ease;
+    }
+
+    .side-card.collapsed .card-body {
+      max-height: 0;
     }
 
     /* ── Card 1: ORION orb ── */
@@ -395,22 +422,83 @@
     }
 
     #agents-row {
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 4px;
     }
 
+    .agents-row-span {
+      grid-column: 1 / -1;
+    }
+
     .agent-chip {
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 600;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.03em;
       text-transform: uppercase;
-      padding: 4px 9px;
+      padding: 4px 7px;
       border-radius: 6px;
       background: rgba(180, 195, 220, 0.2);
       border: 1px solid rgba(180, 195, 220, 0.3);
       color: #a8b2c4;
+      text-align: center;
       transition: background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+    }
+
+    /* ── Tools grid ── */
+    #tools-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+    }
+
+    .tools-row-span {
+      grid-column: 1 / -1;
+    }
+
+    .tool-chip {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      padding: 4px 7px;
+      border-radius: 6px;
+      background: rgba(180, 195, 220, 0.15);
+      border: 1px solid rgba(180, 195, 220, 0.25);
+      color: #a8b2c4;
+      word-break: break-word;
+      hyphens: auto;
+      min-width: 0;
+      transition: background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+    }
+
+    .tool-chip-name {
+      line-height: 1.3;
+    }
+
+    .tool-chip-count {
+      font-size: 9px;
+      font-weight: 700;
+      color: #5a9fd4;
+      background: rgba(90, 159, 212, 0.18);
+      border-radius: 3px;
+      padding: 0 4px;
+      display: none;
+    }
+
+    .tool-chip.called .tool-chip-count {
+      display: inline;
+    }
+
+    .tool-chip.active {
+      background: rgba(90, 159, 212, 0.18);
+      border-color: rgba(90, 159, 212, 0.55);
+      color: #5a9fd4;
+      box-shadow: 0 0 7px rgba(90, 159, 212, 0.25);
     }
 
     /* Per-agent active colours */
@@ -444,60 +532,70 @@
       color: #ec4899;
       box-shadow: 0 0 7px rgba(236, 72, 153, 0.2);
     }
-
-    #tool-metrics {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
+    .agent-chip.active[data-agent="DOC_Agent"] {
+      background: rgba(20, 184, 166, 0.12);
+      border-color: rgba(20, 184, 166, 0.4);
+      color: #14b8a6;
+      box-shadow: 0 0 7px rgba(20, 184, 166, 0.2);
+    }
+    .agent-chip.active[data-agent="Briefing_Agent"] {
+      background: rgba(99, 102, 241, 0.12);
+      border-color: rgba(99, 102, 241, 0.4);
+      color: #6366f1;
+      box-shadow: 0 0 7px rgba(99, 102, 241, 0.2);
+    }
+    .agent-chip.active[data-agent="Timeout_Agent"] {
+      background: rgba(251, 146, 60, 0.12);
+      border-color: rgba(251, 146, 60, 0.4);
+      color: #fb923c;
+      box-shadow: 0 0 7px rgba(251, 146, 60, 0.2);
+    }
+    .agent-chip.active[data-agent="Report_Agent"] {
+      background: rgba(163, 230, 53, 0.12);
+      border-color: rgba(163, 230, 53, 0.4);
+      color: #84cc16;
+      box-shadow: 0 0 7px rgba(163, 230, 53, 0.2);
+    }
+    .agent-chip.active[data-agent="Complication_Advisor"] {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #ef4444;
+      box-shadow: 0 0 7px rgba(239, 68, 68, 0.2);
+    }
+    .agent-chip.active[data-agent="EBL_Tracker"] {
+      background: rgba(234, 179, 8, 0.12);
+      border-color: rgba(234, 179, 8, 0.4);
+      color: #eab308;
+      box-shadow: 0 0 7px rgba(234, 179, 8, 0.2);
+    }
+    .agent-chip.active[data-agent="Drug_Checker"] {
+      background: rgba(168, 85, 247, 0.12);
+      border-color: rgba(168, 85, 247, 0.4);
+      color: #a855f7;
+      box-shadow: 0 0 7px rgba(168, 85, 247, 0.2);
+    }
+    .agent-chip.active[data-agent="Anatomy_Spotter"] {
+      background: rgba(6, 182, 212, 0.12);
+      border-color: rgba(6, 182, 212, 0.4);
+      color: #06b6d4;
+      box-shadow: 0 0 7px rgba(6, 182, 212, 0.2);
+    }
+    .agent-chip.active[data-agent="Handoff_Agent"] {
+      background: rgba(52, 211, 153, 0.12);
+      border-color: rgba(52, 211, 153, 0.4);
+      color: #34d399;
+      box-shadow: 0 0 7px rgba(52, 211, 153, 0.2);
     }
 
-    .tool-metric-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-    }
-
-    .tool-metric-name {
-      font-size: 11px;
-      font-weight: 500;
-      color: #7b8299;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      flex: 1;
-      font-family: 'Poppins', sans-serif;
-    }
-
-    .tool-metric-count {
-      font-size: 10px;
-      font-weight: 700;
-      color: #5a9fd4;
-      background: rgba(90, 159, 212, 0.12);
-      border-radius: 4px;
-      padding: 1px 5px;
-      flex-shrink: 0;
-      font-family: 'Poppins', sans-serif;
-    }
-
-    .tool-metrics-empty {
-      font-size: 11px;
-      color: #c0c8d8;
-      font-style: italic;
-      font-family: 'Poppins', sans-serif;
-    }
 
     /* ── Card 3: Agent activity ── */
     #routing-card {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
+      flex: 0 0 auto;
     }
 
     #routing-log {
-      flex: 1;
       overflow-y: auto;
+      max-height: 220px;
       padding: 8px 12px 10px;
       display: flex;
       flex-direction: column;
@@ -520,15 +618,12 @@
 
     /* ── Card 3: Conversation ── */
     #transcript-card {
-      flex: 2;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
+      flex: 0 0 auto;
     }
 
     #transcript-log {
-      flex: 1;
       overflow-y: auto;
+      max-height: 300px;
       padding: 8px 10px 10px;
       display: flex;
       flex-direction: column;
@@ -639,43 +734,94 @@
 
     <!-- Card 2: Agents & Tools -->
     <div id="agents-card" class="side-card">
-      <div class="card-label">Agents &amp; Tools</div>
-      <div id="agents-tools-body">
-        <div>
-          <div class="at-section-label">Agents</div>
-          <div id="agents-row">
-            <div class="agent-chip" data-agent="ORION_Orchestrator">Orchestrator</div>
-            <div class="agent-chip" data-agent="IR_Agent">IR — Patient Data</div>
-            <div class="agent-chip" data-agent="IV_Agent">IV — CT Imaging</div>
-            <div class="agent-chip" data-agent="AR_Agent">AR — 3D Anatomy</div>
-            <div class="agent-chip" data-agent="PC_Agent">PC — Proc. Context</div>
-            <div class="agent-chip" data-agent="DOC_Agent">DOC — Op. Log</div>
+      <div class="card-label" onclick="toggleCard(this)">Agents &amp; Tools<span class="card-toggle">▾</span></div>
+      <div class="card-body">
+        <div id="agents-tools-body">
+
+          <!-- Agents -->
+          <div>
+            <div class="at-section-label">Agents</div>
+            <div id="agents-row">
+              <div class="agent-chip agents-row-span" data-agent="ORION_Orchestrator">Orchestrator</div>
+              <div class="at-section-label agents-row-span" style="margin-top:4px;">Protocol</div>
+              <div class="agent-chip" data-agent="Briefing_Agent">Briefing</div>
+              <div class="agent-chip" data-agent="Timeout_Agent">WHO Timeout</div>
+              <div class="agent-chip" data-agent="Report_Agent">Op. Report</div>
+              <div class="at-section-label agents-row-span" style="margin-top:4px;">Decision Support</div>
+              <div class="agent-chip" data-agent="Complication_Advisor">Complication Advisor</div>
+              <div class="agent-chip" data-agent="EBL_Tracker">EBL Tracker</div>
+              <div class="agent-chip" data-agent="Drug_Checker">Drug Checker</div>
+              <div class="agent-chip" data-agent="Anatomy_Spotter">Anatomy Spotter</div>
+              <div class="agent-chip" data-agent="Handoff_Agent">Handoff</div>
+            </div>
           </div>
-        </div>
-        <div>
-          <div class="at-section-label">Tool calls</div>
-          <div id="tool-metrics">
-            <span class="tool-metrics-empty">No tools called yet</span>
+
+          <!-- Tools -->
+          <div>
+            <div class="at-section-label" style="margin-top:6px;">Tools</div>
+            <div id="tools-row">
+              <div class="at-section-label tools-row-span" style="margin-top:2px;">Patient Data</div>
+              <div class="tool-chip" data-tool="display_patient_data"><span class="tool-chip-name">display_patient_data</span><span class="tool-chip-count"></span></div>
+              <div class="tool-chip" data-tool="display_all_patient_data"><span class="tool-chip-name">display_all_patient_data</span><span class="tool-chip-count"></span></div>
+              <div class="tool-chip" data-tool="hide_patient_data"><span class="tool-chip-name">hide_patient_data</span><span class="tool-chip-count"></span></div>
+              <div class="at-section-label tools-row-span" style="margin-top:4px;">CT Imaging</div>
+              <div class="tool-chip" data-tool="navigate_ct"><span class="tool-chip-name">navigate_ct</span><span class="tool-chip-count"></span></div>
+              <div class="tool-chip" data-tool="jump_to_landmark"><span class="tool-chip-name">jump_to_landmark</span><span class="tool-chip-count"></span></div>
+              <div class="tool-chip" data-tool="hide_ct"><span class="tool-chip-name">hide_ct</span><span class="tool-chip-count"></span></div>
+              <div class="at-section-label tools-row-span" style="margin-top:4px;">3D Anatomy</div>
+              <div class="tool-chip" data-tool="rotate_model"><span class="tool-chip-name">rotate_model</span><span class="tool-chip-count"></span></div>
+              <div class="tool-chip" data-tool="toggle_structure"><span class="tool-chip-name">toggle_structure</span><span class="tool-chip-count"></span></div>
+              <div class="tool-chip" data-tool="hide_3d"><span class="tool-chip-name">hide_3d</span><span class="tool-chip-count"></span></div>
+              <div class="tool-chip" data-tool="reset_3d_view"><span class="tool-chip-name">reset_3d_view</span><span class="tool-chip-count"></span></div>
+              <div class="at-section-label tools-row-span" style="margin-top:4px;">Procedure</div>
+              <div class="tool-chip" data-tool="get_surgical_phase"><span class="tool-chip-name">get_surgical_phase</span><span class="tool-chip-count"></span></div>
+              <div class="tool-chip" data-tool="hide_surgical_checklist"><span class="tool-chip-name">hide_surgical_checklist</span><span class="tool-chip-count"></span></div>
+              <div class="at-section-label tools-row-span" style="margin-top:4px;">Op. Log</div>
+              <div class="tool-chip" data-tool="log_event"><span class="tool-chip-name">log_event</span><span class="tool-chip-count"></span></div>
+              <div class="tool-chip" data-tool="show_event_log"><span class="tool-chip-name">show_event_log</span><span class="tool-chip-count"></span></div>
+              <div class="tool-chip" data-tool="hide_event_log"><span class="tool-chip-name">hide_event_log</span><span class="tool-chip-count"></span></div>
+              <div class="tool-chip" data-tool="capture_surgical_photo"><span class="tool-chip-name">capture_surgical_photo</span><span class="tool-chip-count"></span></div>
+              <div class="at-section-label tools-row-span" style="margin-top:4px;">Decision Support</div>
+              <div class="tool-chip" data-tool="get_complication_protocol"><span class="tool-chip-name">get_complication_protocol</span><span class="tool-chip-count"></span></div>
+              <div class="tool-chip" data-tool="update_ebl"><span class="tool-chip-name">update_ebl</span><span class="tool-chip-count"></span></div>
+              <div class="tool-chip" data-tool="get_ebl_summary"><span class="tool-chip-name">get_ebl_summary</span><span class="tool-chip-count"></span></div>
+              <div class="tool-chip" data-tool="check_drug_safety"><span class="tool-chip-name">check_drug_safety</span><span class="tool-chip-count"></span></div>
+              <div class="tool-chip" data-tool="get_anatomy_context"><span class="tool-chip-name">get_anatomy_context</span><span class="tool-chip-count"></span></div>
+              <div class="at-section-label tools-row-span" style="margin-top:4px;">Global</div>
+              <div class="tool-chip" data-tool="hide_all_overlays"><span class="tool-chip-name">hide_all_overlays</span><span class="tool-chip-count"></span></div>
+              <div class="tool-chip" data-tool="show_only_ar"><span class="tool-chip-name">show_only_ar</span><span class="tool-chip-count"></span></div>
+            </div>
           </div>
+
         </div>
       </div>
     </div>
 
     <!-- Card 3: Agent activity -->
     <div id="routing-card" class="side-card">
-      <div class="card-label">Agent activity</div>
-      <div id="routing-log">
-        <div class="routing-event">Waiting for connection…</div>
+      <div class="card-label" onclick="toggleCard(this)">Agent activity<span class="card-toggle">▾</span></div>
+      <div class="card-body">
+        <div id="routing-log">
+          <div class="routing-event">Waiting for connection…</div>
+        </div>
       </div>
     </div>
 
-    <!-- Card 3: Conversation -->
+    <!-- Card 4: Conversation -->
     <div id="transcript-card" class="side-card">
-      <div class="card-label">Conversation</div>
-      <div id="transcript-log"></div>
+      <div class="card-label" onclick="toggleCard(this)">Conversation<span class="card-toggle">▾</span></div>
+      <div class="card-body">
+        <div id="transcript-log"></div>
+      </div>
     </div>
 
   </div>
+
+  <script>
+    function toggleCard(labelEl) {
+      labelEl.closest('.side-card').classList.toggle('collapsed');
+    }
+  </script>
 
   <!-- ── Scripts ── -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>

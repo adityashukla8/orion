@@ -219,6 +219,7 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str, session_id: str
             live_request_queue=live_request_queue,
             run_config=run_config,
         )) as live_events:
+          try:
             async for event in live_events:
                 event_json = event.model_dump_json(exclude_none=True, by_alias=True)
                 await websocket.send_text(event_json)
@@ -252,6 +253,15 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str, session_id: str
                         }))
                     _surgeon_said = ''
                     _orion_said = ''
+          except (ValueError, KeyError, TypeError) as exc:
+            # Tool-not-found errors (e.g. model calls agent name as a tool)
+            # or malformed function calls. Log and notify browser instead of
+            # crashing the entire session.
+            logger.warning('Recoverable live error: %s', exc)
+            await websocket.send_text(json.dumps({
+                'type': 'error',
+                'message': f'ORION encountered an issue: {exc}. Please try again.',
+            }))
 
     # ---------------------------------------------------------------------------
     # Run both tasks — mirrors adk_web_server.py's /run_live implementation:
