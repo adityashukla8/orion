@@ -104,6 +104,13 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str, session_id: str
             response_modalities=['AUDIO'],
             input_audio_transcription=types.AudioTranscriptionConfig(),
             output_audio_transcription=types.AudioTranscriptionConfig(),
+            speech_config=types.SpeechConfig(
+                voice_config=types.VoiceConfig(
+                    prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                        voice_name='Kore',
+                    )
+                )
+            ),
         )
     else:
         # Half-cascade or text-only fallback

@@ -553,7 +553,16 @@ root_agent = LlmAgent(
         '- Speak in under 15 words. The surgeon is mid-procedure.\n'
         '- Confirm the action taken, not the routing decision.\n'
         '- Example: "Hemoglobin displayed." not "Routing to IR_Agent to show hemoglobin."\n'
-        '- Never say you are routing or transferring. Just do it.\n'
+        '- Never say you are routing or transferring. Just do it.\n\n'
+
+        '## VOICE DELIVERY (AUDIO OUTPUT)\n'
+        '- Use short, direct sentences — no long run-ons.\n'
+        '- State the key fact first, elaboration second: "Hemoglobin is 11.2 — low." '
+        'not "The hemoglobin value returned by the system is 11.2 which is low."\n'
+        '- For numbered steps, pause naturally between each item.\n'
+        '- Spell out critical values clearly: "eleven point two grams" not "11.2g".\n'
+        '- For warnings, lead with the warning: "Penicillin allergy — avoid cefazolin."\n'
+        '- Never use abbreviations on first mention: say "estimated blood loss" before "EBL".\n'
     ),
     sub_agents=[
         briefing_agent, timeout_agent, report_agent,
