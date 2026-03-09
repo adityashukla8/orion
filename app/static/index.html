@@ -661,6 +661,102 @@
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.12); border-radius: 2px; }
+
+    /* ── Hover Tooltip ────────────────────────────────────────────────────── */
+    #orion-tooltip {
+      position: fixed;
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 0;
+      width: 218px;
+      transition: opacity 0.14s ease;
+    }
+    #orion-tooltip.tt-visible { opacity: 1; }
+
+    .tt-inner {
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.11);
+      border-radius: 8px;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.06);
+      position: relative;
+      overflow: visible;
+    }
+    /* Caret pointing right (toward the chip) */
+    .tt-inner::before {
+      content: '';
+      position: absolute;
+      right: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0; height: 0;
+      border-top: 7px solid transparent;
+      border-bottom: 7px solid transparent;
+      border-left: 7px solid rgba(0, 0, 0, 0.11);
+      z-index: 1;
+    }
+    .tt-inner::after {
+      content: '';
+      position: absolute;
+      right: -6px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0; height: 0;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-left: 6px solid #ffffff;
+      z-index: 2;
+    }
+    .tt-header {
+      padding: 8px 12px 7px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      background: #f8fafc;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      border-radius: 8px 8px 0 0;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .tt-header-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: #0d9488;
+      flex-shrink: 0;
+    }
+    .tt-name {
+      padding: 8px 12px 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #0f172a;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    }
+    .tt-cmds {
+      padding: 8px 12px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .tt-cmd {
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      font-size: 11px;
+      color: #475569;
+      line-height: 1.4;
+    }
+    .tt-cmd-bullet {
+      color: #0d9488;
+      font-size: 13px;
+      line-height: 1.1;
+      flex-shrink: 0;
+      font-weight: 700;
+    }
+
+    /* Agents & tools get a subtle hover cursor */
+    .agent-chip, .tool-chip { cursor: default; }
   </style>
 </head>
 <body>
@@ -836,6 +932,198 @@
   <script src="/static/js/summary-panel.js"></script>
 
   <script type="module" src="/static/js/app.js"></script>
+
+  <script>
+    // ── Agent & Tool hover tooltips ────────────────────────────────────────
+    (function () {
+      const TIPS = {
+        agents: {
+          ORION_Orchestrator: {
+            label: 'ORION Orchestrator',
+            cmds: ["Show patient vitals", "What's the current surgical phase?", "Clear all overlays"]
+          },
+          Briefing_Agent: {
+            label: 'Briefing Agent',
+            cmds: ["Give me a pre-op briefing", "What's this patient's history?", "Summarize today's procedure"]
+          },
+          Timeout_Agent: {
+            label: 'WHO Timeout Agent',
+            cmds: ["Start the surgical timeout", "Run the safety checklist", "Verify the surgical site"]
+          },
+          Report_Agent: {
+            label: 'Operative Report Agent',
+            cmds: ["Generate the operative report", "Summarize what we did", "Document the procedure"]
+          },
+          Complication_Advisor: {
+            label: 'Complication Advisor',
+            cmds: ["I see unexpected bleeding", "Protocol for bowel injury?", "Help me manage this complication"]
+          },
+          EBL_Tracker: {
+            label: 'EBL Tracker',
+            cmds: ["Add 200ml blood loss", "What's total EBL so far?", "Log suction output of 350ml"]
+          },
+          Drug_Checker: {
+            label: 'Drug Checker',
+            cmds: ["Is heparin safe with warfarin?", "Check propofol dosing", "Contraindications for epinephrine?"]
+          },
+          Anatomy_Spotter: {
+            label: 'Anatomy Spotter',
+            cmds: ["What structure is near the ureter?", "Identify this tissue", "Show anatomy in this region"]
+          },
+          Handoff_Agent: {
+            label: 'Handoff Agent',
+            cmds: ["Prepare a handoff summary", "What should the next team know?", "Generate an SBAR handoff"]
+          },
+        },
+        tools: {
+          display_patient_data: {
+            label: 'Display Patient Data',
+            cmds: ["Show patient vitals", "Pull up patient info", "Display the patient card"]
+          },
+          display_all_patient_data: {
+            label: 'Display All Patient Data',
+            cmds: ["Show everything about this patient", "Full patient overview", "All patient data now"]
+          },
+          hide_patient_data: {
+            label: 'Hide Patient Data',
+            cmds: ["Hide the vitals", "Clear the patient card", "Remove patient overlay"]
+          },
+          navigate_ct: {
+            label: 'Navigate CT',
+            cmds: ["Go to CT slice 45", "Scroll to mid-thorax", "Navigate CT to slice 80"]
+          },
+          jump_to_landmark: {
+            label: 'Jump to Landmark',
+            cmds: ["Jump to the tumor", "Go to the renal hilum", "Show me the landmark"]
+          },
+          hide_ct: {
+            label: 'Hide CT Viewer',
+            cmds: ["Close the CT viewer", "Hide the CT scan", "Remove CT overlay"]
+          },
+          rotate_model: {
+            label: 'Rotate 3D Model',
+            cmds: ["Rotate the model 45 degrees", "Spin the anatomy view left", "Turn the 3D model right"]
+          },
+          toggle_structure: {
+            label: 'Toggle Structure',
+            cmds: ["Toggle the left kidney", "Show the aorta", "Hide the renal artery"]
+          },
+          hide_3d: {
+            label: 'Hide 3D Model',
+            cmds: ["Hide the 3D model", "Close anatomy view", "Remove 3D overlay"]
+          },
+          reset_3d_view: {
+            label: 'Reset 3D View',
+            cmds: ["Reset the anatomy view", "Return to default orientation", "Reset the 3D model"]
+          },
+          get_surgical_phase: {
+            label: 'Get Surgical Phase',
+            cmds: ["What phase are we in?", "Show the surgical checklist", "What's the current step?"]
+          },
+          hide_surgical_checklist: {
+            label: 'Hide Checklist',
+            cmds: ["Hide the checklist", "Close procedural context", "Remove phase display"]
+          },
+          log_event: {
+            label: 'Log Event',
+            cmds: ["Log specimen removal", "Record port placement time", "Document this incision step"]
+          },
+          show_event_log: {
+            label: 'Show Event Log',
+            cmds: ["Show the operative log", "Open the event history", "Display what we've logged"]
+          },
+          hide_event_log: {
+            label: 'Hide Event Log',
+            cmds: ["Hide the event log", "Close the log view", "Remove log overlay"]
+          },
+          capture_surgical_photo: {
+            label: 'Capture Photo',
+            cmds: ["Take a photo now", "Capture this view", "Photograph this finding"]
+          },
+          get_complication_protocol: {
+            label: 'Complication Protocol',
+            cmds: ["Protocol for hemorrhage?", "How do I handle this injury?", "Complication management guide"]
+          },
+          update_ebl: {
+            label: 'Update EBL',
+            cmds: ["Add 150ml blood loss", "Log 400ml suction output", "Update EBL by 250ml"]
+          },
+          get_ebl_summary: {
+            label: 'Get EBL Summary',
+            cmds: ["Total blood loss so far?", "EBL summary please", "How much have we lost?"]
+          },
+          check_drug_safety: {
+            label: 'Check Drug Safety',
+            cmds: ["Is this drug safe here?", "Check interaction with current meds", "Safe to give epinephrine?"]
+          },
+          get_anatomy_context: {
+            label: 'Get Anatomy Context',
+            cmds: ["What's adjacent to the ureter?", "Anatomy near the hilum?", "Structures in this region?"]
+          },
+          hide_all_overlays: {
+            label: 'Hide All Overlays',
+            cmds: ["Clear everything", "Hide all panels", "Clean up the display"]
+          },
+          show_only_ar: {
+            label: 'Show Only 3D',
+            cmds: ["Show only the 3D anatomy", "Focus on anatomy view", "3D model only please"]
+          },
+          show_agent_summary: {
+            label: 'Show Agent Summary',
+            cmds: ["Show the summary", "Display the agent output", "Show me the results"]
+          },
+        },
+      };
+
+      // Build tooltip element
+      const tip = document.createElement('div');
+      tip.id = 'orion-tooltip';
+      tip.innerHTML = `
+        <div class="tt-inner">
+          <div class="tt-header"><span class="tt-header-dot"></span>Try saying…</div>
+          <div class="tt-name" id="tt-name"></div>
+          <div class="tt-cmds" id="tt-cmds"></div>
+        </div>`;
+      document.body.appendChild(tip);
+
+      let hideTimer = null;
+
+      function show(el, type, key) {
+        const data = TIPS[type]?.[key];
+        if (!data) return;
+        clearTimeout(hideTimer);
+
+        document.getElementById('tt-name').textContent = data.label;
+        document.getElementById('tt-cmds').innerHTML = data.cmds
+          .map(c => `<div class="tt-cmd"><span class="tt-cmd-bullet">›</span><span>${c}</span></div>`)
+          .join('');
+
+        const rect  = el.getBoundingClientRect();
+        const tipW  = 218;
+        const tipH  = tip.offsetHeight || 110; // rough height for centering
+        const left  = Math.max(4, rect.left - tipW - 12);
+        const top   = rect.top + rect.height / 2;
+
+        tip.style.left = left + 'px';
+        tip.style.top  = top  + 'px';
+        tip.style.transform = 'translateY(-50%)';
+        tip.classList.add('tt-visible');
+      }
+
+      function hide() {
+        hideTimer = setTimeout(() => tip.classList.remove('tt-visible'), 80);
+      }
+
+      document.querySelectorAll('[data-agent]').forEach(el => {
+        el.addEventListener('mouseenter', () => show(el, 'agents', el.dataset.agent));
+        el.addEventListener('mouseleave', hide);
+      });
+      document.querySelectorAll('[data-tool]').forEach(el => {
+        el.addEventListener('mouseenter', () => show(el, 'tools', el.dataset.tool));
+        el.addEventListener('mouseleave', hide);
+      });
+    })();
+  </script>
 
 </body>
 </html>
