@@ -771,115 +771,165 @@
   </style>
 
   <style>
-    /* ── Implementation Architecture ───────────────────────────────────────── */
+    /* ── Implementation Architecture (Flow Diagram) ─────────────────────── */
     #implementation { padding: 96px 0; background: #f8fafc; }
     .impl-header { text-align: center; margin-bottom: 48px; }
 
-    .impl-canvas-wrap {
-      position: relative;
-      background: #ffffff;
-      background-image: radial-gradient(circle, rgba(0,0,0,0.09) 1px, transparent 1px);
-      background-size: 22px 22px;
-      border: 1px solid rgba(0,0,0,0.08);
-      border-radius: 16px;
-      padding: 36px 28px 40px;
+    /* Pannable viewport */
+    .flow-viewport {
+      position: relative; height: 480px;
       overflow: hidden;
+      border: 1px solid rgba(0,0,0,0.08); border-radius: 12px;
+      cursor: grab; user-select: none;
+      background: #ffffff;
+      background-image: radial-gradient(circle, rgba(0,0,0,0.07) 1px, transparent 1px);
+      background-size: 22px 22px;
       margin-bottom: 32px;
     }
-    .impl-svg {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
+    .flow-viewport:active { cursor: grabbing; }
+
+    /* Pan hint */
+    .flow-hint {
+      position: absolute; bottom: 12px; right: 14px; z-index: 20;
+      font-size: 10px; color: #94a3b8; letter-spacing: 0.05em;
+      display: flex; align-items: center; gap: 5px;
       pointer-events: none;
-      overflow: visible;
     }
-    .impl-zones {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 20px;
-      position: relative;
-      z-index: 1;
+
+    /* Pannable stage */
+    .flow-stage {
+      position: absolute; top: 0; left: 0;
+      width: 1320px; height: 480px;
+      will-change: transform;
     }
-    .impl-zone { display: flex; flex-direction: column; gap: 10px; }
-    .impl-zone-label {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #94a3b8;
-      padding-bottom: 8px;
-      border-bottom: 1px solid rgba(0,0,0,0.08);
-      margin-bottom: 2px;
+
+    /* Layer background areas */
+    .fl-bg { position: absolute; border-radius: 10px; pointer-events: none; z-index: 1; }
+    .fl-bg-label {
+      position: absolute; top: -11px; left: 12px;
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 2px 8px; border-radius: 3px;
     }
-    .rnode {
-      background: #ffffff;
-      border: 1px solid rgba(0,0,0,0.09);
-      border-left-width: 3px;
-      border-radius: 8px;
-      padding: 11px 13px;
-      transition: box-shadow 0.18s;
+
+    /* SVG connections */
+    .flow-svg {
+      position: absolute; top: 0; left: 0;
+      width: 1320px; height: 480px;
+      pointer-events: none; z-index: 2; overflow: visible;
     }
-    .rnode:hover { box-shadow: 0 2px 14px rgba(0,0,0,0.07); }
-    [data-zone="client"] .rnode { border-left-color: #0d9488; }
-    [data-zone="server"] .rnode { border-left-color: #3b82f6; }
-    [data-zone="adk"]    .rnode { border-left-color: #8b5cf6; }
-    [data-zone="gemini"] .rnode { border-left-color: #f59e0b; }
-    [data-zone="agents"] .rnode { border-left-color: #10b981; }
-    .rnode-header { font-size: 12px; font-weight: 600; color: #0f172a; margin-bottom: 4px; }
-    .rnode-body   { font-size: 11px; color: #64748b; line-height: 1.5; }
-    .rnode-tags   { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
-    .rnode-tags span {
-      font-size: 9px;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      padding: 2px 6px;
-      border-radius: 3px;
+
+    /* Flow node card */
+    .fn {
+      position: absolute; width: 210px; height: 64px;
+      background: #ffffff; border-radius: 8px;
+      border: 1.5px solid rgba(0,0,0,0.1);
+      display: flex; align-items: stretch;
+      z-index: 10; transition: box-shadow 0.18s, border-color 0.18s;
     }
-    [data-zone="client"] .rnode-tags span { background: rgba(13,148,136,0.07); border: 1px solid rgba(13,148,136,0.22); color: #0d9488; }
-    [data-zone="server"] .rnode-tags span { background: rgba(59,130,246,0.07); border: 1px solid rgba(59,130,246,0.22); color: #3b82f6; }
-    [data-zone="adk"]    .rnode-tags span { background: rgba(139,92,246,0.07); border: 1px solid rgba(139,92,246,0.22); color: #8b5cf6; }
-    [data-zone="gemini"] .rnode-tags span { background: rgba(245,158,11,0.07);  border: 1px solid rgba(245,158,11,0.22);  color: #d97706; }
-    [data-zone="agents"] .rnode-tags span { background: rgba(16,185,129,0.07);  border: 1px solid rgba(16,185,129,0.22);  color: #059669; }
+    .fn:hover { z-index: 50; }
+    .fn-icon {
+      width: 44px; flex-shrink: 0; border-radius: 6px 0 0 6px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .fn-text {
+      flex: 1; display: flex; flex-direction: column;
+      justify-content: center; padding: 0 10px;
+    }
+    .fn-cat {
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 3px;
+    }
+    .fn-name { font-size: 12px; font-weight: 600; color: #0f172a; line-height: 1.2; }
+
+    /* Large center nodes */
+    .fn.fn-lg { width: 220px; height: 180px; flex-direction: column; }
+    .fn.fn-lg .fn-icon {
+      width: 100%; height: 42px; border-radius: 7px 7px 0 0;
+      flex-direction: row; gap: 8px; padding: 0 14px;
+    }
+    .fn.fn-lg .fn-icon-label { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; }
+    .fn.fn-lg .fn-text { padding: 10px 14px; justify-content: flex-start; }
+    .fn.fn-lg .fn-cat { margin-bottom: 4px; }
+    .fn.fn-lg .fn-name { font-size: 13px; margin-bottom: 5px; }
+    .fn-sub { font-size: 10px; color: #64748b; line-height: 1.45; }
+    .fn-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 6px; }
+    .fn-tag {
+      font-size: 9px; font-weight: 600;
+      padding: 1px 5px; border-radius: 3px; letter-spacing: 0.03em;
+    }
+
+    /* Layer color themes */
+    .fn[data-layer="input"]   { border-color: rgba(234,88,12,0.32); }
+    .fn[data-layer="input"]   .fn-icon { background: rgba(234,88,12,0.08); }
+    .fn[data-layer="input"]   .fn-cat  { color: #ea580c; }
+    .fn[data-layer="input"]:hover { border-color: rgba(234,88,12,0.65); box-shadow: 0 3px 16px rgba(234,88,12,0.12); }
+    .fn[data-layer="input"]   .fn-tag  { background: rgba(234,88,12,0.07); border: 1px solid rgba(234,88,12,0.2); color: #c2410c; }
+
+    .fn[data-layer="adk"]     { border-color: rgba(124,58,237,0.32); }
+    .fn[data-layer="adk"]     .fn-icon { background: rgba(124,58,237,0.08); }
+    .fn[data-layer="adk"]     .fn-cat  { color: #7c3aed; }
+    .fn[data-layer="adk"]:hover { border-color: rgba(124,58,237,0.65); box-shadow: 0 3px 16px rgba(124,58,237,0.12); }
+    .fn[data-layer="adk"]     .fn-tag  { background: rgba(124,58,237,0.07); border: 1px solid rgba(124,58,237,0.2); color: #6d28d9; }
+
+    .fn[data-layer="gemini"]  { border-color: rgba(217,119,6,0.32); }
+    .fn[data-layer="gemini"]  .fn-icon { background: rgba(217,119,6,0.08); }
+    .fn[data-layer="gemini"]  .fn-cat  { color: #d97706; }
+    .fn[data-layer="gemini"]:hover { border-color: rgba(217,119,6,0.65); box-shadow: 0 3px 16px rgba(217,119,6,0.12); }
+    .fn[data-layer="gemini"]  .fn-tag  { background: rgba(217,119,6,0.07); border: 1px solid rgba(217,119,6,0.2); color: #b45309; }
+
+    .fn[data-layer="agentic"] { border-color: rgba(37,99,235,0.32); }
+    .fn[data-layer="agentic"] .fn-icon { background: rgba(37,99,235,0.08); }
+    .fn[data-layer="agentic"] .fn-cat  { color: #2563eb; }
+    .fn[data-layer="agentic"]:hover { border-color: rgba(37,99,235,0.65); box-shadow: 0 3px 16px rgba(37,99,235,0.12); }
+    .fn[data-layer="agentic"] .fn-tag  { background: rgba(37,99,235,0.07); border: 1px solid rgba(37,99,235,0.2); color: #1d4ed8; }
+
+    .fn[data-layer="tools"]   { border-color: rgba(5,150,105,0.32); }
+    .fn[data-layer="tools"]   .fn-icon { background: rgba(5,150,105,0.08); }
+    .fn[data-layer="tools"]   .fn-cat  { color: #059669; }
+    .fn[data-layer="tools"]:hover { border-color: rgba(5,150,105,0.65); box-shadow: 0 3px 16px rgba(5,150,105,0.12); }
+    .fn[data-layer="tools"]   .fn-tag  { background: rgba(5,150,105,0.07); border: 1px solid rgba(5,150,105,0.2); color: #047857; }
+
+    /* Hover tooltip (fixed, JS-positioned) */
+    #flow-tip {
+      position: fixed; z-index: 9999;
+      pointer-events: none; opacity: 0; width: 256px;
+      transition: opacity 0.13s ease;
+    }
+    #flow-tip.tip-on { opacity: 1; }
+    .ft-inner {
+      background: #0f172a; border-radius: 8px; padding: 12px 14px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.28);
+    }
+    .ft-title { font-size: 11px; font-weight: 700; color: #f1f5f9; margin-bottom: 6px; letter-spacing: 0.04em; }
+    .ft-body  { font-size: 10.5px; color: #94a3b8; line-height: 1.55; }
+    .ft-tags  { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 8px; }
+    .ft-tag   {
+      font-size: 9px; font-weight: 600; padding: 2px 5px; border-radius: 3px;
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+      color: #cbd5e1; letter-spacing: 0.03em;
+    }
 
     /* Feature highlight grid */
     .impl-features {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      border: 1px solid rgba(0,0,0,0.08);
-      border-radius: 12px;
-      overflow: hidden;
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; overflow: hidden;
     }
-    .impl-feat-col {
-      padding: 24px 26px;
-      border-right: 1px solid rgba(0,0,0,0.08);
-      background: #ffffff;
-    }
+    .impl-feat-col { padding: 24px 26px; border-right: 1px solid rgba(0,0,0,0.08); background: #ffffff; }
     .impl-feat-col:last-child { border-right: none; }
-    .impl-feat-heading {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #0f172a;
-      margin-bottom: 14px;
-    }
-    .impl-feat-item {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      font-size: 12px;
-      color: #475569;
-      padding: 4px 0;
-    }
-    .impl-feat-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
+    .impl-feat-heading { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #0f172a; margin-bottom: 14px; }
+    .impl-feat-item { display: flex; align-items: center; gap: 9px; font-size: 12px; color: #475569; padding: 4px 0; }
+    .impl-feat-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
     .impl-feat-dot.adk    { background: #8b5cf6; }
     .impl-feat-dot.gemini { background: #f59e0b; }
     .impl-feat-dot.arch   { background: #3b82f6; }
+
+    @media (max-width: 960px) {
+      .impl-features { grid-template-columns: 1fr; }
+      .impl-feat-col { border-right: none; border-bottom: 1px solid rgba(0,0,0,0.08); }
+      .impl-feat-col:last-child { border-bottom: none; }
+      .flow-viewport { height: 360px; }
+    }
   </style>
 </head>
 <body>
@@ -1632,118 +1682,193 @@
         <h2 class="section-headline">How ORION Works Under the Hood</h2>
         <p class="section-sub">
           End-to-end flow from surgeon's voice to real-time surgical intelligence —
-          built on Google ADK multi-agent framework, Gemini Live API, and a high-performance
-          async WebSocket pipeline.
+          ADK multi-agent orchestration, Gemini Live API, and a WebSocket audio pipeline.
+          <span style="color:#94a3b8;margin-left:6px;">↔ Drag to explore</span>
         </p>
       </div>
 
-      <!-- Architecture Canvas -->
-      <div class="impl-canvas-wrap reveal">
-        <svg class="impl-svg" id="implSvg" aria-hidden="true"></svg>
+      <!-- Pannable flow diagram -->
+      <div class="flow-viewport reveal" id="flowViewport">
+        <div class="flow-stage" id="flowStage">
 
-        <div class="impl-zones">
+          <!-- ── Layer backgrounds (z-index:1) ── -->
+          <div class="fl-bg" style="left:10px;top:56px;width:252px;height:272px;border:1.5px dashed rgba(234,88,12,0.22);background:rgba(234,88,12,0.03);">
+            <span class="fl-bg-label" style="background:rgba(234,88,12,0.1);color:#ea580c;border:1px solid rgba(234,88,12,0.22);">Input Pipeline</span>
+          </div>
+          <div class="fl-bg" style="left:376px;top:110px;width:258px;height:248px;border:1.5px dashed rgba(124,58,237,0.22);background:rgba(124,58,237,0.03);">
+            <span class="fl-bg-label" style="background:rgba(124,58,237,0.1);color:#7c3aed;border:1px solid rgba(124,58,237,0.22);">ADK Orchestration</span>
+          </div>
+          <div class="fl-bg" style="left:636px;top:110px;width:258px;height:248px;border:1.5px dashed rgba(217,119,6,0.22);background:rgba(217,119,6,0.03);">
+            <span class="fl-bg-label" style="background:rgba(217,119,6,0.1);color:#d97706;border:1px solid rgba(217,119,6,0.22);">Gemini Live API</span>
+          </div>
+          <div class="fl-bg" style="left:948px;top:4px;width:250px;height:178px;border:1.5px dashed rgba(37,99,235,0.22);background:rgba(37,99,235,0.03);">
+            <span class="fl-bg-label" style="background:rgba(37,99,235,0.1);color:#2563eb;border:1px solid rgba(37,99,235,0.22);">Agentic Layer</span>
+          </div>
+          <div class="fl-bg" style="left:948px;top:190px;width:250px;height:282px;border:1.5px dashed rgba(5,150,105,0.22);background:rgba(5,150,105,0.03);">
+            <span class="fl-bg-label" style="background:rgba(5,150,105,0.1);color:#059669;border:1px solid rgba(5,150,105,0.22);">Tools &amp; Callbacks</span>
+          </div>
 
-          <!-- Zone 1: Client -->
-          <div class="impl-zone" data-zone="client">
-            <div class="impl-zone-label">Browser / Client</div>
-            <div class="rnode" id="rn-ui">
-              <div class="rnode-header">Surgical Console UI</div>
-              <div class="rnode-body">HTML/CSS · WebSocket client<br>Three.js · Canvas renderer</div>
-            </div>
-            <div class="rnode" id="rn-audio-in">
-              <div class="rnode-header">AudioWorklet</div>
-              <div class="rnode-body">Mic → 16kHz PCM<br>128-sample worklet frames</div>
-              <div class="rnode-tags"><span>audio/pcm</span><span>16kHz s16le</span></div>
-            </div>
-            <div class="rnode" id="rn-ws-client">
-              <div class="rnode-header">WebSocket Client</div>
-              <div class="rnode-body">Sends binary audio<br>Receives JSON events</div>
-              <div class="rnode-tags"><span>binary frames</span><span>JSON events</span></div>
+          <!-- ── SVG connections (z-index:2) ── -->
+          <svg class="flow-svg" viewBox="0 0 1320 480" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="fa-or" markerWidth="7" markerHeight="7" refX="3" refY="3.5" orient="auto"><path d="M 0 0.5 L 6 3.5 L 0 6.5 z" fill="#ea580c" opacity="0.7"/></marker>
+              <marker id="fa-gr" markerWidth="7" markerHeight="7" refX="3" refY="3.5" orient="auto"><path d="M 0 0.5 L 6 3.5 L 0 6.5 z" fill="#64748b" opacity="0.7"/></marker>
+              <marker id="fa-bl" markerWidth="7" markerHeight="7" refX="3" refY="3.5" orient="auto"><path d="M 0 0.5 L 6 3.5 L 0 6.5 z" fill="#2563eb" opacity="0.7"/></marker>
+              <marker id="fa-in" markerWidth="7" markerHeight="7" refX="3" refY="3.5" orient="auto"><path d="M 0 0.5 L 6 3.5 L 0 6.5 z" fill="#4f46e5" opacity="0.7"/></marker>
+              <marker id="fa-gn" markerWidth="7" markerHeight="7" refX="3" refY="3.5" orient="auto"><path d="M 0 0.5 L 6 3.5 L 0 6.5 z" fill="#059669" opacity="0.7"/></marker>
+              <marker id="fa-sk" markerWidth="7" markerHeight="7" refX="3" refY="3.5" orient="auto"><path d="M 0 0.5 L 6 3.5 L 0 6.5 z" fill="#0284c7" opacity="0.7"/></marker>
+            </defs>
+            <!-- Left stubs → left bus -->
+            <line x1="234" y1="104" x2="317" y2="104" stroke="#ea580c" stroke-width="1.5" stroke-opacity="0.55"/>
+            <line x1="234" y1="196" x2="317" y2="196" stroke="#ea580c" stroke-width="1.5" stroke-opacity="0.55"/>
+            <line x1="234" y1="288" x2="317" y2="288" stroke="#ea580c" stroke-width="1.5" stroke-opacity="0.55"/>
+            <!-- Left vertical bus -->
+            <line x1="317" y1="104" x2="317" y2="288" stroke="#ea580c" stroke-width="1.5" stroke-opacity="0.4"/>
+            <!-- Left bus → ADK -->
+            <line x1="317" y1="236" x2="386" y2="236" stroke="#ea580c" stroke-width="1.5" stroke-opacity="0.65" marker-end="url(#fa-or)"/>
+            <!-- ADK → Gemini -->
+            <line x1="610" y1="236" x2="642" y2="236" stroke="#94a3b8" stroke-width="1.5" stroke-opacity="0.75" marker-end="url(#fa-gr)"/>
+            <!-- Gemini → right bus -->
+            <line x1="864" y1="236" x2="918" y2="236" stroke="#64748b" stroke-width="1.5" stroke-opacity="0.5"/>
+            <!-- Right vertical bus -->
+            <line x1="918" y1="52" x2="918" y2="436" stroke="#64748b" stroke-width="1.5" stroke-opacity="0.3"/>
+            <!-- Right stubs → nodes -->
+            <line x1="918" y1="52"  x2="958" y2="52"  stroke="#2563eb" stroke-width="1.5" stroke-opacity="0.55" marker-end="url(#fa-bl)"/>
+            <line x1="918" y1="148" x2="958" y2="148" stroke="#2563eb" stroke-width="1.5" stroke-opacity="0.55" marker-end="url(#fa-bl)"/>
+            <line x1="918" y1="244" x2="958" y2="244" stroke="#4f46e5" stroke-width="1.5" stroke-opacity="0.55" marker-end="url(#fa-in)"/>
+            <line x1="918" y1="340" x2="958" y2="340" stroke="#059669" stroke-width="1.5" stroke-opacity="0.55" marker-end="url(#fa-gn)"/>
+            <line x1="918" y1="436" x2="958" y2="436" stroke="#0284c7" stroke-width="1.5" stroke-opacity="0.55" marker-end="url(#fa-sk)"/>
+            <!-- Junction dots — left bus -->
+            <circle cx="317" cy="104" r="3.5" fill="#ea580c" opacity="0.7"/>
+            <circle cx="317" cy="196" r="3.5" fill="#ea580c" opacity="0.7"/>
+            <circle cx="317" cy="288" r="3.5" fill="#ea580c" opacity="0.7"/>
+            <circle cx="317" cy="236" r="4.5" fill="#ea580c" opacity="0.9"/>
+            <!-- Junction dots — right bus -->
+            <circle cx="918" cy="52"  r="3.5" fill="#2563eb" opacity="0.7"/>
+            <circle cx="918" cy="148" r="3.5" fill="#2563eb" opacity="0.7"/>
+            <circle cx="918" cy="236" r="4.5" fill="#64748b" opacity="0.8"/>
+            <circle cx="918" cy="244" r="3.5" fill="#4f46e5" opacity="0.7"/>
+            <circle cx="918" cy="340" r="3.5" fill="#059669" opacity="0.7"/>
+            <circle cx="918" cy="436" r="3.5" fill="#0284c7" opacity="0.7"/>
+          </svg>
+
+          <!-- ── Flow Nodes (z-index:10) ── -->
+
+          <!-- Voice / Mic -->
+          <div class="fn" data-layer="input" style="left:24px;top:72px;"
+            data-tip-title="Voice / Mic Capture"
+            data-tip-body="Surgeon's voice captured via getUserMedia(). AudioWorklet API runs in a dedicated audio thread — zero-latency 16kHz s16le mono capture at 128-sample frames."
+            data-tip-tags="getUserMedia,AudioWorklet,16kHz s16le">
+            <div class="fn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></div>
+            <div class="fn-text"><div class="fn-cat">Input</div><div class="fn-name">Voice / Mic</div></div>
+          </div>
+
+          <!-- AudioWorklet -->
+          <div class="fn" data-layer="input" style="left:24px;top:164px;"
+            data-tip-title="AudioWorklet PCM Processor"
+            data-tip-body="Worklet frames (128 samples) accumulated server-side into 3200-byte chunks (100ms at 16kHz) before calling send_realtime(). Sending raw worklet chunks directly causes ADK overload."
+            data-tip-tags="3200 bytes,100ms chunks,send_realtime()">
+            <div class="fn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+            <div class="fn-text"><div class="fn-cat">Input</div><div class="fn-name">AudioWorklet</div></div>
+          </div>
+
+          <!-- FastAPI WS -->
+          <div class="fn" data-layer="input" style="left:24px;top:256px;"
+            data-tip-title="FastAPI WebSocket Server"
+            data-tip-body="Async bidirectional WS handler per connection. Binary frames carry PCM audio upstream; JSON frames carry ADK events downstream. MIME type must be 'audio/pcm' — the rate suffix causes error 1007."
+            data-tip-tags="FastAPI,asyncio,audio/pcm MIME">
+            <div class="fn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg></div>
+            <div class="fn-text"><div class="fn-cat">Server</div><div class="fn-name">FastAPI WS</div></div>
+          </div>
+
+          <!-- ADK Runtime (large) -->
+          <div class="fn fn-lg" data-layer="adk" style="left:390px;top:146px;"
+            data-tip-title="Google ADK Runtime"
+            data-tip-body="ADK 1.26.0. LiveRequestQueue per session (close() in finally block). runner.run_live() returns async event generator wrapped with aclosing(). asyncio.wait(FIRST_EXCEPTION) — FIRST_COMPLETED wrongly kills multi-turn sessions after first response."
+            data-tip-tags="ADK 1.26.0,LiveRequestQueue,aclosing(),FIRST_EXCEPTION">
+            <div class="fn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg><span class="fn-icon-label" style="color:#7c3aed;">Google ADK</span></div>
+            <div class="fn-text">
+              <div class="fn-cat">Orchestration</div>
+              <div class="fn-name">ADK Runtime</div>
+              <div class="fn-sub">Runner.run_live() · LiveRequestQueue<br>before / after tool callbacks</div>
+              <div class="fn-tags">
+                <span class="fn-tag">LlmAgent</span>
+                <span class="fn-tag">aclosing()</span>
+                <span class="fn-tag">StreamingMode.BIDI</span>
+              </div>
             </div>
           </div>
 
-          <!-- Zone 2: Server -->
-          <div class="impl-zone" data-zone="server">
-            <div class="impl-zone-label">FastAPI Server</div>
-            <div class="rnode" id="rn-ws-server">
-              <div class="rnode-header">WS Handler</div>
-              <div class="rnode-body">Async duplex<br>Per-connection session</div>
-              <div class="rnode-tags"><span>FastAPI</span><span>asyncio</span></div>
-            </div>
-            <div class="rnode" id="rn-buffer">
-              <div class="rnode-header">Audio Buffer</div>
-              <div class="rnode-body">3200-byte chunks<br>→ send_realtime() at 100ms</div>
-              <div class="rnode-tags"><span>100ms cadence</span></div>
-            </div>
-            <div class="rnode" id="rn-dispatch">
-              <div class="rnode-header">Event Dispatcher</div>
-              <div class="rnode-body">Serializes ADK events<br>→ JSON to browser</div>
-              <div class="rnode-tags"><span>model_dump_json</span><span>by_alias</span></div>
+          <!-- Gemini Live API (large) -->
+          <div class="fn fn-lg" data-layer="gemini" style="left:650px;top:146px;"
+            data-tip-title="Gemini Live API"
+            data-tip-body="gemini-2.5-flash-preview-native-audio-dialog on Vertex AI via ADC. BIDI streaming via RunConfig. 16kHz PCM in / 24kHz PCM out. AudioTranscriptionConfig for real-time text. All sub-agent audio played — no author filtering."
+            data-tip-tags="Vertex AI,native-audio-dialog,BIDI,24kHz out">
+            <div class="fn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span class="fn-icon-label" style="color:#d97706;">Gemini Live</span></div>
+            <div class="fn-text">
+              <div class="fn-cat">AI / LLM</div>
+              <div class="fn-name">Gemini 2.5 Flash</div>
+              <div class="fn-sub">native-audio-dialog · Vertex AI<br>SpeechConfig · AudioTranscription</div>
+              <div class="fn-tags">
+                <span class="fn-tag">RunConfig</span>
+                <span class="fn-tag">Sadaltager voice</span>
+                <span class="fn-tag">ADC auth</span>
+              </div>
             </div>
           </div>
 
-          <!-- Zone 3: ADK Runtime -->
-          <div class="impl-zone" data-zone="adk">
-            <div class="impl-zone-label">Google ADK Runtime</div>
-            <div class="rnode" id="rn-lrq">
-              <div class="rnode-header">LiveRequestQueue</div>
-              <div class="rnode-body">Per-session queue<br>Thread-safe audio feed</div>
-              <div class="rnode-tags"><span>close() on finally</span></div>
-            </div>
-            <div class="rnode" id="rn-runner">
-              <div class="rnode-header">Runner.run_live()</div>
-              <div class="rnode-body">Async event generator<br>aclosing() wrapper</div>
-              <div class="rnode-tags"><span>BIDI streaming</span><span>StreamingMode</span></div>
-            </div>
-            <div class="rnode" id="rn-callbacks">
-              <div class="rnode-header">Tool Callbacks</div>
-              <div class="rnode-body">before_tool_callback<br>after_tool_callback</div>
-              <div class="rnode-tags"><span>log_ai_interaction</span></div>
-            </div>
+          <!-- Orchestrator -->
+          <div class="fn" data-layer="agentic" style="left:960px;top:20px;"
+            data-tip-title="ORION Orchestrator"
+            data-tip-body="Root LlmAgent with 8 sub_agents. Receives surgeon intent from Gemini, routes to specialist via transfer_to_agent(). Handles 20 core tools directly. System prompt encodes full surgical context."
+            data-tip-tags="Root LlmAgent,transfer_to_agent,20 tools">
+            <div class="fn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="4" cy="15" r="3"/><circle cx="20" cy="15" r="3"/></svg></div>
+            <div class="fn-text"><div class="fn-cat">Agentic</div><div class="fn-name">Orchestrator</div></div>
           </div>
 
-          <!-- Zone 4: Gemini Live -->
-          <div class="impl-zone" data-zone="gemini">
-            <div class="impl-zone-label">Gemini Live API</div>
-            <div class="rnode" id="rn-model">
-              <div class="rnode-header">Gemini 2.5 Flash</div>
-              <div class="rnode-body">native-audio-dialog<br>Real-time multimodal</div>
-              <div class="rnode-tags"><span>Vertex AI</span><span>ADC auth</span></div>
-            </div>
-            <div class="rnode" id="rn-speech">
-              <div class="rnode-header">Speech Config</div>
-              <div class="rnode-body">Voice: Sadaltager<br>24kHz PCM output</div>
-              <div class="rnode-tags"><span>PrebuiltVoiceConfig</span></div>
-            </div>
-            <div class="rnode" id="rn-transcription">
-              <div class="rnode-header">Audio Transcription</div>
-              <div class="rnode-body">Input + output<br>Real-time text stream</div>
-              <div class="rnode-tags"><span>AudioTranscriptionConfig</span></div>
-            </div>
+          <!-- 8 Specialist Agents -->
+          <div class="fn" data-layer="agentic" style="left:960px;top:116px;"
+            data-tip-title="8 Specialist Agents"
+            data-tip-body="Briefing · Timeout · Report · Complication Advisor · EBL Tracker · Drug Checker · Anatomy Spotter · Handoff. Each is an LlmAgent with specialized system prompt and tool subset. All use the native audio model in run_live()."
+            data-tip-tags="LlmAgent,sub_agents,native audio model">
+            <div class="fn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <div class="fn-text"><div class="fn-cat">Agentic</div><div class="fn-name">8 Specialist Agents</div></div>
           </div>
 
-          <!-- Zone 5: Agents & Tools -->
-          <div class="impl-zone" data-zone="agents">
-            <div class="impl-zone-label">Agents &amp; Tools</div>
-            <div class="rnode" id="rn-orchestrator">
-              <div class="rnode-header">ORION Orchestrator</div>
-              <div class="rnode-body">Root LlmAgent<br>Routes to 8 specialists</div>
-              <div class="rnode-tags"><span>transfer_to_agent</span></div>
-            </div>
-            <div class="rnode" id="rn-agents">
-              <div class="rnode-header">8 Specialist Agents</div>
-              <div class="rnode-body">Briefing · Timeout · Report<br>Complication · EBL · Drug<br>Anatomy · Handoff</div>
-              <div class="rnode-tags"><span>LlmAgent</span><span>sub_agents</span></div>
-            </div>
-            <div class="rnode" id="rn-tools">
-              <div class="rnode-header">24 Tools</div>
-              <div class="rnode-body">IR · IV · AR · PC · DOC<br>Decision Support · Global</div>
-              <div class="rnode-tags"><span>FunctionTool</span><span>Python</span></div>
-            </div>
+          <!-- Tool Callbacks -->
+          <div class="fn" data-layer="tools" style="left:960px;top:212px;"
+            data-tip-title="Tool Callbacks — Hallucination Guard"
+            data-tip-body="before_tool_callback fires before every tool invocation and logs to _SESSION_LOG. after_tool_callback logs the result. Audits every AI decision. log_ai_interaction() is internal-only — not exposed as a user tool."
+            data-tip-tags="before_tool_callback,after_tool_callback,_SESSION_LOG">
+            <div class="fn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <div class="fn-text"><div class="fn-cat">Callbacks</div><div class="fn-name">Tool Callbacks</div></div>
           </div>
 
-        </div><!-- /impl-zones -->
-      </div><!-- /impl-canvas-wrap -->
+          <!-- 24 Tools -->
+          <div class="fn" data-layer="tools" style="left:960px;top:308px;"
+            data-tip-title="24 Python FunctionTools"
+            data-tip-body="IR×3 (patient data) · IV×3 (CT navigation) · AR×4 (3D anatomy) · PC×2 (procedure) · DOC×4 (op log) · Decision Support×5 · Global×3. Tools mutate browser state by dispatching structured JSON events over WebSocket."
+            data-tip-tags="FunctionTool,24 tools,WS dispatch">
+            <div class="fn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+            <div class="fn-text"><div class="fn-cat">Tools</div><div class="fn-name">24 Python Tools</div></div>
+          </div>
+
+          <!-- Audio Response -->
+          <div class="fn" data-layer="tools" style="left:960px;top:404px;"
+            data-tip-title="Audio + Event Response"
+            data-tip-body="Agent audio in inlineData.data (camelCase — by_alias=True). All sub-agent audio played, no author filtering. 24kHz PCM decoded via Web Audio API. JSON events dispatch UI updates: CT viewer, 3D overlays, patient panels."
+            data-tip-tags="inlineData.data,24kHz PCM,camelCase by_alias">
+            <div class="fn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg></div>
+            <div class="fn-text"><div class="fn-cat">Output</div><div class="fn-name">Audio Response</div></div>
+          </div>
+
+        </div><!-- /flow-stage -->
+
+        <div class="flow-hint">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          Drag to pan
+        </div>
+      </div><!-- /flow-viewport -->
 
       <!-- Feature highlight grid -->
       <div class="impl-features reveal">
@@ -1977,89 +2102,89 @@
   </script>
 
   <script>
-    // ── Implementation Architecture — bezier edge drawing ──────────────────
+    // ── Flow diagram: pan + hover tooltip ──────────────────────────────────
     (function () {
-      const edges = [
-        // forward flow (solid)
-        { from: 'rn-audio-in',     to: 'rn-buffer',       color: '#0d9488', dashed: false },
-        { from: 'rn-ws-client',    to: 'rn-ws-server',    color: '#3b82f6', dashed: false },
-        { from: 'rn-buffer',       to: 'rn-lrq',          color: '#3b82f6', dashed: false },
-        { from: 'rn-runner',       to: 'rn-model',        color: '#8b5cf6', dashed: false },
-        { from: 'rn-model',        to: 'rn-orchestrator', color: '#f59e0b', dashed: false },
-        { from: 'rn-orchestrator', to: 'rn-agents',       color: '#10b981', dashed: false },
-        // return / response path (dashed)
-        { from: 'rn-transcription',to: 'rn-dispatch',     color: '#f59e0b', dashed: true  },
-        { from: 'rn-dispatch',     to: 'rn-ws-client',    color: '#3b82f6', dashed: true  },
-      ];
+      const vp    = document.getElementById('flowViewport');
+      const stage = document.getElementById('flowStage');
+      if (!vp || !stage) return;
 
-      let markerId = 0;
+      // ── Pan ──────────────────────────────────────────────────────────────
+      let panX = 0, panY = 0;
+      let dragging = false, startX = 0, startY = 0, startPanX = 0, startPanY = 0;
 
-      function draw() {
-        const wrap = document.querySelector('.impl-canvas-wrap');
-        const svg  = document.getElementById('implSvg');
-        if (!wrap || !svg) return;
-
-        svg.innerHTML = '';
-        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-        svg.appendChild(defs);
-
-        const wRect = wrap.getBoundingClientRect();
-
-        function center(id) {
-          const el = document.getElementById(id);
-          if (!el) return null;
-          const r = el.getBoundingClientRect();
-          return {
-            left:  r.left  - wRect.left,
-            right: r.right - wRect.left,
-            cy:    r.top   - wRect.top + r.height / 2,
-          };
-        }
-
-        edges.forEach(({ from, to, color, dashed }) => {
-          const a = center(from);
-          const b = center(to);
-          if (!a || !b) return;
-
-          const goingRight = a.right < b.left;
-          const x1 = goingRight ? a.right : a.left;
-          const x2 = goingRight ? b.left  : b.right;
-          const y1 = a.cy, y2 = b.cy;
-          const cpx = Math.abs(x2 - x1) * 0.45;
-          const cp1x = goingRight ? x1 + cpx : x1 - cpx;
-          const cp2x = goingRight ? x2 - cpx : x2 + cpx;
-
-          // Arrow marker
-          const mid = `impl-arrow-${markerId++}`;
-          const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
-          marker.setAttribute('id', mid);
-          marker.setAttribute('markerWidth', '7');
-          marker.setAttribute('markerHeight', '7');
-          marker.setAttribute('refX', '3.5');
-          marker.setAttribute('refY', '3.5');
-          marker.setAttribute('orient', 'auto');
-          const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-          arrow.setAttribute('d', 'M 0 0.5 L 6 3.5 L 0 6.5 z');
-          arrow.setAttribute('fill', color);
-          arrow.setAttribute('fill-opacity', '0.55');
-          marker.appendChild(arrow);
-          defs.appendChild(marker);
-
-          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-          path.setAttribute('d', `M ${x1} ${y1} C ${cp1x} ${y1} ${cp2x} ${y2} ${x2} ${y2}`);
-          path.setAttribute('fill', 'none');
-          path.setAttribute('stroke', color);
-          path.setAttribute('stroke-width', '1.5');
-          path.setAttribute('stroke-opacity', dashed ? '0.38' : '0.52');
-          if (dashed) path.setAttribute('stroke-dasharray', '4 3');
-          path.setAttribute('marker-end', `url(#${mid})`);
-          svg.appendChild(path);
-        });
+      function clamp(x, y) {
+        const minX = Math.min(0, vp.offsetWidth  - 1320);
+        const minY = Math.min(0, vp.offsetHeight - 480);
+        return { x: Math.min(0, Math.max(minX, x)), y: Math.min(0, Math.max(minY, y)) };
       }
 
-      window.addEventListener('load',   draw);
-      window.addEventListener('resize', draw);
-      setTimeout(draw, 400);
+      function initPan() {
+        // Start slightly panned so left nodes are visible with some margin
+        const c = clamp(-20, 0);
+        panX = c.x; panY = c.y;
+        stage.style.transform = `translate(${panX}px,${panY}px)`;
+      }
+      initPan();
+      window.addEventListener('resize', initPan);
+
+      vp.addEventListener('mousedown', e => {
+        if (e.button !== 0) return;
+        dragging = true; startX = e.clientX; startY = e.clientY;
+        startPanX = panX; startPanY = panY;
+        vp.style.cursor = 'grabbing';
+        e.preventDefault();
+      });
+      window.addEventListener('mousemove', e => {
+        if (!dragging) return;
+        const c = clamp(startPanX + e.clientX - startX, startPanY + e.clientY - startY);
+        panX = c.x; panY = c.y;
+        stage.style.transform = `translate(${panX}px,${panY}px)`;
+      });
+      window.addEventListener('mouseup', () => { if (dragging) { dragging = false; vp.style.cursor = 'grab'; } });
+
+      // Touch
+      let tx = 0, ty = 0, tpx = 0, tpy = 0;
+      vp.addEventListener('touchstart', e => {
+        if (e.touches.length !== 1) return;
+        tx = e.touches[0].clientX; ty = e.touches[0].clientY; tpx = panX; tpy = panY;
+      }, { passive: true });
+      vp.addEventListener('touchmove', e => {
+        if (e.touches.length !== 1) return;
+        const c = clamp(tpx + e.touches[0].clientX - tx, tpy + e.touches[0].clientY - ty);
+        panX = c.x; panY = c.y;
+        stage.style.transform = `translate(${panX}px,${panY}px)`;
+        e.preventDefault();
+      }, { passive: false });
+
+      // ── Hover tooltip ────────────────────────────────────────────────────
+      const tip = document.createElement('div');
+      tip.id = 'flow-tip';
+      tip.innerHTML = '<div class="ft-inner"><div class="ft-title" id="ft-title"></div><div class="ft-body" id="ft-body"></div><div class="ft-tags" id="ft-tags"></div></div>';
+      document.body.appendChild(tip);
+
+      let hideTimer = null;
+
+      document.querySelectorAll('.fn[data-tip-title]').forEach(el => {
+        el.addEventListener('mouseenter', () => {
+          clearTimeout(hideTimer);
+          document.getElementById('ft-title').textContent = el.dataset.tipTitle;
+          document.getElementById('ft-body').textContent  = el.dataset.tipBody;
+          const tags = (el.dataset.tipTags || '').split(',').filter(Boolean);
+          document.getElementById('ft-tags').innerHTML = tags.map(t => `<span class="ft-tag">${t.trim()}</span>`).join('');
+
+          const r  = el.getBoundingClientRect();
+          const tw = 256, th = 140;
+          let top  = r.top - th - 12;
+          if (top < 8) top = r.bottom + 10;
+          const left = Math.min(window.innerWidth - tw - 8, Math.max(8, r.left + r.width / 2 - tw / 2));
+          tip.style.top  = top  + 'px';
+          tip.style.left = left + 'px';
+          tip.classList.add('tip-on');
+        });
+        el.addEventListener('mouseleave', () => {
+          hideTimer = setTimeout(() => tip.classList.remove('tip-on'), 80);
+        });
+      });
     })();
   </script>
 
