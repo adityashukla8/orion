@@ -1,0 +1,51 @@
+steps:
+  # Step 1 — Build Docker image tagged with commit SHA and latest
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - build
+      - -t
+      - '$_AR_REGION-docker.pkg.dev/$PROJECT_ID/$_AR_REPO/orion:$COMMIT_SHA'
+      - -t
+      - '$_AR_REGION-docker.pkg.dev/$PROJECT_ID/$_AR_REPO/orion:latest'
+      - .
+
+  # Step 2 — Push both tags to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - push
+      - '--all-tags'
+      - '$_AR_REGION-docker.pkg.dev/$PROJECT_ID/$_AR_REPO/orion'
+
+  # Step 3 — Deploy to Cloud Run (immutable SHA tag keeps rollbacks clean)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - orion
+      - --image=$_AR_REGION-docker.pkg.dev/$PROJECT_ID/$_AR_REPO/orion:$COMMIT_SHA
+      - --region=$_REGION
+      - --platform=managed
+      - --allow-unauthenticated
+      - --port=8080
+      - --memory=2Gi
+      - --cpu=2
+      - --timeout=3600
+      - --set-env-vars=GOOGLE_GENAI_USE_VERTEXAI=1,GOOGLE_CLOUD_PROJECT=$PROJECT_ID,GOOGLE_CLOUD_LOCATION=$_REGION
+      # DEMO_AGENT_MODEL, GCS_BUCKET, PATIENT_ID are set directly on the
+      # Cloud Run service and intentionally omitted here — they survive
+      # redeploys without being overwritten or exposed in this file.
+
+# Substitution defaults — override in Cloud Build trigger UI if needed
+substitutions:
+  _AR_REGION: us-central1
+  _AR_REPO: orion-repo
+  _REGION: us-central1
+
+# Retain both tags in Artifact Registry image history
+images:
+  - '$_AR_REGION-docker.pkg.dev/$PROJECT_ID/$_AR_REPO/orion:$COMMIT_SHA'
+  - '$_AR_REGION-docker.pkg.dev/$PROJECT_ID/$_AR_REPO/orion:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

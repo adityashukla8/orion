@@ -1,0 +1,27 @@
+# .gcloudignore — excludes files from Cloud Build source upload
+# Keep in sync with .dockerignore
+
+# Secrets — never upload; set via Cloud Run env vars
+app/.env
+.env
+
+# Python cache
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# Git history
+.git
+
+# Large binary assets — stored in GCS, not the image
+assets/
+
+# Experimental frontend build artifacts
+frontend/node_modules/
+frontend/.next/
+
+# Dev tooling
+.venv
+venv/
+*.md
