@@ -775,16 +775,21 @@
     #implementation { padding: 96px 0; background: #f8fafc; }
     .impl-header { text-align: center; margin-bottom: 48px; }
 
+    /* Heading fix */
+    .impl-header .section-sub { text-align: center; }
+    .impl-drag-hint { display: block; margin-top: 10px; font-size: 12px; color: #94a3b8; letter-spacing: 0.04em; }
+
     /* Pannable viewport */
     .flow-viewport {
-      position: relative; height: 480px;
+      position: relative; height: 460px;
       overflow: hidden;
-      border: 1px solid rgba(0,0,0,0.08); border-radius: 12px;
+      border: 1px solid rgba(0,0,0,0.09); border-radius: 14px;
       cursor: grab; user-select: none;
       background: #ffffff;
       background-image: radial-gradient(circle, rgba(0,0,0,0.07) 1px, transparent 1px);
       background-size: 22px 22px;
       margin-bottom: 32px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04), inset 0 0 0 1px rgba(255,255,255,0.6);
     }
     .flow-viewport:active { cursor: grabbing; }
 
@@ -799,7 +804,7 @@
     /* Pannable stage */
     .flow-stage {
       position: absolute; top: 0; left: 0;
-      width: 1320px; height: 480px;
+      width: 1440px; height: 580px;
       will-change: transform;
     }
 
@@ -815,21 +820,45 @@
     /* SVG connections */
     .flow-svg {
       position: absolute; top: 0; left: 0;
-      width: 1320px; height: 480px;
+      width: 1440px; height: 580px;
       pointer-events: none; z-index: 2; overflow: visible;
+    }
+
+    /* Google Cloud layer */
+    .fl-bg-cloud {
+      position: absolute; border-radius: 12px; pointer-events: none; z-index: 1;
+      border: 1.5px solid rgba(26,115,232,0.28);
+      background: rgba(26,115,232,0.025);
+    }
+    .fl-bg-cloud-label {
+      position: absolute; top: -12px; left: 16px;
+      font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      background: #1a73e8; color: #ffffff;
+      padding: 3px 10px; border-radius: 4px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .fl-bg-cloud-badges {
+      position: absolute; bottom: 10px; right: 12px;
+      display: flex; gap: 5px;
+    }
+    .fl-bg-cloud-badge {
+      font-size: 9px; font-weight: 600; letter-spacing: 0.04em;
+      padding: 2px 7px; border-radius: 3px;
+      background: rgba(26,115,232,0.08); border: 1px solid rgba(26,115,232,0.22); color: #1a73e8;
     }
 
     /* Flow node card */
     .fn {
-      position: absolute; width: 210px; height: 64px;
-      background: #ffffff; border-radius: 8px;
+      position: absolute; width: 215px; height: 66px;
+      background: #ffffff; border-radius: 10px;
       border: 1.5px solid rgba(0,0,0,0.1);
       display: flex; align-items: stretch;
-      z-index: 10; transition: box-shadow 0.18s, border-color 0.18s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      z-index: 10; transition: box-shadow 0.18s, border-color 0.18s, transform 0.12s;
     }
-    .fn:hover { z-index: 50; }
+    .fn:hover { z-index: 50; transform: translateY(-1px); }
     .fn-icon {
-      width: 44px; flex-shrink: 0; border-radius: 6px 0 0 6px;
+      width: 46px; flex-shrink: 0; border-radius: 8px 0 0 8px;
       display: flex; align-items: center; justify-content: center;
     }
     .fn-text {
@@ -843,9 +872,9 @@
     .fn-name { font-size: 12px; font-weight: 600; color: #0f172a; line-height: 1.2; }
 
     /* Large center nodes */
-    .fn.fn-lg { width: 220px; height: 180px; flex-direction: column; }
+    .fn.fn-lg { width: 228px; height: 190px; flex-direction: column; }
     .fn.fn-lg .fn-icon {
-      width: 100%; height: 42px; border-radius: 7px 7px 0 0;
+      width: 100%; height: 44px; border-radius: 8px 8px 0 0;
       flex-direction: row; gap: 8px; padding: 0 14px;
     }
     .fn.fn-lg .fn-icon-label { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; }
@@ -928,7 +957,7 @@
       .impl-features { grid-template-columns: 1fr; }
       .impl-feat-col { border-right: none; border-bottom: 1px solid rgba(0,0,0,0.08); }
       .impl-feat-col:last-child { border-bottom: none; }
-      .flow-viewport { height: 360px; }
+      .flow-viewport { height: 340px; }
     }
   </style>
 </head>
@@ -1683,8 +1712,8 @@
         <p class="section-sub">
           End-to-end flow from surgeon's voice to real-time surgical intelligence —
           ADK multi-agent orchestration, Gemini Live API, and a WebSocket audio pipeline.
-          <span style="color:#94a3b8;margin-left:6px;">↔ Drag to explore</span>
         </p>
+        <span class="impl-drag-hint">↔↕ Drag to pan the diagram</span>
       </div>
 
       <!-- Pannable flow diagram -->
@@ -1692,24 +1721,37 @@
         <div class="flow-stage" id="flowStage">
 
           <!-- ── Layer backgrounds (z-index:1) ── -->
-          <div class="fl-bg" style="left:10px;top:56px;width:252px;height:272px;border:1.5px dashed rgba(234,88,12,0.22);background:rgba(234,88,12,0.03);">
+
+          <!-- Google Cloud outer wrapper (ADK + Gemini) -->
+          <div class="fl-bg-cloud" style="left:354px;top:68px;width:558px;height:310px;">
+            <div class="fl-bg-cloud-label">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+              Google Cloud
+            </div>
+            <div class="fl-bg-cloud-badges">
+              <span class="fl-bg-cloud-badge">Vertex AI</span>
+              <span class="fl-bg-cloud-badge">Cloud Run</span>
+            </div>
+          </div>
+
+          <div class="fl-bg" style="left:10px;top:52px;width:256px;height:280px;border:1.5px dashed rgba(234,88,12,0.25);background:rgba(234,88,12,0.03);">
             <span class="fl-bg-label" style="background:rgba(234,88,12,0.1);color:#ea580c;border:1px solid rgba(234,88,12,0.22);">Input Pipeline</span>
           </div>
-          <div class="fl-bg" style="left:376px;top:110px;width:258px;height:248px;border:1.5px dashed rgba(124,58,237,0.22);background:rgba(124,58,237,0.03);">
+          <div class="fl-bg" style="left:376px;top:108px;width:258px;height:258px;border:1.5px dashed rgba(124,58,237,0.25);background:rgba(124,58,237,0.03);">
             <span class="fl-bg-label" style="background:rgba(124,58,237,0.1);color:#7c3aed;border:1px solid rgba(124,58,237,0.22);">ADK Orchestration</span>
           </div>
-          <div class="fl-bg" style="left:636px;top:110px;width:258px;height:248px;border:1.5px dashed rgba(217,119,6,0.22);background:rgba(217,119,6,0.03);">
+          <div class="fl-bg" style="left:638px;top:108px;width:258px;height:258px;border:1.5px dashed rgba(217,119,6,0.25);background:rgba(217,119,6,0.03);">
             <span class="fl-bg-label" style="background:rgba(217,119,6,0.1);color:#d97706;border:1px solid rgba(217,119,6,0.22);">Gemini Live API</span>
           </div>
-          <div class="fl-bg" style="left:948px;top:4px;width:250px;height:178px;border:1.5px dashed rgba(37,99,235,0.22);background:rgba(37,99,235,0.03);">
+          <div class="fl-bg" style="left:952px;top:4px;width:252px;height:180px;border:1.5px dashed rgba(37,99,235,0.25);background:rgba(37,99,235,0.03);">
             <span class="fl-bg-label" style="background:rgba(37,99,235,0.1);color:#2563eb;border:1px solid rgba(37,99,235,0.22);">Agentic Layer</span>
           </div>
-          <div class="fl-bg" style="left:948px;top:190px;width:250px;height:282px;border:1.5px dashed rgba(5,150,105,0.22);background:rgba(5,150,105,0.03);">
+          <div class="fl-bg" style="left:952px;top:192px;width:252px;height:282px;border:1.5px dashed rgba(5,150,105,0.25);background:rgba(5,150,105,0.03);">
             <span class="fl-bg-label" style="background:rgba(5,150,105,0.1);color:#059669;border:1px solid rgba(5,150,105,0.22);">Tools &amp; Callbacks</span>
           </div>
 
           <!-- ── SVG connections (z-index:2) ── -->
-          <svg class="flow-svg" viewBox="0 0 1320 480" xmlns="http://www.w3.org/2000/svg">
+          <svg class="flow-svg" viewBox="0 0 1440 580" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <marker id="fa-or" markerWidth="7" markerHeight="7" refX="3" refY="3.5" orient="auto"><path d="M 0 0.5 L 6 3.5 L 0 6.5 z" fill="#ea580c" opacity="0.7"/></marker>
               <marker id="fa-gr" markerWidth="7" markerHeight="7" refX="3" refY="3.5" orient="auto"><path d="M 0 0.5 L 6 3.5 L 0 6.5 z" fill="#64748b" opacity="0.7"/></marker>
@@ -1719,37 +1761,37 @@
               <marker id="fa-sk" markerWidth="7" markerHeight="7" refX="3" refY="3.5" orient="auto"><path d="M 0 0.5 L 6 3.5 L 0 6.5 z" fill="#0284c7" opacity="0.7"/></marker>
             </defs>
             <!-- Left stubs → left bus -->
-            <line x1="234" y1="104" x2="317" y2="104" stroke="#ea580c" stroke-width="1.5" stroke-opacity="0.55"/>
-            <line x1="234" y1="196" x2="317" y2="196" stroke="#ea580c" stroke-width="1.5" stroke-opacity="0.55"/>
-            <line x1="234" y1="288" x2="317" y2="288" stroke="#ea580c" stroke-width="1.5" stroke-opacity="0.55"/>
+            <line x1="239" y1="105" x2="320" y2="105" stroke="#ea580c" stroke-width="1.8" stroke-opacity="0.55"/>
+            <line x1="239" y1="197" x2="320" y2="197" stroke="#ea580c" stroke-width="1.8" stroke-opacity="0.55"/>
+            <line x1="239" y1="289" x2="320" y2="289" stroke="#ea580c" stroke-width="1.8" stroke-opacity="0.55"/>
             <!-- Left vertical bus -->
-            <line x1="317" y1="104" x2="317" y2="288" stroke="#ea580c" stroke-width="1.5" stroke-opacity="0.4"/>
+            <line x1="320" y1="105" x2="320" y2="289" stroke="#ea580c" stroke-width="1.8" stroke-opacity="0.38"/>
             <!-- Left bus → ADK -->
-            <line x1="317" y1="236" x2="386" y2="236" stroke="#ea580c" stroke-width="1.5" stroke-opacity="0.65" marker-end="url(#fa-or)"/>
+            <line x1="320" y1="241" x2="386" y2="241" stroke="#ea580c" stroke-width="1.8" stroke-opacity="0.65" marker-end="url(#fa-or)"/>
             <!-- ADK → Gemini -->
-            <line x1="610" y1="236" x2="642" y2="236" stroke="#94a3b8" stroke-width="1.5" stroke-opacity="0.75" marker-end="url(#fa-gr)"/>
+            <line x1="618" y1="241" x2="646" y2="241" stroke="#94a3b8" stroke-width="1.8" stroke-opacity="0.75" marker-end="url(#fa-gr)"/>
             <!-- Gemini → right bus -->
-            <line x1="864" y1="236" x2="918" y2="236" stroke="#64748b" stroke-width="1.5" stroke-opacity="0.5"/>
+            <line x1="878" y1="241" x2="922" y2="241" stroke="#64748b" stroke-width="1.8" stroke-opacity="0.45"/>
             <!-- Right vertical bus -->
-            <line x1="918" y1="52" x2="918" y2="436" stroke="#64748b" stroke-width="1.5" stroke-opacity="0.3"/>
+            <line x1="922" y1="53" x2="922" y2="437" stroke="#64748b" stroke-width="1.8" stroke-opacity="0.28"/>
             <!-- Right stubs → nodes -->
-            <line x1="918" y1="52"  x2="958" y2="52"  stroke="#2563eb" stroke-width="1.5" stroke-opacity="0.55" marker-end="url(#fa-bl)"/>
-            <line x1="918" y1="148" x2="958" y2="148" stroke="#2563eb" stroke-width="1.5" stroke-opacity="0.55" marker-end="url(#fa-bl)"/>
-            <line x1="918" y1="244" x2="958" y2="244" stroke="#4f46e5" stroke-width="1.5" stroke-opacity="0.55" marker-end="url(#fa-in)"/>
-            <line x1="918" y1="340" x2="958" y2="340" stroke="#059669" stroke-width="1.5" stroke-opacity="0.55" marker-end="url(#fa-gn)"/>
-            <line x1="918" y1="436" x2="958" y2="436" stroke="#0284c7" stroke-width="1.5" stroke-opacity="0.55" marker-end="url(#fa-sk)"/>
+            <line x1="922" y1="53"  x2="958" y2="53"  stroke="#2563eb" stroke-width="1.8" stroke-opacity="0.55" marker-end="url(#fa-bl)"/>
+            <line x1="922" y1="149" x2="958" y2="149" stroke="#2563eb" stroke-width="1.8" stroke-opacity="0.55" marker-end="url(#fa-bl)"/>
+            <line x1="922" y1="245" x2="958" y2="245" stroke="#4f46e5" stroke-width="1.8" stroke-opacity="0.55" marker-end="url(#fa-in)"/>
+            <line x1="922" y1="341" x2="958" y2="341" stroke="#059669" stroke-width="1.8" stroke-opacity="0.55" marker-end="url(#fa-gn)"/>
+            <line x1="922" y1="437" x2="958" y2="437" stroke="#0284c7" stroke-width="1.8" stroke-opacity="0.55" marker-end="url(#fa-sk)"/>
             <!-- Junction dots — left bus -->
-            <circle cx="317" cy="104" r="3.5" fill="#ea580c" opacity="0.7"/>
-            <circle cx="317" cy="196" r="3.5" fill="#ea580c" opacity="0.7"/>
-            <circle cx="317" cy="288" r="3.5" fill="#ea580c" opacity="0.7"/>
-            <circle cx="317" cy="236" r="4.5" fill="#ea580c" opacity="0.9"/>
+            <circle cx="320" cy="105" r="4" fill="#ea580c" opacity="0.72"/>
+            <circle cx="320" cy="197" r="4" fill="#ea580c" opacity="0.72"/>
+            <circle cx="320" cy="289" r="4" fill="#ea580c" opacity="0.72"/>
+            <circle cx="320" cy="241" r="5" fill="#ea580c" opacity="0.92"/>
             <!-- Junction dots — right bus -->
-            <circle cx="918" cy="52"  r="3.5" fill="#2563eb" opacity="0.7"/>
-            <circle cx="918" cy="148" r="3.5" fill="#2563eb" opacity="0.7"/>
-            <circle cx="918" cy="236" r="4.5" fill="#64748b" opacity="0.8"/>
-            <circle cx="918" cy="244" r="3.5" fill="#4f46e5" opacity="0.7"/>
-            <circle cx="918" cy="340" r="3.5" fill="#059669" opacity="0.7"/>
-            <circle cx="918" cy="436" r="3.5" fill="#0284c7" opacity="0.7"/>
+            <circle cx="922" cy="53"  r="4" fill="#2563eb" opacity="0.72"/>
+            <circle cx="922" cy="149" r="4" fill="#2563eb" opacity="0.72"/>
+            <circle cx="922" cy="241" r="5" fill="#64748b" opacity="0.82"/>
+            <circle cx="922" cy="245" r="4" fill="#4f46e5" opacity="0.72"/>
+            <circle cx="922" cy="341" r="4" fill="#059669" opacity="0.72"/>
+            <circle cx="922" cy="437" r="4" fill="#0284c7" opacity="0.72"/>
           </svg>
 
           <!-- ── Flow Nodes (z-index:10) ── -->
@@ -1782,7 +1824,7 @@
           </div>
 
           <!-- ADK Runtime (large) -->
-          <div class="fn fn-lg" data-layer="adk" style="left:390px;top:146px;"
+          <div class="fn fn-lg" data-layer="adk" style="left:390px;top:146px;width:228px;height:190px;"
             data-tip-title="Google ADK Runtime"
             data-tip-body="ADK 1.26.0. LiveRequestQueue per session (close() in finally block). runner.run_live() returns async event generator wrapped with aclosing(). asyncio.wait(FIRST_EXCEPTION) — FIRST_COMPLETED wrongly kills multi-turn sessions after first response."
             data-tip-tags="ADK 1.26.0,LiveRequestQueue,aclosing(),FIRST_EXCEPTION">
@@ -1800,7 +1842,7 @@
           </div>
 
           <!-- Gemini Live API (large) -->
-          <div class="fn fn-lg" data-layer="gemini" style="left:650px;top:146px;"
+          <div class="fn fn-lg" data-layer="gemini" style="left:650px;top:146px;width:228px;height:190px;"
             data-tip-title="Gemini Live API"
             data-tip-body="gemini-2.5-flash-preview-native-audio-dialog on Vertex AI via ADC. BIDI streaming via RunConfig. 16kHz PCM in / 24kHz PCM out. AudioTranscriptionConfig for real-time text. All sub-agent audio played — no author filtering."
             data-tip-tags="Vertex AI,native-audio-dialog,BIDI,24kHz out">
@@ -2113,13 +2155,13 @@
       let dragging = false, startX = 0, startY = 0, startPanX = 0, startPanY = 0;
 
       function clamp(x, y) {
-        const minX = Math.min(0, vp.offsetWidth  - 1320);
-        const minY = Math.min(0, vp.offsetHeight - 480);
+        const minX = Math.min(0, vp.offsetWidth  - 1440);
+        const minY = Math.min(0, vp.offsetHeight - 580);
         return { x: Math.min(0, Math.max(minX, x)), y: Math.min(0, Math.max(minY, y)) };
       }
 
       function initPan() {
-        // Start slightly panned so left nodes are visible with some margin
+        // Start slightly panned so left nodes are visible with margin
         const c = clamp(-20, 0);
         panX = c.x; panY = c.y;
         stage.style.transform = `translate(${panX}px,${panY}px)`;
