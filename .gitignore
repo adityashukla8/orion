@@ -26,3 +26,11 @@ build/
 
 # Claude personal memory — not project code
 .claude/
+
+# Experimental React/Next.js frontend — node_modules and build artifacts
+frontend/node_modules/
+frontend/.next/
+frontend/next-env.d.ts
+
+# Windows Zone.Identifier sidecar files
+*:Zone.Identifier
