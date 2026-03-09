@@ -353,6 +353,81 @@
     .stat-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(0,0,0,0.38); margin-bottom: 5px; }
     .stat-value { font-size: 14.5px; font-weight: 500; color: var(--text); line-height: 1.5; }
 
+    /* ── Evidence-based metrics strip ── */
+    .problem-evidence {
+      margin-top: 72px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+      padding-top: 52px;
+    }
+    .evidence-eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
+      text-transform: uppercase; color: rgba(0,0,0,0.38); margin-bottom: 28px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .evidence-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    .ev-card {
+      background: #f4f4f4;
+      border-radius: 14px;
+      padding: 28px 26px 26px;
+      display: flex; flex-direction: column;
+      transition: background 0.2s;
+    }
+    .ev-card:hover { background: #efefef; }
+    .ev-icon {
+      width: 38px; height: 38px; border-radius: 9px;
+      background: #e4e4e4;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 24px; flex-shrink: 0;
+    }
+    .ev-icon svg { display: block; }
+    .ev-label {
+      font-size: 13px; font-weight: 500;
+      color: rgba(0,0,0,0.45);
+      margin-bottom: 8px;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+    .ev-metric {
+      font-size: clamp(14px, 1.6vw, 16px); font-weight: 400;
+      line-height: 1.6; color: #111;
+      font-family: 'Poppins', sans-serif;
+      flex: 1;
+    }
+    .ev-metric strong {
+      font-weight: 700; color: #111;
+    }
+    .ev-source {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 500; letter-spacing: 0.02em;
+      color: rgba(0,0,0,0.3); text-decoration: none;
+      margin-top: 16px;
+      transition: color 0.2s;
+    }
+    .ev-source:hover { color: rgba(0,0,0,0.6); }
+    .ev-source svg { flex-shrink: 0; }
+    .ev-orion {
+      font-size: 12px; font-weight: 500; color: var(--blue);
+      margin-top: 12px; padding-top: 12px;
+      border-top: 1px solid rgba(0,0,0,0.07);
+      line-height: 1.6;
+    }
+    /* last row: 5 cards in 3-col grid */
+    .ev-card:nth-child(4) { grid-column: 1; }
+    .ev-card:nth-child(5) { grid-column: 2 / 4; }
+
+    @media (max-width: 960px) {
+      .evidence-grid { grid-template-columns: 1fr 1fr; }
+      .ev-card:nth-child(5) { grid-column: 1 / 3; }
+    }
+    @media (max-width: 600px) {
+      .evidence-grid { grid-template-columns: 1fr; }
+      .ev-card:nth-child(5) { grid-column: 1; }
+    }
+
     /* ── Section headers (shared) ── */
     .section-tag {
       display: inline-block; font-size: 11px; font-weight: 700;
@@ -1148,6 +1223,85 @@
         </div>
 
       </div>
+
+      <!-- Evidence-based metrics -->
+      <div class="problem-evidence reveal">
+        <div class="evidence-eyebrow">Evidence-based challenges ORION addresses</div>
+        <div class="evidence-grid">
+
+          <!-- 1. CVS Documentation -->
+          <div class="ev-card">
+            <div class="ev-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.5)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            </div>
+            <div class="ev-label">CVS Documentation</div>
+            <div class="ev-metric">Only <strong>23.1%</strong> of laparoscopic cholecystectomies have Critical View of Safety documented — the primary safeguard against bile duct injury.</div>
+            <div class="ev-orion">Orion's Safety Protocol Agent logs CVS confirmation by voice and immediately captures a timestamped photo as a medicolegal record.</div>
+            <a class="ev-source" href="https://pubmed.ncbi.nlm.nih.gov/33975802/" target="_blank" rel="noopener">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Terho et al. 2021 · PMID 33975802
+            </a>
+          </div>
+
+          <!-- 2. WHO Timeout -->
+          <div class="ev-card">
+            <div class="ev-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.5)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div class="ev-label">WHO Surgical Checklist</div>
+            <div class="ev-metric">Implementing the WHO Surgical Safety Checklist reduced in-hospital mortality by <strong>47%</strong> and complications by <strong>36%</strong> globally.</div>
+            <div class="ev-orion">Orion's Timeout Agent surfaces the phase-specific WHO checklist on screen and marks it complete once the surgeon confirms each item by voice.</div>
+            <a class="ev-source" href="https://pubmed.ncbi.nlm.nih.gov/19144931/" target="_blank" rel="noopener">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Haynes et al. 2009 · NEJM · PMID 19144931
+            </a>
+          </div>
+
+          <!-- 3. Blood Loss Estimation -->
+          <div class="ev-card">
+            <div class="ev-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.5)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+            </div>
+            <div class="ev-label">Blood Loss Estimation</div>
+            <div class="ev-metric">Surgeons underestimate intraoperative blood loss by <strong>52–85%</strong> on average; 95% of clinicians are wrong by more than 25%.</div>
+            <div class="ev-orion">Orion's Blood Loss Agent tracks a running total against the patient's estimated blood volume and escalates alerts at 15%, 25%, and 40% loss thresholds.</div>
+            <a class="ev-source" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7943515/" target="_blank" rel="noopener">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              PMC7943515
+            </a>
+          </div>
+
+          <!-- 4. Operative Notes Delay -->
+          <div class="ev-card">
+            <div class="ev-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.5)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="ev-label">Operative Note Delays</div>
+            <div class="ev-metric">Surgeons take a mean of <strong>15.6 days</strong> to dictate operative notes — vs. just 28 minutes with structured voice templates.</div>
+            <div class="ev-orion">Orion's DOC Agent auto-timestamps every milestone throughout the case, producing a complete structured operative record the moment the case closes.</div>
+            <a class="ev-source" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1560865/" target="_blank" rel="noopener">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Laflamme et al. · PMC1560865
+            </a>
+          </div>
+
+          <!-- 5. Medication Errors -->
+          <div class="ev-card">
+            <div class="ev-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.5)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div class="ev-label">Drug Administration Errors</div>
+            <div class="ev-metric"><strong>1 in 20</strong> anesthesia drug administrations involves an error — 80% are judged preventable with better real-time cross-checks.</div>
+            <div class="ev-orion">Orion's Drug Safety Agent cross-checks the patient's allergies, active medications, and live lab values — returning a safe or caution verdict on screen in under a second.</div>
+            <a class="ev-source" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4681677/" target="_blank" rel="noopener">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Nanji et al. · PMC4681677
+            </a>
+          </div>
+
+        </div>
+      </div><!-- /problem-evidence -->
+
     </div>
   </section>
 
