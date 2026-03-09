@@ -133,13 +133,13 @@
     .hero-robot-img {
       width: 100%; aspect-ratio: 4/3;
       object-fit: cover; object-position: center 15%;
-      border-radius: 8px; display: block;
+      border-radius: 0; display: block;
       box-shadow: 0 20px 56px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.10);
     }
     .hero-robot-wrap::before {
       content: '';
       position: absolute; inset: -2px;
-      border-radius: 10px;
+      border-radius: 2px;
       background: linear-gradient(135deg, rgba(2,132,199,0.18) 0%, rgba(34,211,238,0.08) 50%, rgba(16,185,129,0.12) 100%);
       z-index: -1;
     }
@@ -177,26 +177,26 @@
       50%      { opacity: 0.45; transform: scale(0.65); }
     }
 
-    /* Hero orb — floats over robot image */
+    /* Hero orb — inline beside CTA buttons */
     .hero-orb-wrap {
-      position: absolute; width: 108px; height: 108px;
-      bottom: -22px; right: -22px; z-index: 2;
-      opacity: 0; animation: fade-scale 0.75s cubic-bezier(0.34,1.56,0.64,1) 0.55s forwards;
+      position: relative; width: 48px; height: 48px;
+      flex-shrink: 0; align-self: center;
+      opacity: 0; animation: fade-scale 0.75s cubic-bezier(0.34,1.56,0.64,1) 0.72s forwards;
     }
     .orb-ring {
       position: absolute; border-radius: 50%; top: 50%; left: 50%;
       transform: translate(-50%,-50%);
       animation: ring-pulse 3s ease-in-out infinite;
     }
-    .orb-ring:nth-child(1) { width: 96px; height: 96px; border: 1px solid rgba(34,211,238,0.28); animation-delay: 0s; }
-    .orb-ring:nth-child(2) { width: 112px; height: 112px; border: 1px solid rgba(129,140,248,0.18); animation-delay: 0.85s; }
-    .orb-ring:nth-child(3) { width: 130px; height: 130px; border: 1px solid rgba(16,185,129,0.12); animation-delay: 1.7s; }
+    .orb-ring:nth-child(1) { width: 38px; height: 38px; border: 1px solid rgba(34,211,238,0.32); animation-delay: 0s; }
+    .orb-ring:nth-child(2) { width: 46px; height: 46px; border: 1px solid rgba(129,140,248,0.20); animation-delay: 0.85s; }
+    .orb-ring:nth-child(3) { width: 56px; height: 56px; border: 1px solid rgba(16,185,129,0.14); animation-delay: 1.7s; }
     @keyframes ring-pulse {
       0%,100% { opacity: 1; transform: translate(-50%,-50%) scale(1); }
       50%      { opacity: 0; transform: translate(-50%,-50%) scale(1.1); }
     }
     .hero-orb {
-      width: 84px; height: 84px; border-radius: 50%;
+      width: 30px; height: 30px; border-radius: 50%;
       position: absolute; top: 50%; left: 50%;
       transform: translate(-50%,-50%);
       overflow: hidden;
@@ -811,11 +811,9 @@
   <style>
     /* ── Implementation Architecture (Flow Diagram) ─────────────────────── */
     #implementation { padding: 96px 0; background: #f8fafc; }
-    .impl-header { text-align: center; margin-bottom: 48px; }
-
-    /* Heading fix */
-    .impl-header .section-sub { text-align: center; }
-    .impl-drag-hint { display: block; margin-top: 10px; font-size: 12px; color: #94a3b8; letter-spacing: 0.04em; }
+    .impl-header { text-align: left; margin-bottom: 48px; }
+    .impl-header .section-sub { text-align: left; max-width: 680px; }
+    .impl-drag-hint { display: block; margin-top: 10px; font-size: 12px; color: #94a3b8; letter-spacing: 0.04em; text-align: left; }
 
     /* Pannable viewport */
     .flow-viewport {
@@ -1055,6 +1053,17 @@
               See How It Works
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>
             </a>
+            <div class="hero-orb-wrap">
+              <div class="orb-ring"></div>
+              <div class="orb-ring"></div>
+              <div class="orb-ring"></div>
+              <div class="hero-orb">
+                <div class="orb-blob ob1"></div>
+                <div class="orb-blob ob2"></div>
+                <div class="orb-blob ob3"></div>
+                <div class="orb-blob ob4"></div>
+              </div>
+            </div>
           </div>
 
           <div class="hero-voice-hint">
@@ -1076,19 +1085,6 @@
               loading="eager"
             />
             <div class="hero-robot-label">da Vinci Xi System</div>
-
-            <!-- Animated orb overlay — ORION's AI eye on the robot -->
-            <div class="hero-orb-wrap">
-              <div class="orb-ring"></div>
-              <div class="orb-ring"></div>
-              <div class="orb-ring"></div>
-              <div class="hero-orb">
-                <div class="orb-blob ob1"></div>
-                <div class="orb-blob ob2"></div>
-                <div class="orb-blob ob3"></div>
-                <div class="orb-blob ob4"></div>
-              </div>
-            </div>
           </div>
         </div>
 
