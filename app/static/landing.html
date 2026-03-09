@@ -133,13 +133,13 @@
     .hero-robot-img {
       width: 100%; aspect-ratio: 4/3;
       object-fit: cover; object-position: center 15%;
-      border-radius: 0; display: block;
+      border-radius: 8px; display: block;
       box-shadow: 0 20px 56px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.10);
     }
     .hero-robot-wrap::before {
       content: '';
       position: absolute; inset: -2px;
-      border-radius: 2px;
+      border-radius: 10px;
       background: linear-gradient(135deg, rgba(2,132,199,0.18) 0%, rgba(34,211,238,0.08) 50%, rgba(16,185,129,0.12) 100%);
       z-index: -1;
     }
@@ -177,7 +177,7 @@
       50%      { opacity: 0.45; transform: scale(0.65); }
     }
 
-    /* Hero orb — inline beside CTA buttons */
+    /* Hero orb — inline beside CTA buttons
     .hero-orb-wrap {
       position: relative; width: 48px; height: 48px;
       flex-shrink: 0; align-self: center;
@@ -239,7 +239,7 @@
       content:''; position:absolute; inset:0; border-radius:50%;
       background: radial-gradient(ellipse at 28% 22%, rgba(255,255,255,0.76) 0%, rgba(255,255,255,0.2) 30%, transparent 55%);
       z-index:10; pointer-events:none;
-    }
+    } */
 
     .hero-headline {
       font-size: clamp(38px, 5.6vw, 68px); font-weight: 800;
@@ -482,7 +482,7 @@
     .hw-canvas-svg .nd-gem   { fill: rgba(255,255,255,0.86); stroke: rgba(0,0,0,0.15); stroke-width: 1.2; transition: fill 0.35s, stroke 0.35s; }
     .hw-canvas-svg .nd-icon  { stroke: rgba(0,0,0,0.28); fill: none; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.35s; }
     .hw-canvas-svg .nd-label { fill: rgba(0,0,0,0.38); font-family: 'Poppins',sans-serif; font-size: 10.5px; font-weight: 600; letter-spacing: 0.5px; transition: fill 0.35s; }
-    .hw-canvas-svg .nd-title { fill: rgba(0,0,0,0.52); font-family: 'Poppins',sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.3px; transition: fill 0.35s; }
+    .hw-canvas-svg .nd-title { fill: rgba(0,0,0,0.52); font-family: 'Poppins',sans-serif; font-size: 8.5px; font-weight: 700; letter-spacing: 0.2px; transition: fill 0.35s; }
     .hw-canvas-svg .nd-sub   { fill: rgba(0,0,0,0.28); font-family: 'Poppins',sans-serif; font-size: 8.5px; transition: fill 0.35s; }
     .hw-canvas-svg .fp       { stroke: rgba(0,0,0,0.16); stroke-width: 1.5; fill: none; transition: stroke 0.35s; }
     .hw-canvas-svg .fp-arrow { fill: rgba(0,0,0,0.13); stroke: none; transition: fill 0.35s; }
@@ -1246,43 +1246,35 @@
               <g id="hw-g-ag">
                 <g class="ag-br">
                   <rect class="nd-rect" x="4"   y="132" width="48" height="44" rx="4"/>
-                  <text class="nd-title" x="28"  y="151" text-anchor="middle">BRIEF</text>
-                  <text class="nd-sub"   x="28"  y="166" text-anchor="middle">Pre-Op</text>
+                  <text class="nd-title" x="28"  y="148" text-anchor="middle"><tspan x="28">Pre-Op</tspan><tspan x="28" dy="11">Briefing</tspan></text>
                 </g>
                 <g class="ag-to">
                   <rect class="nd-rect" x="59"  y="132" width="48" height="44" rx="4"/>
-                  <text class="nd-title" x="83"  y="151" text-anchor="middle">TMOUT</text>
-                  <text class="nd-sub"   x="83"  y="166" text-anchor="middle">WHO</text>
+                  <text class="nd-title" x="83"  y="148" text-anchor="middle"><tspan x="83">Surgical</tspan><tspan x="83" dy="11">Timeout</tspan></text>
                 </g>
                 <g class="ag-rp">
                   <rect class="nd-rect" x="114" y="132" width="48" height="44" rx="4"/>
-                  <text class="nd-title" x="138" y="151" text-anchor="middle">RPRT</text>
-                  <text class="nd-sub"   x="138" y="166" text-anchor="middle">Report</text>
+                  <text class="nd-title" x="138" y="148" text-anchor="middle"><tspan x="138">Operative</tspan><tspan x="138" dy="11">Report</tspan></text>
                 </g>
                 <g class="ag-ca">
                   <rect class="nd-rect" x="169" y="132" width="48" height="44" rx="4"/>
-                  <text class="nd-title" x="193" y="151" text-anchor="middle">COMPL</text>
-                  <text class="nd-sub"   x="193" y="166" text-anchor="middle">Protocol</text>
+                  <text class="nd-title" x="193" y="148" text-anchor="middle"><tspan x="193">Safety</tspan><tspan x="193" dy="11">Protocol</tspan></text>
                 </g>
                 <g class="ag-el">
                   <rect class="nd-rect" x="224" y="132" width="48" height="44" rx="4"/>
-                  <text class="nd-title" x="248" y="151" text-anchor="middle">EBL</text>
-                  <text class="nd-sub"   x="248" y="166" text-anchor="middle">Blood</text>
+                  <text class="nd-title" x="248" y="148" text-anchor="middle"><tspan x="248">Blood</tspan><tspan x="248" dy="11">Loss Est.</tspan></text>
                 </g>
                 <g class="ag-dr">
                   <rect class="nd-rect" x="279" y="132" width="48" height="44" rx="4"/>
-                  <text class="nd-title" x="303" y="151" text-anchor="middle">DRUG</text>
-                  <text class="nd-sub"   x="303" y="166" text-anchor="middle">Safety</text>
+                  <text class="nd-title" x="303" y="148" text-anchor="middle"><tspan x="303">Drug</tspan><tspan x="303" dy="11">Interaction</tspan></text>
                 </g>
                 <g class="ag-an">
                   <rect class="nd-rect" x="334" y="132" width="48" height="44" rx="4"/>
-                  <text class="nd-title" x="358" y="151" text-anchor="middle">ANAT</text>
-                  <text class="nd-sub"   x="358" y="166" text-anchor="middle">3D Map</text>
+                  <text class="nd-title" x="358" y="148" text-anchor="middle"><tspan x="358">Anatomy</tspan><tspan x="358" dy="11">Navigator</tspan></text>
                 </g>
                 <g class="ag-hf">
                   <rect class="nd-rect" x="389" y="132" width="48" height="44" rx="4"/>
-                  <text class="nd-title" x="413" y="151" text-anchor="middle">HOFF</text>
-                  <text class="nd-sub"   x="413" y="166" text-anchor="middle">SBAR</text>
+                  <text class="nd-title" x="413" y="148" text-anchor="middle"><tspan x="413">Handoff</tspan><tspan x="413" dy="11">SBAR</tspan></text>
                 </g>
               </g>
             </svg>
