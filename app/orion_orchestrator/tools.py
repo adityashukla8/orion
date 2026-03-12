@@ -1257,3 +1257,50 @@ def hide_all_overlays() -> dict:
             'action': 'hide',
         },
     }
+
+
+# ---------------------------------------------------------------------------
+# Screen Share Tools
+# ---------------------------------------------------------------------------
+
+def start_screen_share() -> dict:
+    """
+    Activates screen sharing mode so ORION can visually analyze what the
+    surgical team sees on their monitor. Use this tool when the surgeon says
+    any of the following (and natural variations):
+      "start screen share"       "share your screen"
+      "enable screen share"      "show ORION my screen"
+      "ORION, look at my screen" "screen share on"
+      "start visual analysis"    "analyze my screen"
+      "I want you to see my screen"
+    After calling this tool, route the conversation to Screen_Advisor so it
+    can describe, interpret, and act on the screen content.
+    Do NOT route this to a sub-agent at the root level — handle the tool call
+    here, then transfer to Screen_Advisor.
+    """
+    return {
+        'status': 'success',
+        'render_command': {
+            'layer': 'screenshare',
+            'action': 'start',
+        },
+    }
+
+
+def stop_screen_share() -> dict:
+    """
+    Deactivates screen sharing mode. The live screen frame stream stops and
+    ORION's visual analysis is suspended. Use when the surgeon says:
+      "stop screen share"        "disable screen share"
+      "screen share off"         "stop sharing"
+      "ORION, stop looking"      "end screen share"
+      "stop visual analysis"     "close screen share"
+    Handle directly at root level without sub-agent routing.
+    """
+    return {
+        'status': 'success',
+        'render_command': {
+            'layer': 'screenshare',
+            'action': 'stop',
+        },
+    }

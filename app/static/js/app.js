@@ -104,6 +104,25 @@ orionOrb.addEventListener('click', () => {
   else connect();
 });
 
+// Screen share badge click → stop screen share
+const _ssBadge = document.getElementById('screenshare-badge');
+if (_ssBadge) {
+  _ssBadge.addEventListener('click', () => ScreenshareAgent.stop());
+}
+
+// Screen share state → show/hide badge
+document.addEventListener('screenshare:started', () => {
+  if (_ssBadge) _ssBadge.classList.add('ss-active');
+  logRouting('Screen share active — sending frames to Screen_Advisor', 'turn');
+});
+document.addEventListener('screenshare:stopped', () => {
+  if (_ssBadge) _ssBadge.classList.remove('ss-active');
+  logRouting('Screen share stopped.', 'turn');
+});
+document.addEventListener('screenshare:error', (e) => {
+  logRouting(`Screen share unavailable: ${e.detail?.message || 'permission denied'}`, 'error');
+});
+
 // Sequential video playlist with 3-stage fallback per video:
 //   Stage 0 → local /static/ (dev: same-origin, canvas always works)
 //   Stage 1 → GCS + crossorigin="anonymous" (prod: canvas works when CORS configured)
@@ -215,6 +234,7 @@ async function connect() {
       if (countEl) countEl.textContent = '';
     });
     stopVideoCapture();
+    ScreenshareAgent.stop();
     if (micStream) { stopMicrophone(micStream); micStream = null; }
     if (audioRecorderCtx) {         // close recorder AudioContext — prevents browser limit (~6) being hit on repeated reconnects
       try { audioRecorderCtx.close(); } catch (_) {}
@@ -478,6 +498,14 @@ function dispatchRenderCommand(toolName, args) {
       CTViewer.hide(); ClinicalPanel.hide(); ChecklistPanel.hide(); LogPanel.hide();
       relayoutTiles();
       break;
+    case 'start_screen_share':
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ScreenshareAgent.start(ws);
+      }
+      break;
+    case 'stop_screen_share':
+      ScreenshareAgent.stop();
+      break;
     default:
       console.warn('[app.js] Unknown tool:', toolName);
   }
@@ -530,6 +558,13 @@ function handleFunctionResponse(fr) {
   }
   if (cmd.layer === 'summary' && cmd.action === 'show') {
     SummaryPanel.show(cmd.title, cmd.content, cmd.bullets);
+  }
+  if (cmd.layer === 'screenshare') {
+    if (cmd.action === 'start' && ws && ws.readyState === WebSocket.OPEN) {
+      ScreenshareAgent.start(ws);
+    } else if (cmd.action === 'stop') {
+      ScreenshareAgent.stop();
+    }
   }
 }
 

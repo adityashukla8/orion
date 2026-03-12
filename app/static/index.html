@@ -380,6 +380,117 @@
       background: radial-gradient(circle, rgba(254,215,170,0.76) 0%, rgba(253,186,116,0.34) 50%, transparent 72%);
     }
 
+    /* ── Screen Share ambient halo ── */
+    /* Two large blurred blobs orbit around the viewport perimeter.
+       overflow:hidden clips each blob so only the inward-facing half
+       is visible — creating a soft, widthless glow that bleeds in from
+       whichever edge the blob is currently nearest. No fixed border width. */
+    #screenshare-border {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0;
+      overflow: hidden;
+      transition: opacity 0.8s ease;
+    }
+    #screenshare-border.active {
+      opacity: 1;
+    }
+
+    /* Blob A — teal/cyan, starts at bottom-left */
+    #screenshare-border::before {
+      content: '';
+      position: absolute;
+      top: 100%;          /* fixed to bottom edge */
+      width: 800px;
+      height: 800px;
+      border-radius: 50%;
+      background: radial-gradient(circle,
+        rgba(0, 245, 212, 0.85)  0%,
+        rgba(14, 165, 233, 0.55) 40%,
+        transparent              70%
+      );
+      transform: translate(-50%, -50%);
+      animation:
+        ss-slide-a   7s ease-in-out infinite alternate,
+        ss-breathe-a 3s ease-in-out infinite alternate;
+    }
+
+    /* Blob B — indigo/blue, starts at bottom-right (opposite phase) */
+    #screenshare-border::after {
+      content: '';
+      position: absolute;
+      top: 100%;          /* fixed to bottom edge */
+      width: 700px;
+      height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle,
+        rgba(99, 102, 241, 0.75)  0%,
+        rgba(14, 165, 233, 0.50)  40%,
+        transparent               70%
+      );
+      transform: translate(-50%, -50%);
+      animation:
+        ss-slide-b   7s ease-in-out infinite alternate,
+        ss-breathe-b 3s ease-in-out 1.5s infinite alternate;
+    }
+
+    /* Single-axis slide along bottom edge, BL ↔ BR.
+       alternate direction makes it ping-pong naturally.
+       ease-in-out on the animation itself creates the smooth
+       deceleration into each corner and acceleration out —
+       no manual keyframe holds needed. */
+    @keyframes ss-slide-a {
+      from { left: 0%;   }   /* bottom-left  */
+      to   { left: 100%; }   /* bottom-right */
+    }
+    @keyframes ss-slide-b {
+      from { left: 100%; }   /* bottom-right */
+      to   { left: 0%;   }   /* bottom-left  */
+    }
+
+    @keyframes ss-breathe-a {
+      from { filter: blur(60px); opacity: 0.80; }
+      to   { filter: blur(85px); opacity: 1.00; }
+    }
+    @keyframes ss-breathe-b {
+      from { filter: blur(65px); opacity: 0.70; }
+      to   { filter: blur(90px); opacity: 0.95; }
+    }
+
+    /* Screen share status badge shown in orb card when active */
+    #screenshare-badge {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: #00f5d4;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background: rgba(0, 245, 212, 0.12);
+      border: 1px solid rgba(0, 245, 212, 0.3);
+      cursor: pointer;
+      margin-top: 4px;
+    }
+    #screenshare-badge.ss-active {
+      display: flex;
+    }
+    #screenshare-badge .ss-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #00f5d4;
+      animation: ss-blink 1s ease-in-out infinite alternate;
+    }
+    @keyframes ss-blink {
+      from { opacity: 1; }
+      to   { opacity: 0.2; }
+    }
+
     /* ── Status label colours per state ── */
     #orion-status-label {
       font-size: 12px;
@@ -827,6 +938,9 @@
         <div class="orb-blob b3"></div>
       </div>
       <span id="orion-status-label">ORION offline</span>
+      <div id="screenshare-badge" title="Screen share active — click to stop">
+        <span class="ss-dot"></span>Screen Share
+      </div>
     </div>
 
     <!-- Card 2: Agents & Tools -->
@@ -850,6 +964,8 @@
               <div class="agent-chip" data-agent="Drug_Checker">Drug Checker</div>
               <div class="agent-chip" data-agent="Anatomy_Spotter">Anatomy Spotter</div>
               <div class="agent-chip" data-agent="Handoff_Agent">Handoff</div>
+              <div class="at-section-label agents-row-span" style="margin-top:4px;">Visual Intelligence</div>
+              <div class="agent-chip" data-agent="Screen_Advisor">Screen Advisor</div>
             </div>
           </div>
 
@@ -887,6 +1003,9 @@
               <div class="at-section-label" style="margin-top:4px;">Global</div>
               <div class="tool-chip" data-tool="hide_all_overlays"><span class="tool-chip-count"></span><span class="tool-chip-name">hide_all_overlays</span></div>
               <div class="tool-chip" data-tool="show_only_ar"><span class="tool-chip-count"></span><span class="tool-chip-name">show_only_ar</span></div>
+              <div class="at-section-label" style="margin-top:4px;">Screen Share</div>
+              <div class="tool-chip" data-tool="start_screen_share"><span class="tool-chip-count"></span><span class="tool-chip-name">start_screen_share</span></div>
+              <div class="tool-chip" data-tool="stop_screen_share"><span class="tool-chip-count"></span><span class="tool-chip-name">stop_screen_share</span></div>
             </div>
           </div>
 
@@ -920,6 +1039,9 @@
     }
   </script>
 
+  <!-- Screen share animated border overlay (pointer-events:none, z-index:9999) -->
+  <div id="screenshare-border"></div>
+
   <!-- ── Scripts ── -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
@@ -930,6 +1052,7 @@
   <script src="/static/js/checklist-panel.js"></script>
   <script src="/static/js/log-panel.js"></script>
   <script src="/static/js/summary-panel.js"></script>
+  <script src="/static/js/screenshare-agent.js"></script>
 
   <script type="module" src="/static/js/app.js"></script>
 
@@ -973,6 +1096,10 @@
           Handoff_Agent: {
             label: 'Handoff Agent',
             cmds: ["Prepare a handoff summary", "What should the next team know?", "Generate an SBAR handoff"]
+          },
+          Screen_Advisor: {
+            label: 'Screen Advisor',
+            cmds: ["ORION, start screen share", "What do you see on my screen?", "Read the lab values on the monitor", "Check the EMR and verify patient data"]
           },
         },
         tools: {
@@ -1071,6 +1198,14 @@
           show_agent_summary: {
             label: 'Show Agent Summary',
             cmds: ["Show the summary", "Display the agent output", "Show me the results"]
+          },
+          start_screen_share: {
+            label: 'Start Screen Share',
+            cmds: ["ORION, start screen share", "Share my screen with ORION", "Enable visual analysis"]
+          },
+          stop_screen_share: {
+            label: 'Stop Screen Share',
+            cmds: ["ORION, stop screen share", "End screen sharing", "Disable visual analysis"]
           },
         },
       };

@@ -1,17 +1,23 @@
 """
 ORION Agent Definitions
 ========================
-Hybrid architecture: root_agent owns all 18 tools for direct single/multi-
-action commands. Three specialist sub-agents handle complex multi-step
-surgical protocols that require reading multiple data sources and
-synthesizing a structured verbal response:
+Hybrid architecture: root_agent owns all 20 tools for direct single/multi-
+action commands. Specialist sub-agents handle complex multi-step surgical
+protocols that require reading multiple data sources and synthesizing a
+structured verbal response:
 
   ORION_Orchestrator (root_agent)
-    ├── 18 direct tools (all display, navigation, logging, hide commands)
+    ├── 20 direct tools (display, navigation, logging, hide, screen share)
     └── sub_agents:
-          ├── Briefing_Agent   — pre-op case briefing (patient + phase synthesis)
-          ├── Timeout_Agent    — WHO surgical safety timeout (guided protocol)
-          └── Report_Agent     — operative report generation (log → narrative)
+          ├── Briefing_Agent     — pre-op case briefing (patient + phase synthesis)
+          ├── Timeout_Agent      — WHO surgical safety timeout (guided protocol)
+          ├── Report_Agent       — operative report generation (log → narrative)
+          ├── Complication_Advisor — real-time crisis management protocols
+          ├── EBL_Tracker        — estimated blood loss monitoring
+          ├── Drug_Checker       — intraoperative drug safety checks
+          ├── Anatomy_Spotter    — phase-aware anatomical context
+          ├── Handoff_Agent      — SBAR surgical sign-out
+          └── Screen_Advisor     — visual analysis of shared screen content
 
 Root agent runs on the native audio model for direct voice I/O.
 Sub-agents also use the native model in run_live() sessions.
@@ -49,6 +55,8 @@ from .tools import (
     check_drug_safety,
     get_anatomy_context,
     show_agent_summary,
+    start_screen_share,
+    stop_screen_share,
 )
 
 # The native audio model for real-time voice I/O via runner.run_live().
@@ -461,6 +469,95 @@ handoff_agent = LlmAgent(
 
 
 # ---------------------------------------------------------------------------
+# Screen_Advisor — Visual screen analysis (UI Navigator category)
+# ---------------------------------------------------------------------------
+# Clinical basis: Surgeons interact with hospital IT systems (EMR, PACS, labs)
+# throughout cases but cannot break sterile field to type. Screen sharing lets
+# ORION act as a visual bridge — reading any screen visually, without APIs,
+# and cross-verifying against stored patient data in real time.
+# This agent qualifies ORION for the hackathon's UI Navigator category:
+# it observes the display, interprets visual elements, and triggers ORION
+# tools based on what it sees — all without DOM access or hospital APIs.
+
+screen_advisor = LlmAgent(
+    name='Screen_Advisor',
+    model=_sub_model,
+    description=(
+        'Visually analyzes the surgeon\'s shared screen using live JPEG frames. '
+        'Route here when the surgeon says "analyze my screen", "what do you see?", '
+        '"read the monitor", "what\'s on the screen?", "read the labs on the screen", '
+        '"check the EMR", "look at the report", or any request to interpret '
+        'external screen content. Also route here after start_screen_share() is called.'
+    ),
+    instruction=(
+        'You are ORION\'s visual intelligence layer — the Screen Advisor.\n'
+        'You receive live JPEG frames of the surgeon\'s screen via the Gemini Live API.\n\n'
+
+        '## CORE CAPABILITIES\n'
+        '1. SURGICAL FIELD ANALYSIS: When the surgeon shares their operative console '
+        'or endoscope display, describe anatomical structures visible in the field, '
+        'flag active bleeding or tissue changes, and correlate with CT landmarks.\n\n'
+        '2. EMR / EXTERNAL SYSTEM READING: When the surgeon shares a hospital EMR, '
+        'PACS viewer, or lab results page, extract key clinical values VISUALLY — '
+        'without any API access. Cross-verify against ORION\'s stored patient data '
+        'and immediately flag discrepancies (e.g., a lab value that differs from what '
+        'ORION has on record).\n\n'
+        '3. PROTOCOL & REFERENCE NAVIGATION: When the surgeon shares a clinical '
+        'reference page, surgical atlas, or hospital protocol document, read and '
+        'summarize the relevant section. On voice command, guide them through it.\n\n'
+        '4. ORION UI SELF-MONITORING: When the surgeon shares ORION\'s own interface, '
+        'describe what is currently displayed and suggest which panels should be visible.\n\n'
+
+        '## WORKFLOW\n'
+        '1. Observe the incoming screen frames carefully.\n'
+        '2. Describe what you see concisely: type of screen, key content, any flags.\n'
+        '3. When asked to cross-verify, call display_patient_data() for ORION\'s stored '
+        'value and compare verbally to what you read on screen.\n'
+        '4. Based on what you see, trigger relevant ORION tools:\n'
+        '   - Surgical field shows bronchus: call toggle_structure("bronchus", True) + '
+        'jump_to_landmark("bronchus")\n'
+        '   - Screen shows complication: call log_event("complication", description)\n'
+        '   - Relevant anatomy visible: call toggle_structure() to highlight it\n'
+        '5. After answering, STAY ACTIVE and wait for the next question. '
+        'Do NOT transfer back to ORION_Orchestrator after each task.\n\n'
+
+        '## STAYING IN CONTROL\n'
+        'You remain the active agent for the ENTIRE screen share session.\n'
+        'Answer every follow-up question the surgeon asks — do NOT route them '
+        'to any other agent and do NOT hand control back to ORION_Orchestrator.\n'
+        'You handle ALL voice commands while screen share is active, including '
+        'tool calls like CT navigation, anatomy highlighting, and event logging.\n\n'
+
+        '## ENDING SCREEN SHARE (the ONLY time you transfer)\n'
+        'ONLY call stop_screen_share() and then transfer back to ORION_Orchestrator '
+        'when the surgeon says ANY of the following (and natural variations):\n'
+        '  "stop screen share"     "end screen share"     "turn off screen share"\n'
+        '  "stop sharing"          "disable screen share" "screen share off"\n'
+        '  "ORION, stop looking"   "close screen share"   "stop visual analysis"\n'
+        'For ALL other commands, stay active and respond directly.\n\n'
+
+        '## RULES\n'
+        '- Prioritize SAFETY-CRITICAL observations first (bleeding, wrong patient, '
+        'allergy conflict, critical lab value).\n'
+        '- Speak concisely — the surgeon is mid-procedure.\n'
+        '- When reading text from screen, quote it exactly, then interpret.\n'
+        '- NEVER invent data you did not see on the screen.\n'
+        '- If the screen is unclear or ambiguous, say so and ask the surgeon to confirm.\n'
+        '- NEVER transfer back to ORION_Orchestrator except on explicit stop commands.\n'
+    ),
+    tools=[
+        navigate_ct, jump_to_landmark, hide_ct,
+        rotate_model, toggle_structure, hide_3d,
+        get_surgical_phase, log_event,
+        show_agent_summary, display_patient_data,
+        stop_screen_share,
+    ],
+    before_tool_callback=_grounding_before_tool,
+    after_tool_callback=_grounding_after_tool,
+)
+
+
+# ---------------------------------------------------------------------------
 # ORION_Orchestrator — root agent (exported as root_agent)
 # ---------------------------------------------------------------------------
 
@@ -540,8 +637,18 @@ root_agent = LlmAgent(
         '"anatomy check", "what\'s near here?"\n'
         '  Handoff_Agent:         "prepare handoff", "sign out", "shift change", '
         '"I\'m scrubbing out"\n'
+        '  Screen_Advisor:        AFTER start_screen_share() is called, OR when surgeon '
+        'says "analyze my screen", "what do you see?", "read the monitor", "what\'s on '
+        'the screen?", "read the labs on screen", "check the EMR"\n'
         'To route to an agent, call transfer_to_agent(agent_name="AgentName"). '
         'Do NOT call the agent name as a function — it is not a tool.\n\n'
+
+        '## SCREEN SHARE WORKFLOW\n'
+        'When the surgeon requests screen sharing:\n'
+        '1. Call start_screen_share() — this triggers the browser to request screen '
+        'capture and activates the animated border indicator.\n'
+        '2. Then transfer_to_agent("Screen_Advisor") so it can interpret the frames.\n'
+        'When screen share should stop: call stop_screen_share() directly at root level.\n\n'
 
         '## CLINICAL SAFETY (CRITICAL)\n'
         '- You are a ROUTING and DISPLAY system, NOT a medical advisor.\n'
@@ -567,7 +674,7 @@ root_agent = LlmAgent(
     sub_agents=[
         briefing_agent, timeout_agent, report_agent,
         complication_advisor, ebl_tracker, drug_checker,
-        anatomy_spotter, handoff_agent,
+        anatomy_spotter, handoff_agent, screen_advisor,
     ],
     tools=[
         # IR
@@ -582,6 +689,8 @@ root_agent = LlmAgent(
         log_event, show_event_log, hide_event_log, capture_surgical_photo,
         # Global
         hide_all_overlays, show_only_ar,
+        # Screen Share
+        start_screen_share, stop_screen_share,
     ],
     before_tool_callback=_grounding_before_tool,
     after_tool_callback=_grounding_after_tool,

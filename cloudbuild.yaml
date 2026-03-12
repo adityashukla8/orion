@@ -31,7 +31,7 @@ steps:
       - --memory=2Gi
       - --cpu=2
       - --timeout=3600
-      - --set-env-vars=GOOGLE_GENAI_USE_VERTEXAI=1,GOOGLE_CLOUD_PROJECT=$PROJECT_ID,GOOGLE_CLOUD_LOCATION=$_REGION
+      - --set-env-vars=GOOGLE_GENAI_USE_VERTEXAI=1,GOOGLE_CLOUD_PROJECT=$PROJECT_ID,GOOGLE_CLOUD_LOCATION=$_REGION,DEMO_AGENT_MODEL=gemini-live-2.5-flash-native-audio,GCS_BUCKET=orion-assets-2026,PATIENT_ID=case_demo_001
       # DEMO_AGENT_MODEL, GCS_BUCKET, PATIENT_ID are set directly on the
       # Cloud Run service and intentionally omitted here — they survive
       # redeploys without being overwritten or exposed in this file.
