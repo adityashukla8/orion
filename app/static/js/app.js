@@ -633,7 +633,7 @@ function setStatus(state) {
       }, 1600);
       break;
     default: // inactive / offline
-      orionStatusLabel.textContent = 'ORION offline';
+      orionStatusLabel.textContent = 'ORION offline. Tap to wake.';
   }
 }
 

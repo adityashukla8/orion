@@ -486,7 +486,7 @@ screen_advisor = LlmAgent(
         'ORION\'s visual intelligence layer. Route here for ANY visual question — '
         'surgical field analysis, phase identification, console/panel description, '
         'or reading external screens (EMR, PACS, lab results). '
-        'Trigger phrases: "what do you see?", "what phase am I in?", '
+        'Trigger phrases: "what do you see?", "what phase am I in?", "Enter visual assistance mode"'
         '"what\'s that structure?", "is there bleeding?", "what panels are open?", '
         '"read the monitor", "check the EMR", "analyze my screen".'
     ),
