@@ -528,7 +528,11 @@ screen_advisor = LlmAgent(
         'You remain the active agent for the entire vision session.\n'
         'Answer every follow-up question — do NOT route to any other agent and '
         'do NOT hand control back to ORION_Orchestrator between questions.\n'
-        'You handle ALL voice commands while vision mode is active.\n\n'
+        'You handle ALL voice commands while vision mode is active, including:\n'
+        '- "hide everything" / "clear the screen" → call hide_all_overlays()\n'
+        '- Complication questions → call get_complication_protocol(type, phase) directly\n'
+        '- Anatomy questions → call get_anatomy_context(query, phase) directly\n'
+        '- Photo capture → call capture_surgical_photo(step, note) directly\n\n'
 
         '## ENDING VISION MODE (the ONLY time you transfer)\n'
         'Transfer back to ORION_Orchestrator ONLY when the surgeon explicitly says:\n'
@@ -552,6 +556,8 @@ screen_advisor = LlmAgent(
         rotate_model, toggle_structure, hide_3d,
         get_surgical_phase, log_event,
         show_agent_summary, display_patient_data,
+        hide_all_overlays, hide_patient_data, hide_surgical_checklist, hide_event_log,
+        get_complication_protocol, get_anatomy_context, capture_surgical_photo,
     ],
     before_tool_callback=_grounding_before_tool,
     after_tool_callback=_grounding_after_tool,
@@ -597,16 +603,18 @@ root_agent = LlmAgent(
         '  Fields: hemoglobin, creatinine, platelets, inr, bp, weight, age, '
         'diagnosis, procedure, allergies, medications\n\n'
         'CT imaging (IV):\n'
-        '  navigate_ct(direction, count) — scroll slices (direction: prev/next)\n'
-        '  jump_to_landmark(landmark)    — jump to anatomy\n'
+        '  navigate_ct(direction, count) — scroll slices AND shows the CT viewer (direction: prev/next)\n'
+        '  jump_to_landmark(landmark)    — jump to anatomy (also shows the CT viewer)\n'
         '  hide_ct()                     — hide CT overlay\n'
-        '  Landmarks: carina, aortic_arch, clavicle, diaphragm, tumor, bronchus\n\n'
+        '  Landmarks: carina, aortic_arch, clavicle, diaphragm, tumor, bronchus\n'
+        '  To SHOW CT: "show CT scan" → navigate_ct("next",1); "CT at tumor" → jump_to_landmark("tumor")\n\n'
         '3D anatomy (AR):\n'
-        '  rotate_model(axis, degrees)          — rotate model\n'
-        '  toggle_structure(structure, visible) — show/hide mesh\n'
-        '  reset_3d_view()                      — reset to default\n'
+        '  reset_3d_view()                      — reset to default AND shows the 3D model\n'
+        '  rotate_model(axis, degrees)          — rotate model (also shows 3D model)\n'
+        '  toggle_structure(structure, visible) — show/hide mesh (also shows 3D model)\n'
         '  hide_3d()                            — hide 3D model\n'
-        '  Structures: lung_right, lung_left, bronchus, tumor, parenchyma, vessels, ribs, pleura\n\n'
+        '  Structures: lung_right, lung_left, bronchus, tumor, parenchyma, vessels, ribs, pleura\n'
+        '  To SHOW 3D: "show 3D model" → reset_3d_view(); "show bronchus" → toggle_structure("bronchus", True)\n\n'
         'Surgical phase (PC):\n'
         '  get_surgical_phase(phase)    — show phase checklist\n'
         '  hide_surgical_checklist()    — hide checklist\n'
