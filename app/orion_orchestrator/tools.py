@@ -1236,7 +1236,8 @@ def show_agent_summary(title: str, content: str, bullets: list = None) -> dict:
 def hide_all_overlays() -> dict:
     """
     Use this tool when the surgeon asks to clear, hide, close, or dismiss ALL
-    active overlays simultaneously — CT scan, clinical data, and the 3D model.
+    active overlays simultaneously — CT scan, clinical data, 3D model, surgical
+    checklist, operative log, and any summary or complication panels.
     Trigger on ANY of the following (and natural variations):
       "clear everything"        "hide everything"
       "hide all overlays"       "hide all"

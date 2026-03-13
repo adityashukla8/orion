@@ -113,10 +113,13 @@ if (_ssBadge) {
 // Screen share state → show/hide badge
 document.addEventListener('screenshare:started', () => {
   if (_ssBadge) _ssBadge.classList.add('ss-active');
+  _activeAgent = 'Screen_Advisor';
+  updateAgentCard();
   logRouting('Screen share active — sending frames to Screen_Advisor', 'turn');
 });
 document.addEventListener('screenshare:stopped', () => {
   if (_ssBadge) _ssBadge.classList.remove('ss-active');
+  if (_activeAgent === 'Screen_Advisor') { _activeAgent = null; updateAgentCard(); }
   logRouting('Screen share stopped.', 'turn');
 });
 document.addEventListener('screenshare:error', (e) => {
@@ -491,8 +494,8 @@ function dispatchRenderCommand(toolName, args) {
       relayoutTiles();
       break;
     case 'hide_all_overlays':
-      CTViewer.hide(); ClinicalPanel.hide(); Anatomy3D.hide(); ChecklistPanel.hide(); LogPanel.hide();
-      relayoutTiles();  // belt-and-suspenders: ensure column collapses even if a module's modal ref is stale
+      CTViewer.hide(); ClinicalPanel.hide(); Anatomy3D.hide(); ChecklistPanel.hide(); LogPanel.hide(); SummaryPanel.hide();
+      relayoutTiles();
       break;
     case 'show_only_ar':
       CTViewer.hide(); ClinicalPanel.hide(); ChecklistPanel.hide(); LogPanel.hide();
@@ -558,6 +561,15 @@ function handleFunctionResponse(fr) {
   }
   if (cmd.layer === 'summary' && cmd.action === 'show') {
     SummaryPanel.show(cmd.title, cmd.content, cmd.bullets);
+  }
+  if (cmd.layer === 'summary' && cmd.action === 'hide') {
+    SummaryPanel.hide();
+    relayoutTiles();
+  }
+  if (cmd.layer === 'all' && cmd.action === 'hide') {
+    CTViewer.hide(); ClinicalPanel.hide(); Anatomy3D.hide();
+    ChecklistPanel.hide(); LogPanel.hide(); SummaryPanel.hide();
+    relayoutTiles();
   }
   if (cmd.layer === 'screenshare') {
     if (cmd.action === 'start' && ws && ws.readyState === WebSocket.OPEN) {

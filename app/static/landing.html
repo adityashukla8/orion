@@ -361,7 +361,7 @@
     }
     .evidence-eyebrow {
       font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
-      text-transform: uppercase; color: rgba(0,0,0,0.38); margin-bottom: 28px;
+      text-transform: uppercase; color: var(--blue); margin-bottom: 28px;
       display: flex; align-items: center; gap: 10px;
     }
     .evidence-grid {
@@ -369,14 +369,33 @@
       grid-template-columns: repeat(3, 1fr);
       gap: 14px;
     }
+
+    @property --ev-angle {
+      syntax: '<angle>';
+      initial-value: 0deg;
+      inherits: false;
+    }
+    @keyframes ev-border-spin {
+      to { --ev-angle: 360deg; }
+    }
+
     .ev-card {
       background: #f4f4f4;
       border-radius: 14px;
       padding: 28px 26px 26px;
       display: flex; flex-direction: column;
-      transition: background 0.2s;
+      border: 2px solid transparent;
+      transition: background 0.28s;
     }
-    .ev-card:hover { background: #efefef; }
+    .ev-card:hover {
+      background: #ffffff;
+      background-image: linear-gradient(#ffffff, #ffffff),
+        conic-gradient(from var(--ev-angle) at 50% 50%, #22d3ee 0%, #3b82f6 30%, #0ea5e9 55%, #22d3ee 80%, #3b82f6 100%);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      animation: ev-border-spin 3s linear infinite;
+      box-shadow: 0 4px 24px rgba(34,211,238,0.10);
+    }
     .ev-icon {
       width: 38px; height: 38px; border-radius: 9px;
       background: #e4e4e4;
@@ -498,7 +517,7 @@
       display: flex; align-items: center; justify-content: center;
       padding: 24px; overflow: hidden;
     }
-    .hw-canvas-svg { width: 100%; max-width: 440px; height: auto; }
+    .hw-canvas-svg { width: 100%; max-width: 520px; height: auto; }
 
     /* Bottom row: 4 step panels (mirrors arch-agents) */
     .hw-steps { display: grid; grid-template-columns: repeat(4, 1fr); }
@@ -561,9 +580,9 @@
     .hw-canvas-svg .nd-rect  { fill: rgba(255,255,255,0.86); stroke: rgba(0,0,0,0.15); stroke-width: 1.2; transition: fill 0.35s, stroke 0.35s; }
     .hw-canvas-svg .nd-gem   { fill: rgba(255,255,255,0.86); stroke: rgba(0,0,0,0.15); stroke-width: 1.2; transition: fill 0.35s, stroke 0.35s; }
     .hw-canvas-svg .nd-icon  { stroke: rgba(0,0,0,0.28); fill: none; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.35s; }
-    .hw-canvas-svg .nd-label { fill: rgba(0,0,0,0.38); font-family: 'Poppins',sans-serif; font-size: 10.5px; font-weight: 600; letter-spacing: 0.5px; transition: fill 0.35s; }
-    .hw-canvas-svg .nd-title { fill: rgba(0,0,0,0.52); font-family: 'Poppins',sans-serif; font-size: 8.5px; font-weight: 700; letter-spacing: 0.2px; transition: fill 0.35s; }
-    .hw-canvas-svg .nd-sub   { fill: rgba(0,0,0,0.28); font-family: 'Poppins',sans-serif; font-size: 8.5px; transition: fill 0.35s; }
+    .hw-canvas-svg .nd-label { fill: rgba(0,0,0,0.38); font-family: 'Poppins',sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; transition: fill 0.35s; }
+    .hw-canvas-svg .nd-title { fill: rgba(0,0,0,0.52); font-family: 'Poppins',sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.2px; transition: fill 0.35s; }
+    .hw-canvas-svg .nd-sub   { fill: rgba(0,0,0,0.28); font-family: 'Poppins',sans-serif; font-size: 9.5px; transition: fill 0.35s; }
     .hw-canvas-svg .fp       { stroke: rgba(0,0,0,0.16); stroke-width: 1.5; fill: none; transition: stroke 0.35s; }
     .hw-canvas-svg .fp-arrow { fill: rgba(0,0,0,0.13); stroke: none; transition: fill 0.35s; }
     .hw-canvas-svg .cn       { stroke: rgba(0,0,0,0.11); stroke-width: 1.2; fill: none; transition: stroke 0.35s; }
@@ -609,6 +628,10 @@
     #hw-g-ag.hl .ag-hf .nd-rect  { fill: rgba(20,184,166,0.10);  stroke: #14b8a6; }
     #hw-g-ag.hl .ag-hf .nd-title { fill: #0d9488; }
     #hw-g-ag.hl .ag-hf .nd-sub   { fill: #0d9488; }
+    #hw-g-ag.hl .ag-ss .nd-rect  { fill: rgba(34,211,238,0.10);  stroke: #22d3ee; }
+    #hw-g-ag.hl .ag-ss .nd-title { fill: #0891b2; }
+    #hw-g-ag.hl .ag-ss .nd-sub   { fill: #0891b2; }
+    #hw-g-rt.hl .fp-ss  { stroke: #22d3ee; stroke-dasharray: 5 4; animation: hwFlow 1.6s linear infinite; }
     #hw-g-dp.hl .nd-rect  { fill: rgba(2,132,199,0.08); stroke: rgba(2,132,199,0.32); }
     #hw-g-dp.hl .nd-label { fill: #0369a1; }
     #hw-g-dp.hl .cn       { stroke: rgba(2,132,199,0.26); }
@@ -667,17 +690,17 @@
       border: 1px solid rgba(0,0,0,0.12); font-family: 'Poppins', sans-serif;
     }
 
-    /* ── Agent panels — 4-col 2-row layout (8 specialists) ── */
-    .arch-agents { display: grid; grid-template-columns: repeat(4, 1fr); }
+    /* ── Agent panels — 3-col 3-row layout (9 specialists) ── */
+    .arch-agents { display: grid; grid-template-columns: repeat(3, 1fr); }
     .arch-agent {
       border-right: 1px solid rgba(0,0,0,0.09);
       padding: 24px 20px 28px; display: flex; flex-direction: column;
       min-height: 300px; cursor: default; transition: background 0.28s;
     }
-    /* Remove right border from 4th and 8th cards */
-    .arch-agent:nth-child(4n) { border-right: none; }
-    /* Add top border to second row */
-    .arch-agent:nth-child(n+5) { border-top: 1px solid rgba(0,0,0,0.09); }
+    /* Remove right border from 3rd, 6th, 9th cards */
+    .arch-agent:nth-child(3n) { border-right: none; }
+    /* Add top border from 4th card onwards */
+    .arch-agent:nth-child(n+4) { border-top: 1px solid rgba(0,0,0,0.09); }
 
     /* Pill fill: default grey; accent on hover */
     .arch-agent .pill    { fill: rgba(0,0,0,0.08); transition: fill 0.35s; }
@@ -706,6 +729,9 @@
     .arch-agent.handoff:hover { background: rgba(20,184,166,0.05); }
     .arch-agent.handoff:hover .pill    { fill: rgba(20,184,166,0.35); }
     .arch-agent.handoff:hover .pill.hi { fill: #0d9488; }
+    .arch-agent.screenshare:hover { background: rgba(34,211,238,0.05); }
+    .arch-agent.screenshare:hover .pill    { fill: rgba(34,211,238,0.35); }
+    .arch-agent.screenshare:hover .pill.hi { fill: #22d3ee; }
 
     .arch-num {
       display: inline-flex; font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
@@ -893,167 +919,30 @@
     #implementation { padding: 96px 0; background: #f8fafc; }
     .impl-header { text-align: left; margin-bottom: 48px; }
     .impl-header .section-sub { text-align: left; max-width: 680px; }
-    .impl-drag-hint { display: block; margin-top: 10px; font-size: 12px; color: #94a3b8; letter-spacing: 0.04em; text-align: left; }
-
-    /* Pannable viewport */
-    .flow-viewport {
-      position: relative; height: 460px;
-      overflow: hidden;
-      border: 1px solid rgba(0,0,0,0.09); border-radius: 14px;
-      cursor: grab; user-select: none;
-      background: #ffffff;
-      background-image: radial-gradient(circle, rgba(0,0,0,0.07) 1px, transparent 1px);
-      background-size: 22px 22px;
-      margin-bottom: 32px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.04), inset 0 0 0 1px rgba(255,255,255,0.6);
+    /* ── Architecture image grid ── */
+    .arch-img-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 32px;
     }
-    .flow-viewport:active { cursor: grabbing; }
-
-    /* Pan hint */
-    .flow-hint {
-      position: absolute; bottom: 12px; right: 14px; z-index: 20;
-      font-size: 10px; color: #94a3b8; letter-spacing: 0.05em;
-      display: flex; align-items: center; gap: 5px;
-      pointer-events: none;
+    .arch-img-card {
+      border: 1px solid rgba(0,0,0,0.09); border-radius: 10px; overflow: hidden;
+      background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      cursor: pointer; transition: box-shadow 0.2s, transform 0.2s; text-decoration: none;
     }
-
-    /* Pannable stage */
-    .flow-stage {
-      position: absolute; top: 0; left: 0;
-      width: 1440px; height: 580px;
-      will-change: transform;
+    .arch-img-card:hover { box-shadow: 0 6px 28px rgba(0,0,0,0.10); transform: translateY(-2px); }
+    .arch-img-card img { width: 100%; height: auto; display: block; }
+    .arch-img-caption {
+      padding: 10px 14px; border-top: 1px solid rgba(0,0,0,0.07);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .arch-img-caption-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(30,65,130,0.72); font-family: 'Poppins', sans-serif;
+    }
+    .arch-img-caption-hint {
+      font-size: 10px; color: #94a3b8; font-family: 'Poppins', sans-serif;
+      display: flex; align-items: center; gap: 4px;
     }
 
-    /* Layer background areas */
-    .fl-bg { position: absolute; border-radius: 10px; pointer-events: none; z-index: 1; }
-    .fl-bg-label {
-      position: absolute; top: -11px; left: 12px;
-      font-size: 9px; font-weight: 700;
-      letter-spacing: 0.1em; text-transform: uppercase;
-      padding: 2px 8px; border-radius: 3px;
-    }
-
-    /* SVG connections */
-    .flow-svg {
-      position: absolute; top: 0; left: 0;
-      width: 1440px; height: 580px;
-      pointer-events: none; z-index: 2; overflow: visible;
-    }
-
-    /* Google Cloud layer */
-    .fl-bg-cloud {
-      position: absolute; border-radius: 12px; pointer-events: none; z-index: 1;
-      border: 1.5px solid rgba(26,115,232,0.28);
-      background: rgba(26,115,232,0.025);
-    }
-    .fl-bg-cloud-label {
-      position: absolute; top: -12px; left: 16px;
-      font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-      background: #1a73e8; color: #ffffff;
-      padding: 3px 10px; border-radius: 4px;
-      display: flex; align-items: center; gap: 6px;
-    }
-    .fl-bg-cloud-badges {
-      position: absolute; bottom: 10px; right: 12px;
-      display: flex; gap: 5px;
-    }
-    .fl-bg-cloud-badge {
-      font-size: 9px; font-weight: 600; letter-spacing: 0.04em;
-      padding: 2px 7px; border-radius: 3px;
-      background: rgba(26,115,232,0.08); border: 1px solid rgba(26,115,232,0.22); color: #1a73e8;
-    }
-
-    /* Flow node card */
-    .fn {
-      position: absolute; width: 215px; height: 66px;
-      background: #ffffff; border-radius: 10px;
-      border: 1.5px solid rgba(0,0,0,0.1);
-      display: flex; align-items: stretch;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-      z-index: 10; transition: box-shadow 0.18s, border-color 0.18s, transform 0.12s;
-    }
-    .fn:hover { z-index: 50; transform: translateY(-1px); }
-    .fn-icon {
-      width: 46px; flex-shrink: 0; border-radius: 8px 0 0 8px;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .fn-text {
-      flex: 1; display: flex; flex-direction: column;
-      justify-content: center; padding: 0 10px;
-    }
-    .fn-cat {
-      font-size: 9px; font-weight: 700;
-      letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 3px;
-    }
-    .fn-name { font-size: 12px; font-weight: 600; color: #0f172a; line-height: 1.2; }
-
-    /* Large center nodes */
-    .fn.fn-lg { width: 228px; height: 190px; flex-direction: column; }
-    .fn.fn-lg .fn-icon {
-      width: 100%; height: 44px; border-radius: 8px 8px 0 0;
-      flex-direction: row; gap: 8px; padding: 0 14px;
-    }
-    .fn.fn-lg .fn-icon-label { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; }
-    .fn.fn-lg .fn-text { padding: 10px 14px; justify-content: flex-start; }
-    .fn.fn-lg .fn-cat { margin-bottom: 4px; }
-    .fn.fn-lg .fn-name { font-size: 13px; margin-bottom: 5px; }
-    .fn-sub { font-size: 10px; color: #64748b; line-height: 1.45; }
-    .fn-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 6px; }
-    .fn-tag {
-      font-size: 9px; font-weight: 600;
-      padding: 1px 5px; border-radius: 3px; letter-spacing: 0.03em;
-    }
-
-    /* Layer color themes */
-    .fn[data-layer="input"]   { border-color: rgba(234,88,12,0.32); }
-    .fn[data-layer="input"]   .fn-icon { background: rgba(234,88,12,0.08); }
-    .fn[data-layer="input"]   .fn-cat  { color: #ea580c; }
-    .fn[data-layer="input"]:hover { border-color: rgba(234,88,12,0.65); box-shadow: 0 3px 16px rgba(234,88,12,0.12); }
-    .fn[data-layer="input"]   .fn-tag  { background: rgba(234,88,12,0.07); border: 1px solid rgba(234,88,12,0.2); color: #c2410c; }
-
-    .fn[data-layer="adk"]     { border-color: rgba(124,58,237,0.32); }
-    .fn[data-layer="adk"]     .fn-icon { background: rgba(124,58,237,0.08); }
-    .fn[data-layer="adk"]     .fn-cat  { color: #7c3aed; }
-    .fn[data-layer="adk"]:hover { border-color: rgba(124,58,237,0.65); box-shadow: 0 3px 16px rgba(124,58,237,0.12); }
-    .fn[data-layer="adk"]     .fn-tag  { background: rgba(124,58,237,0.07); border: 1px solid rgba(124,58,237,0.2); color: #6d28d9; }
-
-    .fn[data-layer="gemini"]  { border-color: rgba(217,119,6,0.32); }
-    .fn[data-layer="gemini"]  .fn-icon { background: rgba(217,119,6,0.08); }
-    .fn[data-layer="gemini"]  .fn-cat  { color: #d97706; }
-    .fn[data-layer="gemini"]:hover { border-color: rgba(217,119,6,0.65); box-shadow: 0 3px 16px rgba(217,119,6,0.12); }
-    .fn[data-layer="gemini"]  .fn-tag  { background: rgba(217,119,6,0.07); border: 1px solid rgba(217,119,6,0.2); color: #b45309; }
-
-    .fn[data-layer="agentic"] { border-color: rgba(37,99,235,0.32); }
-    .fn[data-layer="agentic"] .fn-icon { background: rgba(37,99,235,0.08); }
-    .fn[data-layer="agentic"] .fn-cat  { color: #2563eb; }
-    .fn[data-layer="agentic"]:hover { border-color: rgba(37,99,235,0.65); box-shadow: 0 3px 16px rgba(37,99,235,0.12); }
-    .fn[data-layer="agentic"] .fn-tag  { background: rgba(37,99,235,0.07); border: 1px solid rgba(37,99,235,0.2); color: #1d4ed8; }
-
-    .fn[data-layer="tools"]   { border-color: rgba(5,150,105,0.32); }
-    .fn[data-layer="tools"]   .fn-icon { background: rgba(5,150,105,0.08); }
-    .fn[data-layer="tools"]   .fn-cat  { color: #059669; }
-    .fn[data-layer="tools"]:hover { border-color: rgba(5,150,105,0.65); box-shadow: 0 3px 16px rgba(5,150,105,0.12); }
-    .fn[data-layer="tools"]   .fn-tag  { background: rgba(5,150,105,0.07); border: 1px solid rgba(5,150,105,0.2); color: #047857; }
-
-    /* Hover tooltip (fixed, JS-positioned) */
-    #flow-tip {
-      position: fixed; z-index: 9999;
-      pointer-events: none; opacity: 0; width: 256px;
-      transition: opacity 0.13s ease;
-    }
-    #flow-tip.tip-on { opacity: 1; }
-    .ft-inner {
-      background: #0f172a; border-radius: 8px; padding: 12px 14px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.28);
-    }
-    .ft-title { font-size: 11px; font-weight: 700; color: #f1f5f9; margin-bottom: 6px; letter-spacing: 0.04em; }
-    .ft-body  { font-size: 10.5px; color: #94a3b8; line-height: 1.55; }
-    .ft-tags  { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 8px; }
-    .ft-tag   {
-      font-size: 9px; font-weight: 600; padding: 2px 5px; border-radius: 3px;
-      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
-      color: #cbd5e1; letter-spacing: 0.03em;
-    }
 
     /* Feature highlight grid */
     .impl-features {
@@ -1073,7 +962,7 @@
       .impl-features { grid-template-columns: 1fr; }
       .impl-feat-col { border-right: none; border-bottom: 1px solid rgba(0,0,0,0.08); }
       .impl-feat-col:last-child { border-bottom: none; }
-      .flow-viewport { height: 340px; }
+      .arch-img-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -1344,9 +1233,9 @@
             <div class="hw-pipeline-sub">Hover any step below to trace its path through the live pipeline.</div>
           </div>
           <div class="hw-pipeline-right">
-            <svg id="hw-diagram" class="hw-canvas-svg" viewBox="0 0 440 310" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg id="hw-diagram" class="hw-canvas-svg" viewBox="0 0 500 310" fill="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
-                <linearGradient id="hd-gem-grad" x1="16" y1="0" x2="424" y2="0" gradientUnits="userSpaceOnUse">
+                <linearGradient id="hd-gem-grad" x1="16" y1="0" x2="484" y2="0" gradientUnits="userSpaceOnUse">
                   <stop offset="0%"   stop-color="#0369a1"/>
                   <stop offset="40%"  stop-color="#0ea5e9"/>
                   <stop offset="60%"  stop-color="#38bdf8"/>
@@ -1354,8 +1243,8 @@
                 </linearGradient>
               </defs>
               <g id="hw-g-pv">
-                <line class="fp" x1="220" y1="44" x2="220" y2="62"/>
-                <polygon class="fp-arrow" points="220,64 216,56 224,56"/>
+                <line class="fp" x1="250" y1="44" x2="250" y2="62"/>
+                <polygon class="fp-arrow" points="250,64 246,56 254,56"/>
               </g>
               <g id="hw-g-rt">
                 <line class="fp fp-br"  x1="28"  y1="102" x2="28"  y2="132"/>
@@ -1366,6 +1255,7 @@
                 <line class="fp fp-dr"  x1="303" y1="102" x2="303" y2="132"/>
                 <line class="fp fp-an"  x1="358" y1="102" x2="358" y2="132"/>
                 <line class="fp fp-hf"  x1="413" y1="102" x2="413" y2="132"/>
+                <line class="fp fp-ss"  x1="468" y1="102" x2="468" y2="132"/>
               </g>
               <g id="hw-g-dp">
                 <line class="cn" x1="28"  y1="176" x2="28"  y2="196"/>
@@ -1376,32 +1266,33 @@
                 <line class="cn" x1="303" y1="176" x2="303" y2="196"/>
                 <line class="cn" x1="358" y1="176" x2="358" y2="196"/>
                 <line class="cn" x1="413" y1="176" x2="413" y2="196"/>
-                <line class="cn" x1="28"  y1="196" x2="413" y2="196"/>
-                <line class="cn" x1="220" y1="196" x2="220" y2="210"/>
+                <line class="cn" x1="468" y1="176" x2="468" y2="196"/>
+                <line class="cn" x1="28"  y1="196" x2="468" y2="196"/>
+                <line class="cn" x1="250" y1="196" x2="250" y2="210"/>
                 <!-- 24 Tools layer — stacked rectangles -->
-                <rect class="nd-rect" x="84"  y="212" width="272" height="9"  rx="3"/>
-                <rect class="nd-rect" x="76"  y="207" width="288" height="9"  rx="3"/>
-                <rect class="nd-rect" x="68"  y="202" width="304" height="12" rx="3"/>
-                <text class="nd-title" x="220" y="212" text-anchor="middle">24 TOOLS</text>
-                <line class="cn" x1="220" y1="214" x2="220" y2="234"/>
-                <polygon class="fp-arrow" points="220,236 216,228 224,228"/>
-                <rect class="nd-rect" x="88" y="238" width="264" height="38" rx="5"/>
-                <text class="nd-label" x="220" y="262" text-anchor="middle">SURGICAL DISPLAY</text>
+                <rect class="nd-rect" x="114" y="212" width="272" height="9"  rx="3"/>
+                <rect class="nd-rect" x="106" y="207" width="288" height="9"  rx="3"/>
+                <rect class="nd-rect" x="98"  y="202" width="304" height="12" rx="3"/>
+                <text class="nd-title" x="250" y="212" text-anchor="middle">24 TOOLS</text>
+                <line class="cn" x1="250" y1="214" x2="250" y2="234"/>
+                <polygon class="fp-arrow" points="250,236 246,228 254,228"/>
+                <rect class="nd-rect" x="118" y="238" width="264" height="38" rx="5"/>
+                <text class="nd-label" x="250" y="262" text-anchor="middle">SURGICAL DISPLAY</text>
               </g>
               <g id="hw-g-voice">
-                <rect class="nd-rect" x="154" y="4" width="132" height="40" rx="5"/>
-                <g class="nd-icon" transform="translate(214,10) scale(0.5)">
+                <rect class="nd-rect" x="184" y="4" width="132" height="40" rx="5"/>
+                <g class="nd-icon" transform="translate(244,10) scale(0.5)">
                   <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" stroke-width="2"/>
                   <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke-width="2"/>
                   <line x1="12" y1="19" x2="12" y2="23" stroke-width="2"/>
                   <line x1="8"  y1="23" x2="16" y2="23" stroke-width="2"/>
                 </g>
-                <text class="nd-label" x="220" y="38" text-anchor="middle">SURGEON VOICE</text>
+                <text class="nd-label" x="250" y="38" text-anchor="middle">SURGEON VOICE</text>
               </g>
               <g id="hw-g-gem">
-                <rect class="nd-gem" x="16" y="62" width="408" height="40" rx="5"/>
-                <text class="nd-title" x="220" y="79" text-anchor="middle">GEMINI</text>
-                <text class="nd-sub"   x="220" y="93" text-anchor="middle">LIVE API  ·  ORION ORCHESTRATOR</text>
+                <rect class="nd-gem" x="16" y="62" width="468" height="40" rx="5"/>
+                <text class="nd-title" x="250" y="79" text-anchor="middle">GEMINI</text>
+                <text class="nd-sub"   x="250" y="93" text-anchor="middle">LIVE API  ·  ORION ORCHESTRATOR</text>
               </g>
               <g id="hw-g-ag">
                 <g class="ag-br">
@@ -1435,6 +1326,10 @@
                 <g class="ag-hf">
                   <rect class="nd-rect" x="389" y="132" width="48" height="44" rx="4"/>
                   <text class="nd-title" x="413" y="148" text-anchor="middle"><tspan x="413">Handoff</tspan><tspan x="413" dy="11">SBAR</tspan></text>
+                </g>
+                <g class="ag-ss">
+                  <rect class="nd-rect" x="444" y="132" width="48" height="44" rx="4"/>
+                  <text class="nd-title" x="468" y="148" text-anchor="middle"><tspan x="468">Screen</tspan><tspan x="468" dy="11">Advisor</tspan></text>
                 </g>
               </g>
             </svg>
@@ -1571,10 +1466,10 @@
   <section id="agents">
     <div class="container">
       <div class="agents-header reveal">
-        <span class="section-tag">Architecture</span>
-        <h2 class="section-headline">One orchestrator.<br>Eight specialists.</h2>
+        <span class="section-tag">Agents</span>
+        <h2 class="section-headline">One orchestrator.<br>Nine specialists.</h2>
         <p class="section-sub">
-          ORION routes every voice command to the right specialist agent — protocol, clinical decision, or documentation — no configuration, no delays, no hands.
+          ORION routes every voice command to the right specialist agent — protocol, clinical decision, documentation, or screen analysis — no configuration, no delays, no hands.
         </p>
       </div>
 
@@ -1901,6 +1796,31 @@
             </div>
           </div>
 
+          <!-- Screen_Advisor -->
+          <div class="arch-agent screenshare">
+            <div class="arch-num">009</div>
+            <div class="arch-visual">
+              <svg viewBox="0 0 156 156" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="18" y="32" width="120" height="76" rx="6" class="pill"/>
+                <rect x="28" y="42" width="100" height="56" rx="3" class="pill hi"/>
+                <rect x="58" y="108" width="40" height="8" rx="4" class="pill"/>
+                <rect x="48" y="116" width="60" height="6" rx="3" class="pill"/>
+                <circle cx="78" cy="70" r="14" class="pill hi"/>
+                <circle cx="78" cy="70" r="7" class="pill"/>
+                <line x1="78" y1="56" x2="78" y2="84" stroke="rgba(0,0,0,0.2)" stroke-width="1.5"/>
+                <line x1="64" y1="70" x2="92" y2="70" stroke="rgba(0,0,0,0.2)" stroke-width="1.5"/>
+              </svg>
+            </div>
+            <div class="arch-agent-label">Screen_Advisor</div>
+            <div class="arch-agent-title">Visual Console Intelligence</div>
+            <div class="arch-agent-desc">Captures a live screenshot of the surgical console and uses Gemini vision to answer questions about what is visible — panels open, vitals shown, CT slice displayed.</div>
+            <div class="arch-agent-tags">
+              <span class="arch-tag">Screen capture</span>
+              <span class="arch-tag">Vision analysis</span>
+              <span class="arch-tag">Live context</span>
+            </div>
+          </div>
+
         </div>
       </div><!-- /arch-wrap -->
 
@@ -1918,204 +1838,31 @@
           End-to-end flow from surgeon's voice to real-time surgical intelligence —
           ADK multi-agent orchestration, Gemini Live API, and a WebSocket audio pipeline.
         </p>
-        <span class="impl-drag-hint">↔↕ Drag to pan the diagram</span>
       </div>
 
-      <!-- Pannable flow diagram -->
-      <div class="flow-viewport reveal" id="flowViewport">
-        <div class="flow-stage" id="flowStage">
-
-          <!-- ── Layer backgrounds (z-index:1) ── -->
-
-          <!-- Google Cloud outer wrapper (ADK + Gemini) -->
-          <div class="fl-bg-cloud" style="left:354px;top:68px;width:558px;height:310px;">
-            <div class="fl-bg-cloud-label">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
-              Google Cloud
-            </div>
-            <div class="fl-bg-cloud-badges">
-              <span class="fl-bg-cloud-badge">Vertex AI</span>
-              <span class="fl-bg-cloud-badge">Cloud Run</span>
-            </div>
+      <!-- Architecture diagrams -->
+      <div class="arch-img-grid">
+        <a class="arch-img-card reveal" href="https://github.com/adityashukla8/orion/blob/main/Gemini_LiveAPI_Hackathon_Architecture.png" target="_blank" rel="noopener">
+          <img src="/static/Gemini_LiveAPI_Hackathon_Architecture.png" alt="System Architecture"/>
+          <div class="arch-img-caption">
+            <span class="arch-img-caption-label">System Architecture</span>
+            <span class="arch-img-caption-hint">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              View full size
+            </span>
           </div>
-
-          <div class="fl-bg" style="left:10px;top:52px;width:256px;height:280px;border:1.5px dashed rgba(234,88,12,0.25);background:rgba(234,88,12,0.03);">
-            <span class="fl-bg-label" style="background:rgba(234,88,12,0.1);color:#ea580c;border:1px solid rgba(234,88,12,0.22);">Input Pipeline</span>
+        </a>
+        <a class="arch-img-card reveal" href="https://github.com/adityashukla8/orion/blob/main/Gemini_LiveAPI_Hackathon_Workflow.png" target="_blank" rel="noopener">
+          <img src="/static/Gemini_LiveAPI_Hackathon_Workflow.png" alt="Agentic Workflow"/>
+          <div class="arch-img-caption">
+            <span class="arch-img-caption-label">Agentic Workflow</span>
+            <span class="arch-img-caption-hint">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              View full size
+            </span>
           </div>
-          <div class="fl-bg" style="left:376px;top:108px;width:258px;height:258px;border:1.5px dashed rgba(124,58,237,0.25);background:rgba(124,58,237,0.03);">
-            <span class="fl-bg-label" style="background:rgba(124,58,237,0.1);color:#7c3aed;border:1px solid rgba(124,58,237,0.22);">ADK Orchestration</span>
-          </div>
-          <div class="fl-bg" style="left:638px;top:108px;width:258px;height:258px;border:1.5px dashed rgba(217,119,6,0.25);background:rgba(217,119,6,0.03);">
-            <span class="fl-bg-label" style="background:rgba(217,119,6,0.1);color:#d97706;border:1px solid rgba(217,119,6,0.22);">Gemini Live API</span>
-          </div>
-          <div class="fl-bg" style="left:952px;top:4px;width:252px;height:180px;border:1.5px dashed rgba(37,99,235,0.25);background:rgba(37,99,235,0.03);">
-            <span class="fl-bg-label" style="background:rgba(37,99,235,0.1);color:#2563eb;border:1px solid rgba(37,99,235,0.22);">Agentic Layer</span>
-          </div>
-          <div class="fl-bg" style="left:952px;top:192px;width:252px;height:282px;border:1.5px dashed rgba(5,150,105,0.25);background:rgba(5,150,105,0.03);">
-            <span class="fl-bg-label" style="background:rgba(5,150,105,0.1);color:#059669;border:1px solid rgba(5,150,105,0.22);">Tools &amp; Callbacks</span>
-          </div>
-
-          <!-- ── SVG connections (z-index:2) ── -->
-          <svg class="flow-svg" viewBox="0 0 1440 580" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <marker id="fa-or" markerWidth="7" markerHeight="7" refX="3" refY="3.5" orient="auto"><path d="M 0 0.5 L 6 3.5 L 0 6.5 z" fill="#ea580c" opacity="0.7"/></marker>
-              <marker id="fa-gr" markerWidth="7" markerHeight="7" refX="3" refY="3.5" orient="auto"><path d="M 0 0.5 L 6 3.5 L 0 6.5 z" fill="#64748b" opacity="0.7"/></marker>
-              <marker id="fa-bl" markerWidth="7" markerHeight="7" refX="3" refY="3.5" orient="auto"><path d="M 0 0.5 L 6 3.5 L 0 6.5 z" fill="#2563eb" opacity="0.7"/></marker>
-              <marker id="fa-in" markerWidth="7" markerHeight="7" refX="3" refY="3.5" orient="auto"><path d="M 0 0.5 L 6 3.5 L 0 6.5 z" fill="#4f46e5" opacity="0.7"/></marker>
-              <marker id="fa-gn" markerWidth="7" markerHeight="7" refX="3" refY="3.5" orient="auto"><path d="M 0 0.5 L 6 3.5 L 0 6.5 z" fill="#059669" opacity="0.7"/></marker>
-              <marker id="fa-sk" markerWidth="7" markerHeight="7" refX="3" refY="3.5" orient="auto"><path d="M 0 0.5 L 6 3.5 L 0 6.5 z" fill="#0284c7" opacity="0.7"/></marker>
-            </defs>
-            <!-- Left stubs → left bus -->
-            <line x1="239" y1="105" x2="320" y2="105" stroke="#ea580c" stroke-width="1.8" stroke-opacity="0.55"/>
-            <line x1="239" y1="197" x2="320" y2="197" stroke="#ea580c" stroke-width="1.8" stroke-opacity="0.55"/>
-            <line x1="239" y1="289" x2="320" y2="289" stroke="#ea580c" stroke-width="1.8" stroke-opacity="0.55"/>
-            <!-- Left vertical bus -->
-            <line x1="320" y1="105" x2="320" y2="289" stroke="#ea580c" stroke-width="1.8" stroke-opacity="0.38"/>
-            <!-- Left bus → ADK -->
-            <line x1="320" y1="241" x2="386" y2="241" stroke="#ea580c" stroke-width="1.8" stroke-opacity="0.65" marker-end="url(#fa-or)"/>
-            <!-- ADK → Gemini -->
-            <line x1="618" y1="241" x2="646" y2="241" stroke="#94a3b8" stroke-width="1.8" stroke-opacity="0.75" marker-end="url(#fa-gr)"/>
-            <!-- Gemini → right bus -->
-            <line x1="878" y1="241" x2="922" y2="241" stroke="#64748b" stroke-width="1.8" stroke-opacity="0.45"/>
-            <!-- Right vertical bus -->
-            <line x1="922" y1="53" x2="922" y2="437" stroke="#64748b" stroke-width="1.8" stroke-opacity="0.28"/>
-            <!-- Right stubs → nodes -->
-            <line x1="922" y1="53"  x2="958" y2="53"  stroke="#2563eb" stroke-width="1.8" stroke-opacity="0.55" marker-end="url(#fa-bl)"/>
-            <line x1="922" y1="149" x2="958" y2="149" stroke="#2563eb" stroke-width="1.8" stroke-opacity="0.55" marker-end="url(#fa-bl)"/>
-            <line x1="922" y1="245" x2="958" y2="245" stroke="#4f46e5" stroke-width="1.8" stroke-opacity="0.55" marker-end="url(#fa-in)"/>
-            <line x1="922" y1="341" x2="958" y2="341" stroke="#059669" stroke-width="1.8" stroke-opacity="0.55" marker-end="url(#fa-gn)"/>
-            <line x1="922" y1="437" x2="958" y2="437" stroke="#0284c7" stroke-width="1.8" stroke-opacity="0.55" marker-end="url(#fa-sk)"/>
-            <!-- Junction dots — left bus -->
-            <circle cx="320" cy="105" r="4" fill="#ea580c" opacity="0.72"/>
-            <circle cx="320" cy="197" r="4" fill="#ea580c" opacity="0.72"/>
-            <circle cx="320" cy="289" r="4" fill="#ea580c" opacity="0.72"/>
-            <circle cx="320" cy="241" r="5" fill="#ea580c" opacity="0.92"/>
-            <!-- Junction dots — right bus -->
-            <circle cx="922" cy="53"  r="4" fill="#2563eb" opacity="0.72"/>
-            <circle cx="922" cy="149" r="4" fill="#2563eb" opacity="0.72"/>
-            <circle cx="922" cy="241" r="5" fill="#64748b" opacity="0.82"/>
-            <circle cx="922" cy="245" r="4" fill="#4f46e5" opacity="0.72"/>
-            <circle cx="922" cy="341" r="4" fill="#059669" opacity="0.72"/>
-            <circle cx="922" cy="437" r="4" fill="#0284c7" opacity="0.72"/>
-          </svg>
-
-          <!-- ── Flow Nodes (z-index:10) ── -->
-
-          <!-- Voice / Mic -->
-          <div class="fn" data-layer="input" style="left:24px;top:72px;"
-            data-tip-title="Voice / Mic Capture"
-            data-tip-body="Surgeon's voice captured via getUserMedia(). AudioWorklet API runs in a dedicated audio thread — zero-latency 16kHz s16le mono capture at 128-sample frames."
-            data-tip-tags="getUserMedia,AudioWorklet,16kHz s16le">
-            <div class="fn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></div>
-            <div class="fn-text"><div class="fn-cat">Input</div><div class="fn-name">Voice / Mic</div></div>
-          </div>
-
-          <!-- AudioWorklet -->
-          <div class="fn" data-layer="input" style="left:24px;top:164px;"
-            data-tip-title="AudioWorklet PCM Processor"
-            data-tip-body="Worklet frames (128 samples) accumulated server-side into 3200-byte chunks (100ms at 16kHz) before calling send_realtime(). Sending raw worklet chunks directly causes ADK overload."
-            data-tip-tags="3200 bytes,100ms chunks,send_realtime()">
-            <div class="fn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
-            <div class="fn-text"><div class="fn-cat">Input</div><div class="fn-name">AudioWorklet</div></div>
-          </div>
-
-          <!-- FastAPI WS -->
-          <div class="fn" data-layer="input" style="left:24px;top:256px;"
-            data-tip-title="FastAPI WebSocket Server"
-            data-tip-body="Async bidirectional WS handler per connection. Binary frames carry PCM audio upstream; JSON frames carry ADK events downstream. MIME type must be 'audio/pcm' — the rate suffix causes error 1007."
-            data-tip-tags="FastAPI,asyncio,audio/pcm MIME">
-            <div class="fn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg></div>
-            <div class="fn-text"><div class="fn-cat">Server</div><div class="fn-name">FastAPI WS</div></div>
-          </div>
-
-          <!-- ADK Runtime (large) -->
-          <div class="fn fn-lg" data-layer="adk" style="left:390px;top:146px;width:228px;height:190px;"
-            data-tip-title="Google ADK Runtime"
-            data-tip-body="ADK 1.26.0. LiveRequestQueue per session (close() in finally block). runner.run_live() returns async event generator wrapped with aclosing(). asyncio.wait(FIRST_EXCEPTION) — FIRST_COMPLETED wrongly kills multi-turn sessions after first response."
-            data-tip-tags="ADK 1.26.0,LiveRequestQueue,aclosing(),FIRST_EXCEPTION">
-            <div class="fn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg><span class="fn-icon-label" style="color:#7c3aed;">Google ADK</span></div>
-            <div class="fn-text">
-              <div class="fn-cat">Orchestration</div>
-              <div class="fn-name">ADK Runtime</div>
-              <div class="fn-sub">Runner.run_live() · LiveRequestQueue<br>before / after tool callbacks</div>
-              <div class="fn-tags">
-                <span class="fn-tag">LlmAgent</span>
-                <span class="fn-tag">aclosing()</span>
-                <span class="fn-tag">StreamingMode.BIDI</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Gemini Live API (large) -->
-          <div class="fn fn-lg" data-layer="gemini" style="left:650px;top:146px;width:228px;height:190px;"
-            data-tip-title="Gemini Live API"
-            data-tip-body="gemini-2.5-flash-preview-native-audio-dialog on Vertex AI via ADC. BIDI streaming via RunConfig. 16kHz PCM in / 24kHz PCM out. AudioTranscriptionConfig for real-time text. All sub-agent audio played — no author filtering."
-            data-tip-tags="Vertex AI,native-audio-dialog,BIDI,24kHz out">
-            <div class="fn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span class="fn-icon-label" style="color:#d97706;">Gemini Live</span></div>
-            <div class="fn-text">
-              <div class="fn-cat">AI / LLM</div>
-              <div class="fn-name">Gemini 2.5 Flash</div>
-              <div class="fn-sub">native-audio-dialog · Vertex AI<br>SpeechConfig · AudioTranscription</div>
-              <div class="fn-tags">
-                <span class="fn-tag">RunConfig</span>
-                <span class="fn-tag">Sadaltager voice</span>
-                <span class="fn-tag">ADC auth</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Orchestrator -->
-          <div class="fn" data-layer="agentic" style="left:960px;top:20px;"
-            data-tip-title="ORION Orchestrator"
-            data-tip-body="Root LlmAgent with 8 sub_agents. Receives surgeon intent from Gemini, routes to specialist via transfer_to_agent(). Handles 20 core tools directly. System prompt encodes full surgical context."
-            data-tip-tags="Root LlmAgent,transfer_to_agent,20 tools">
-            <div class="fn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="4" cy="15" r="3"/><circle cx="20" cy="15" r="3"/></svg></div>
-            <div class="fn-text"><div class="fn-cat">Agentic</div><div class="fn-name">Orchestrator</div></div>
-          </div>
-
-          <!-- 8 Specialist Agents -->
-          <div class="fn" data-layer="agentic" style="left:960px;top:116px;"
-            data-tip-title="8 Specialist Agents"
-            data-tip-body="Briefing · Timeout · Report · Complication Advisor · EBL Tracker · Drug Checker · Anatomy Spotter · Handoff. Each is an LlmAgent with specialized system prompt and tool subset. All use the native audio model in run_live()."
-            data-tip-tags="LlmAgent,sub_agents,native audio model">
-            <div class="fn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-            <div class="fn-text"><div class="fn-cat">Agentic</div><div class="fn-name">8 Specialist Agents</div></div>
-          </div>
-
-          <!-- Tool Callbacks -->
-          <div class="fn" data-layer="tools" style="left:960px;top:212px;"
-            data-tip-title="Tool Callbacks — Hallucination Guard"
-            data-tip-body="before_tool_callback fires before every tool invocation and logs to _SESSION_LOG. after_tool_callback logs the result. Audits every AI decision. log_ai_interaction() is internal-only — not exposed as a user tool."
-            data-tip-tags="before_tool_callback,after_tool_callback,_SESSION_LOG">
-            <div class="fn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-            <div class="fn-text"><div class="fn-cat">Callbacks</div><div class="fn-name">Tool Callbacks</div></div>
-          </div>
-
-          <!-- 24 Tools -->
-          <div class="fn" data-layer="tools" style="left:960px;top:308px;"
-            data-tip-title="24 Python FunctionTools"
-            data-tip-body="IR×3 (patient data) · IV×3 (CT navigation) · AR×4 (3D anatomy) · PC×2 (procedure) · DOC×4 (op log) · Decision Support×5 · Global×3. Tools mutate browser state by dispatching structured JSON events over WebSocket."
-            data-tip-tags="FunctionTool,24 tools,WS dispatch">
-            <div class="fn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
-            <div class="fn-text"><div class="fn-cat">Tools</div><div class="fn-name">24 Python Tools</div></div>
-          </div>
-
-          <!-- Audio Response -->
-          <div class="fn" data-layer="tools" style="left:960px;top:404px;"
-            data-tip-title="Audio + Event Response"
-            data-tip-body="Agent audio in inlineData.data (camelCase — by_alias=True). All sub-agent audio played, no author filtering. 24kHz PCM decoded via Web Audio API. JSON events dispatch UI updates: CT viewer, 3D overlays, patient panels."
-            data-tip-tags="inlineData.data,24kHz PCM,camelCase by_alias">
-            <div class="fn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg></div>
-            <div class="fn-text"><div class="fn-cat">Output</div><div class="fn-name">Audio Response</div></div>
-          </div>
-
-        </div><!-- /flow-stage -->
-
-        <div class="flow-hint">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          Drag to pan
-        </div>
-      </div><!-- /flow-viewport -->
+        </a>
+      </div>
 
       <!-- Feature highlight grid -->
       <div class="impl-features reveal">
@@ -2223,6 +1970,7 @@
     </div>
   </section>
 
+
   <!-- CTA -->
   <section id="cta">
     <div class="container">
@@ -2249,6 +1997,13 @@
       </div>
     </div>
   </section>
+
+  <!-- Disclaimer -->
+  <div style="background:#f1f5f9;border-top:1px solid rgba(0,0,0,0.07);padding:14px 24px;text-align:center;">
+    <p style="font-size:11px;color:rgba(0,0,0,0.44);font-family:'Poppins',sans-serif;margin:0;line-height:1.7;max-width:760px;margin:0 auto;">
+      This project is designed to demonstrate the capabilities of Gemini Live API &amp; Google ADK. It may contain clinical inaccuracies and has not been reviewed by medical domain experts. Not intended for use in actual clinical settings.
+    </p>
+  </div>
 
   <!-- Footer -->
   <footer>
@@ -2348,92 +2103,7 @@
     })();
   </script>
 
-  <script>
-    // ── Flow diagram: pan + hover tooltip ──────────────────────────────────
-    (function () {
-      const vp    = document.getElementById('flowViewport');
-      const stage = document.getElementById('flowStage');
-      if (!vp || !stage) return;
 
-      // ── Pan ──────────────────────────────────────────────────────────────
-      let panX = 0, panY = 0;
-      let dragging = false, startX = 0, startY = 0, startPanX = 0, startPanY = 0;
-
-      function clamp(x, y) {
-        const minX = Math.min(0, vp.offsetWidth  - 1440);
-        const minY = Math.min(0, vp.offsetHeight - 580);
-        return { x: Math.min(0, Math.max(minX, x)), y: Math.min(0, Math.max(minY, y)) };
-      }
-
-      function initPan() {
-        // Start slightly panned so left nodes are visible with margin
-        const c = clamp(-20, 0);
-        panX = c.x; panY = c.y;
-        stage.style.transform = `translate(${panX}px,${panY}px)`;
-      }
-      initPan();
-      window.addEventListener('resize', initPan);
-
-      vp.addEventListener('mousedown', e => {
-        if (e.button !== 0) return;
-        dragging = true; startX = e.clientX; startY = e.clientY;
-        startPanX = panX; startPanY = panY;
-        vp.style.cursor = 'grabbing';
-        e.preventDefault();
-      });
-      window.addEventListener('mousemove', e => {
-        if (!dragging) return;
-        const c = clamp(startPanX + e.clientX - startX, startPanY + e.clientY - startY);
-        panX = c.x; panY = c.y;
-        stage.style.transform = `translate(${panX}px,${panY}px)`;
-      });
-      window.addEventListener('mouseup', () => { if (dragging) { dragging = false; vp.style.cursor = 'grab'; } });
-
-      // Touch
-      let tx = 0, ty = 0, tpx = 0, tpy = 0;
-      vp.addEventListener('touchstart', e => {
-        if (e.touches.length !== 1) return;
-        tx = e.touches[0].clientX; ty = e.touches[0].clientY; tpx = panX; tpy = panY;
-      }, { passive: true });
-      vp.addEventListener('touchmove', e => {
-        if (e.touches.length !== 1) return;
-        const c = clamp(tpx + e.touches[0].clientX - tx, tpy + e.touches[0].clientY - ty);
-        panX = c.x; panY = c.y;
-        stage.style.transform = `translate(${panX}px,${panY}px)`;
-        e.preventDefault();
-      }, { passive: false });
-
-      // ── Hover tooltip ────────────────────────────────────────────────────
-      const tip = document.createElement('div');
-      tip.id = 'flow-tip';
-      tip.innerHTML = '<div class="ft-inner"><div class="ft-title" id="ft-title"></div><div class="ft-body" id="ft-body"></div><div class="ft-tags" id="ft-tags"></div></div>';
-      document.body.appendChild(tip);
-
-      let hideTimer = null;
-
-      document.querySelectorAll('.fn[data-tip-title]').forEach(el => {
-        el.addEventListener('mouseenter', () => {
-          clearTimeout(hideTimer);
-          document.getElementById('ft-title').textContent = el.dataset.tipTitle;
-          document.getElementById('ft-body').textContent  = el.dataset.tipBody;
-          const tags = (el.dataset.tipTags || '').split(',').filter(Boolean);
-          document.getElementById('ft-tags').innerHTML = tags.map(t => `<span class="ft-tag">${t.trim()}</span>`).join('');
-
-          const r  = el.getBoundingClientRect();
-          const tw = 256, th = 140;
-          let top  = r.top - th - 12;
-          if (top < 8) top = r.bottom + 10;
-          const left = Math.min(window.innerWidth - tw - 8, Math.max(8, r.left + r.width / 2 - tw / 2));
-          tip.style.top  = top  + 'px';
-          tip.style.left = left + 'px';
-          tip.classList.add('tip-on');
-        });
-        el.addEventListener('mouseleave', () => {
-          hideTimer = setTimeout(() => tip.classList.remove('tip-on'), 80);
-        });
-      });
-    })();
-  </script>
 
 </body>
 </html>

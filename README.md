@@ -428,3 +428,10 @@ orion/
 **Contest:** [Gemini Live Agent Challenge](https://geminiliveagentchallenge.devpost.com/)
 **Category:** Live Agents
 **Submission deadline:** March 16, 2026
+
+
+---
+
+## Disclaimer
+
+This project is designed to demonstrate the capabilities of the Gemini Live API and Google Agent Development Kit (ADK). It may contain clinical inaccuracies and has not been reviewed by medical domain experts. **Not intended for use in actual clinical settings.**
