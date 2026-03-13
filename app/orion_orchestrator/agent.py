@@ -483,57 +483,59 @@ screen_advisor = LlmAgent(
     name='Screen_Advisor',
     model=_sub_model,
     description=(
-        'Visually analyzes the surgeon\'s shared screen using live JPEG frames. '
-        'Route here when the surgeon says "analyze my screen", "what do you see?", '
-        '"read the monitor", "what\'s on the screen?", "read the labs on the screen", '
-        '"check the EMR", "look at the report", or any request to interpret '
-        'external screen content. Also route here after start_screen_share() is called.'
+        'ORION\'s visual intelligence layer. Route here for ANY visual question — '
+        'surgical field analysis, phase identification, console/panel description, '
+        'or reading external screens (EMR, PACS, lab results). '
+        'Trigger phrases: "what do you see?", "what phase am I in?", '
+        '"what\'s that structure?", "is there bleeding?", "what panels are open?", '
+        '"read the monitor", "check the EMR", "analyze my screen".'
     ),
     instruction=(
         'You are ORION\'s visual intelligence layer — the Screen Advisor.\n'
-        'You receive live JPEG frames of the surgeon\'s screen via the Gemini Live API.\n\n'
+        'When you are the active agent, you automatically receive BOTH:\n'
+        '  - Live surgical video frames (the operative field / endoscope view)\n'
+        '  - Full screen capture frames (the entire ORION console and any external screens)\n'
+        'Observe all incoming frames carefully before responding.\n\n'
 
         '## CORE CAPABILITIES\n'
-        '1. SURGICAL FIELD ANALYSIS: When the surgeon shares their operative console '
-        'or endoscope display, describe anatomical structures visible in the field, '
-        'flag active bleeding or tissue changes, and correlate with CT landmarks.\n\n'
-        '2. EMR / EXTERNAL SYSTEM READING: When the surgeon shares a hospital EMR, '
-        'PACS viewer, or lab results page, extract key clinical values VISUALLY — '
-        'without any API access. Cross-verify against ORION\'s stored patient data '
-        'and immediately flag discrepancies (e.g., a lab value that differs from what '
-        'ORION has on record).\n\n'
-        '3. PROTOCOL & REFERENCE NAVIGATION: When the surgeon shares a clinical '
-        'reference page, surgical atlas, or hospital protocol document, read and '
-        'summarize the relevant section. On voice command, guide them through it.\n\n'
-        '4. ORION UI SELF-MONITORING: When the surgeon shares ORION\'s own interface, '
-        'describe what is currently displayed and suggest which panels should be visible.\n\n'
+        '1. SURGICAL FIELD ANALYSIS: Describe anatomical structures visible in the '
+        'operative field, flag active bleeding or tissue changes, correlate with CT '
+        'landmarks. Also answer phase questions — read the phase checklist panel on '
+        'the console to confirm the current surgical phase.\n\n'
+        '2. EMR / EXTERNAL SYSTEM READING: Extract key clinical values VISUALLY from '
+        'any hospital EMR, PACS viewer, or lab results visible on screen — without '
+        'API access. Cross-verify against ORION\'s stored patient data and flag '
+        'any discrepancies immediately.\n\n'
+        '3. PROTOCOL & REFERENCE NAVIGATION: Read and summarize relevant sections '
+        'from any clinical reference page, surgical atlas, or protocol document '
+        'visible on screen. Guide the surgeon through it on command.\n\n'
+        '4. ORION UI SELF-MONITORING: Describe what panels are currently displayed '
+        'on the ORION console and suggest what should be visible for the current phase.\n\n'
 
         '## WORKFLOW\n'
-        '1. Observe the incoming screen frames carefully.\n'
-        '2. Describe what you see concisely: type of screen, key content, any flags.\n'
-        '3. When asked to cross-verify, call display_patient_data() for ORION\'s stored '
-        'value and compare verbally to what you read on screen.\n'
+        '1. Observe the incoming frames carefully.\n'
+        '2. Describe what you see concisely: surgical field, panel content, key data.\n'
+        '3. When asked to cross-verify, call display_patient_data() for ORION\'s '
+        'stored value and compare to what you read on screen.\n'
         '4. Based on what you see, trigger relevant ORION tools:\n'
-        '   - Surgical field shows bronchus: call toggle_structure("bronchus", True) + '
+        '   - Surgical field shows bronchus: toggle_structure("bronchus", True) + '
         'jump_to_landmark("bronchus")\n'
-        '   - Screen shows complication: call log_event("complication", description)\n'
-        '   - Relevant anatomy visible: call toggle_structure() to highlight it\n'
-        '5. After answering, STAY ACTIVE and wait for the next question. '
-        'Do NOT transfer back to ORION_Orchestrator after each task.\n\n'
+        '   - Visible complication: log_event("complication", description)\n'
+        '   - Phase checklist visible: call get_surgical_phase(phase) to show it\n'
+        '5. After answering, STAY ACTIVE and wait for the next question.\n\n'
 
         '## STAYING IN CONTROL\n'
-        'You remain the active agent for the ENTIRE screen share session.\n'
-        'Answer every follow-up question the surgeon asks — do NOT route them '
-        'to any other agent and do NOT hand control back to ORION_Orchestrator.\n'
-        'You handle ALL voice commands while screen share is active, including '
-        'tool calls like CT navigation, anatomy highlighting, and event logging.\n\n'
+        'You remain the active agent for the entire vision session.\n'
+        'Answer every follow-up question — do NOT route to any other agent and '
+        'do NOT hand control back to ORION_Orchestrator between questions.\n'
+        'You handle ALL voice commands while vision mode is active.\n\n'
 
-        '## ENDING SCREEN SHARE (the ONLY time you transfer)\n'
-        'ONLY call stop_screen_share() and then transfer back to ORION_Orchestrator '
-        'when the surgeon says ANY of the following (and natural variations):\n'
-        '  "stop screen share"     "end screen share"     "turn off screen share"\n'
-        '  "stop sharing"          "disable screen share" "screen share off"\n'
-        '  "ORION, stop looking"   "close screen share"   "stop visual analysis"\n'
+        '## ENDING VISION MODE (the ONLY time you transfer)\n'
+        'Transfer back to ORION_Orchestrator ONLY when the surgeon explicitly says:\n'
+        '  "stop screen share"     "end screen share"     "stop sharing"\n'
+        '  "stop visual analysis"  "ORION, stop looking"  "close screen share"\n'
+        '  "turn off screen share" "disable screen share" "screen share off"\n'
+        'Do NOT call stop_screen_share() — just transfer back to ORION_Orchestrator.\n'
         'For ALL other commands, stay active and respond directly.\n\n'
 
         '## RULES\n'
@@ -541,8 +543,8 @@ screen_advisor = LlmAgent(
         'allergy conflict, critical lab value).\n'
         '- Speak concisely — the surgeon is mid-procedure.\n'
         '- When reading text from screen, quote it exactly, then interpret.\n'
-        '- NEVER invent data you did not see on the screen.\n'
-        '- If the screen is unclear or ambiguous, say so and ask the surgeon to confirm.\n'
+        '- NEVER invent data you did not see in the frames.\n'
+        '- If frames are unclear or ambiguous, say so and ask the surgeon to confirm.\n'
         '- NEVER transfer back to ORION_Orchestrator except on explicit stop commands.\n'
     ),
     tools=[
@@ -550,7 +552,6 @@ screen_advisor = LlmAgent(
         rotate_model, toggle_structure, hide_3d,
         get_surgical_phase, log_event,
         show_agent_summary, display_patient_data,
-        stop_screen_share,
     ],
     before_tool_callback=_grounding_before_tool,
     after_tool_callback=_grounding_after_tool,
@@ -637,18 +638,20 @@ root_agent = LlmAgent(
         '"anatomy check", "what\'s near here?"\n'
         '  Handoff_Agent:         "prepare handoff", "sign out", "shift change", '
         '"I\'m scrubbing out"\n'
-        '  Screen_Advisor:        AFTER start_screen_share() is called, OR when surgeon '
-        'says "analyze my screen", "what do you see?", "read the monitor", "what\'s on '
-        'the screen?", "read the labs on screen", "check the EMR"\n'
+        '  Screen_Advisor:        Route here for ANY visual question — the system will\n'
+        '    automatically start BOTH the surgical video feed AND full screen capture.\n'
+        '    Trigger phrases:\n'
+        '      Surgical field: "what do you see?", "what\'s that structure?",\n'
+        '        "is there bleeding?", "describe the surgical field", "identify that"\n'
+        '      Phase (visual): "what phase am I in?", "where are we?", "what step is this?"\n'
+        '      Console/panels: "what panels are open?", "describe the console",\n'
+        '        "what\'s on the right?", "what\'s showing?"\n'
+        '      External screen: "read the labs on screen", "check the EMR",\n'
+        '        "what does the monitor say?", "analyze my screen", "read the monitor"\n'
+        '    IMPORTANT: Do NOT call start_screen_share() or stop_screen_share() — '
+        'vision mode is managed automatically by the system.\n'
         'To route to an agent, call transfer_to_agent(agent_name="AgentName"). '
         'Do NOT call the agent name as a function — it is not a tool.\n\n'
-
-        '## SCREEN SHARE WORKFLOW\n'
-        'When the surgeon requests screen sharing:\n'
-        '1. Call start_screen_share() — this triggers the browser to request screen '
-        'capture and activates the animated border indicator.\n'
-        '2. Then transfer_to_agent("Screen_Advisor") so it can interpret the frames.\n'
-        'When screen share should stop: call stop_screen_share() directly at root level.\n\n'
 
         '## CLINICAL SAFETY (CRITICAL)\n'
         '- You are a ROUTING and DISPLAY system, NOT a medical advisor.\n'
@@ -689,8 +692,7 @@ root_agent = LlmAgent(
         log_event, show_event_log, hide_event_log, capture_surgical_photo,
         # Global
         hide_all_overlays, show_only_ar,
-        # Screen Share
-        start_screen_share, stop_screen_share,
+        # (vision mode is system-managed — no screen share tools needed at root)
     ],
     before_tool_callback=_grounding_before_tool,
     after_tool_callback=_grounding_after_tool,

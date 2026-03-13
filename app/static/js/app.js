@@ -74,6 +74,14 @@ function updateAgentCard() {
   document.querySelectorAll('.agent-chip').forEach((chip) => {
     chip.classList.toggle('active', chip.dataset.agent === _activeAgent);
   });
+  // Vision mode: both surgical video and screen capture run only while Screen_Advisor is active
+  if (_activeAgent === 'Screen_Advisor') {
+    startVideoCapture();
+    if (ws && ws.readyState === WebSocket.OPEN) ScreenshareAgent.activate(ws);
+  } else {
+    stopVideoCapture();
+    ScreenshareAgent.deactivate();
+  }
 }
 
 function updateToolChip(toolName) {
@@ -104,26 +112,24 @@ orionOrb.addEventListener('click', () => {
   else connect();
 });
 
-// Screen share badge click → stop screen share
+// Screen share badge click → full teardown (user explicitly ending vision mode)
 const _ssBadge = document.getElementById('screenshare-badge');
 if (_ssBadge) {
-  _ssBadge.addEventListener('click', () => ScreenshareAgent.stop());
+  _ssBadge.addEventListener('click', () => ScreenshareAgent.teardown());
 }
 
-// Screen share state → show/hide badge
+// screenshare:started fires once (first permission grant) — just update badge
 document.addEventListener('screenshare:started', () => {
   if (_ssBadge) _ssBadge.classList.add('ss-active');
-  _activeAgent = 'Screen_Advisor';
-  updateAgentCard();
-  logRouting('Screen share active — sending frames to Screen_Advisor', 'turn');
+  logRouting('Vision mode active — surgical video + screen capture streaming', 'turn');
 });
+// screenshare:stopped fires on full teardown (disconnect or browser stop button)
 document.addEventListener('screenshare:stopped', () => {
   if (_ssBadge) _ssBadge.classList.remove('ss-active');
-  if (_activeAgent === 'Screen_Advisor') { _activeAgent = null; updateAgentCard(); }
-  logRouting('Screen share stopped.', 'turn');
+  logRouting('Vision mode stopped.', 'turn');
 });
 document.addEventListener('screenshare:error', (e) => {
-  logRouting(`Screen share unavailable: ${e.detail?.message || 'permission denied'}`, 'error');
+  logRouting(`Screen capture unavailable: ${e.detail?.message || 'permission denied'}`, 'error');
 });
 
 // Sequential video playlist with 3-stage fallback per video:
@@ -197,9 +203,6 @@ async function connect() {
       return;
     }
 
-    // Start video frame capture
-    startVideoCapture();
-
     // Initialise display modules
     CTViewer.init({
       canvasId:    'ct-canvas',
@@ -237,7 +240,7 @@ async function connect() {
       if (countEl) countEl.textContent = '';
     });
     stopVideoCapture();
-    ScreenshareAgent.stop();
+    ScreenshareAgent.teardown();
     if (micStream) { stopMicrophone(micStream); micStream = null; }
     if (audioRecorderCtx) {         // close recorder AudioContext — prevents browser limit (~6) being hit on repeated reconnects
       try { audioRecorderCtx.close(); } catch (_) {}
@@ -501,14 +504,6 @@ function dispatchRenderCommand(toolName, args) {
       CTViewer.hide(); ClinicalPanel.hide(); ChecklistPanel.hide(); LogPanel.hide();
       relayoutTiles();
       break;
-    case 'start_screen_share':
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ScreenshareAgent.start(ws);
-      }
-      break;
-    case 'stop_screen_share':
-      ScreenshareAgent.stop();
-      break;
     default:
       console.warn('[app.js] Unknown tool:', toolName);
   }
@@ -571,13 +566,7 @@ function handleFunctionResponse(fr) {
     ChecklistPanel.hide(); LogPanel.hide(); SummaryPanel.hide();
     relayoutTiles();
   }
-  if (cmd.layer === 'screenshare') {
-    if (cmd.action === 'start' && ws && ws.readyState === WebSocket.OPEN) {
-      ScreenshareAgent.start(ws);
-    } else if (cmd.action === 'stop') {
-      ScreenshareAgent.stop();
-    }
-  }
+  // screenshare layer actions are now system-managed via updateAgentCard()
 }
 
 

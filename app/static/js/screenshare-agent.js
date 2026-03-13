@@ -3,16 +3,21 @@
  * ====================
  * Screen capture module for ORION's Screen_Advisor agent.
  *
- * Captures the surgeon's screen at 1 FPS and sends JPEG frames over the
+ * Captures the surgeon's FULL SCREEN at 1 FPS and sends JPEG frames over the
  * existing WebSocket connection as JSON: { type: 'image_frame', data: <base64> }
  *
- * The server's upstream_task() already handles this message type and forwards
- * the decoded JPEG bytes to Gemini via send_realtime(Blob('image/jpeg', ...)).
+ * The server's upstream_task() handles this message type and forwards decoded
+ * JPEG bytes to Gemini via send_realtime(Blob('image/jpeg', ...)).
+ *
+ * Activation is system-managed — driven by _activeAgent in app.js, NOT by
+ * model tool calls. getDisplayMedia() is requested once per session; subsequent
+ * activations reuse the existing MediaStream (no repeated permission dialogs).
  *
  * Public API:
- *   ScreenshareAgent.start(ws)   — request screen share + begin frame loop
- *   ScreenshareAgent.stop()      — stop frame loop + release MediaStream
- *   ScreenshareAgent.isActive()  — returns bool
+ *   ScreenshareAgent.activate(ws)  — start sending frames; requests permission on first call only
+ *   ScreenshareAgent.deactivate()  — stop sending frames; keep MediaStream alive for reuse
+ *   ScreenshareAgent.teardown()    — full stop; release MediaStream (call on WS disconnect)
+ *   ScreenshareAgent.isActive()    — returns bool (currently sending frames)
  */
 
 const ScreenshareAgent = (() => {
@@ -22,107 +27,101 @@ const ScreenshareAgent = (() => {
   const JPEG_QUALITY      = 0.82;   // balance quality vs. payload size
 
   // --- State ---
-  let _stream     = null;   // MediaStream from getDisplayMedia
+  let _stream     = null;   // MediaStream from getDisplayMedia (kept alive between activations)
   let _video      = null;   // offscreen <video> element
   let _canvas     = null;   // offscreen <canvas> for frame extraction
   let _ctx        = null;   // 2D canvas context
   let _intervalId = null;   // setInterval handle
   let _ws         = null;   // WebSocket reference
-  let _active     = false;
+  let _active     = false;  // currently sending frames
 
   // --- Border element ---
   const BORDER_ID = 'screenshare-border';
 
-  function _setBorder(active) {
+  function _setBorder(on) {
     const el = document.getElementById(BORDER_ID);
-    if (!el) return;
-    if (active) {
-      el.classList.add('active');
-    } else {
-      el.classList.remove('active');
-    }
+    if (el) el.classList.toggle('active', on);
   }
 
   /**
-   * Request screen capture via getDisplayMedia and begin sending frames.
+   * Start sending frames to Gemini. Requests getDisplayMedia() only on the
+   * first call per session; subsequent calls reuse the existing _stream.
    * @param {WebSocket} ws — the open ORION WebSocket connection
    */
-  async function start(ws) {
-    if (_active) return;   // idempotent
-
+  async function activate(ws) {
+    if (_active) return;   // already sending
     _ws = ws;
 
-    // Request screen / window / tab share from the browser
-    try {
-      _stream = await navigator.mediaDevices.getDisplayMedia({
-        video: {
-          cursor: 'always',
-          frameRate: { ideal: 1, max: 1 },
-        },
-        audio: false,
+    if (!_stream) {
+      // First activation this session — request screen capture permission
+      try {
+        _stream = await navigator.mediaDevices.getDisplayMedia({
+          video: { cursor: 'always', frameRate: { ideal: 1, max: 1 } },
+          audio: false,
+        });
+      } catch (err) {
+        console.warn('[ScreenshareAgent] getDisplayMedia denied or cancelled:', err);
+        document.dispatchEvent(new CustomEvent('screenshare:error', { detail: err }));
+        return;
+      }
+
+      // If the user clicks "Stop sharing" in the browser's native UI, full teardown
+      _stream.getVideoTracks()[0].addEventListener('ended', () => {
+        console.log('[ScreenshareAgent] Browser stop-sharing button clicked');
+        teardown();
       });
-    } catch (err) {
-      console.warn('[ScreenshareAgent] getDisplayMedia denied or cancelled:', err);
-      // Notify app.js so it can update UI state
-      document.dispatchEvent(new CustomEvent('screenshare:error', { detail: err }));
-      return;
+
+      // Build offscreen video + canvas (only once, reused across activations)
+      _video = document.createElement('video');
+      _video.srcObject = _stream;
+      _video.muted = true;
+      await _video.play();
+
+      _canvas = document.createElement('canvas');
+      _canvas.width  = CANVAS_SIZE;
+      _canvas.height = CANVAS_SIZE;
+      _ctx = _canvas.getContext('2d');
+
+      document.dispatchEvent(new CustomEvent('screenshare:started'));
     }
 
-    // If the user stops sharing via the browser's built-in "Stop sharing" button,
-    // mirror that into ORION's state.
-    _stream.getVideoTracks()[0].addEventListener('ended', () => {
-      console.log('[ScreenshareAgent] Screen share ended by user (browser stop button)');
-      stop();
-    });
-
-    // Build an offscreen video element to drive the canvas
-    _video = document.createElement('video');
-    _video.srcObject = _stream;
-    _video.muted = true;
-    await _video.play();
-
-    // Build an offscreen canvas for frame extraction
-    _canvas = document.createElement('canvas');
-    _canvas.width  = CANVAS_SIZE;
-    _canvas.height = CANVAS_SIZE;
-    _ctx = _canvas.getContext('2d');
-
+    // Resume (or begin) frame sending
     _active = true;
     _setBorder(true);
-    document.dispatchEvent(new CustomEvent('screenshare:started'));
-
-    // Begin frame capture loop
+    _captureFrame();   // send first frame immediately
     _intervalId = setInterval(_captureFrame, FRAME_INTERVAL_MS);
-
-    // Send first frame immediately (don't wait 1 second for the first visual)
-    _captureFrame();
   }
 
   /**
-   * Stop the frame loop and release the MediaStream.
+   * Stop sending frames but keep the MediaStream alive.
+   * Next activate() call will resume instantly without a permission dialog.
    */
-  function stop() {
+  function deactivate() {
     if (!_active) return;
-
     clearInterval(_intervalId);
     _intervalId = null;
+    _active = false;
+    _setBorder(false);
+    // _stream, _video, _canvas intentionally kept alive
+  }
 
+  /**
+   * Full stop: release the MediaStream and all resources.
+   * Call when the WebSocket disconnects or the user explicitly ends vision mode.
+   */
+  function teardown() {
+    deactivate();
     if (_stream) {
       _stream.getTracks().forEach(t => t.stop());
       _stream = null;
     }
-
     if (_video) {
       _video.srcObject = null;
       _video = null;
     }
-
     _canvas = null;
     _ctx    = null;
     _ws     = null;
-    _active = false;
-
-    _setBorder(false);
     document.dispatchEvent(new CustomEvent('screenshare:stopped'));
   }
 
@@ -133,31 +132,22 @@ const ScreenshareAgent = (() => {
     if (!_active || !_video || !_ctx || !_ws) return;
     if (_ws.readyState !== WebSocket.OPEN) return;
 
-    // Draw current video frame, letterboxed into the square canvas
     const vw = _video.videoWidth  || CANVAS_SIZE;
     const vh = _video.videoHeight || CANVAS_SIZE;
     const scale = Math.min(CANVAS_SIZE / vw, CANVAS_SIZE / vh);
-    const dw = vw * scale;
-    const dh = vh * scale;
-    const dx = (CANVAS_SIZE - dw) / 2;
-    const dy = (CANVAS_SIZE - dh) / 2;
+    const dw = vw * scale, dh = vh * scale;
+    const dx = (CANVAS_SIZE - dw) / 2, dy = (CANVAS_SIZE - dh) / 2;
 
     _ctx.fillStyle = '#000';
     _ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
     _ctx.drawImage(_video, dx, dy, dw, dh);
 
-    // Encode as JPEG (base64 data URL) and strip the header prefix
-    const dataUrl = _canvas.toDataURL('image/jpeg', JPEG_QUALITY);
-    const base64  = dataUrl.split(',', 2)[1];
-
+    const base64 = _canvas.toDataURL('image/jpeg', JPEG_QUALITY).split(',', 2)[1];
     if (!base64) return;
-
     _ws.send(JSON.stringify({ type: 'image_frame', data: base64 }));
   }
 
-  function isActive() {
-    return _active;
-  }
+  function isActive() { return _active; }
 
-  return { start, stop, isActive };
+  return { activate, deactivate, teardown, isActive };
 })();

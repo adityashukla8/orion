@@ -34,3 +34,4 @@ frontend/next-env.d.ts
 
 # Windows Zone.Identifier sidecar files
 *:Zone.Identifier
+*.docx

@@ -507,8 +507,7 @@ def get_surgical_phase(phase: str) -> dict:
     """
     Use this tool when the surgeon asks about the current surgical phase,
     what structures to watch for, what comes next, or when stating a phase
-    transition. Use visual context from the live surgical video to determine
-    the current phase, then call this tool with the appropriate phase name.
+    transition. Call this tool with the appropriate phase name.
 
     Available phases (pass exactly as shown):
       port_placement        — trocar insertion and OR setup
@@ -521,7 +520,7 @@ def get_surgical_phase(phase: str) -> dict:
       closure               — hemostasis, chest tube, re-expansion check
 
     Examples:
-      "what phase are we in" → call with phase you detect from the video
+      "what phase are we in" → call with the current phase
       "what should I watch out for" → call with current detected phase
       "we are starting the vascular dissection" → phase='vascular_dissection'
       "show me the checklist" → call with current phase
