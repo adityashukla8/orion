@@ -43,7 +43,8 @@ let audioSuppressed  = false;  // true after barge-in — suppresses stale audio
 let _lastSuppressTime = 0;     // timestamp of last barge-in (debounce unsuppress)
 
 // ── WebSocket / capture state ──────────────────────────────────────────────
-let ws            = null;
+let ws                = null;
+let _autoReconnect    = false;  // set when server sends error — triggers reconnect on close
 let videoInterval     = null;
 let offscreenCtx      = null;
 let _latestVideoFrame = null;  // most recent JPEG dataURL from startVideoCapture
@@ -254,7 +255,13 @@ async function connect() {
       } catch (_) {}
       audioPlayerNode = null;
     }
-    logRouting('Connection closed.', 'turn');
+    if (_autoReconnect) {
+      _autoReconnect = false;
+      logRouting('Reconnecting…', 'turn');
+      setTimeout(connect, 1500);
+    } else {
+      logRouting('Connection closed.', 'turn');
+    }
   };
 
   ws.onerror = () => {
@@ -348,10 +355,10 @@ function handleServerEvent(jsonString) {
     return;
   }
 
-  // Recoverable server error — log it and keep the session alive
+  // Recoverable server error — log it and flag for auto-reconnect on close
   if (event.type === 'error') {
-    logRouting(`⚠ ${event.message || 'Unknown error'}`, 'error');
-    _upsertTranscript('orion', 'Sorry, please try that again.');
+    logRouting(`⚠ ${event.message || 'Unknown error'} — reconnecting…`, 'error');
+    _autoReconnect = true;
     return;
   }
 

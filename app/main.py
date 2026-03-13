@@ -270,7 +270,7 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str, session_id: str
             try:
                 await websocket.send_text(json.dumps({
                     'type': 'error',
-                    'message': f'ORION encountered an issue. Reconnect to resume.',
+                    'message': f'Session error: {exc}',
                 }))
             except Exception:
                 pass
