@@ -262,13 +262,19 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str, session_id: str
                     _orion_said = ''
           except (ValueError, KeyError, TypeError) as exc:
             # Tool-not-found errors (e.g. model calls agent name as a tool)
-            # or malformed function calls. Log and notify browser instead of
-            # crashing the entire session.
+            # or malformed function calls. Notify browser, then re-raise so
+            # asyncio.wait(FIRST_EXCEPTION) fires and the WebSocket closes
+            # cleanly. Without re-raise, upstream_task keeps the socket open
+            # but downstream is dead — UI shows "active" but stops responding.
             logger.warning('Recoverable live error: %s', exc)
-            await websocket.send_text(json.dumps({
-                'type': 'error',
-                'message': f'ORION encountered an issue: {exc}. Please try again.',
-            }))
+            try:
+                await websocket.send_text(json.dumps({
+                    'type': 'error',
+                    'message': f'ORION encountered an issue. Reconnect to resume.',
+                }))
+            except Exception:
+                pass
+            raise
 
     # ---------------------------------------------------------------------------
     # Run both tasks — mirrors adk_web_server.py's /run_live implementation:
