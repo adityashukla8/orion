@@ -11,6 +11,12 @@
 
 ---
 
+## Disclaimer
+
+This project is designed to demonstrate the capabilities of the Gemini Live API and Google Agent Development Kit (ADK). It may contain clinical inaccuracies and has not been reviewed by medical domain experts.
+
+---
+
 ## The Problem: Five Unsolved Challenges in Robotic Surgery
 
 During robotic surgery, the operating surgeon's hands are **locked on instrument controls** inside a sterile field for the entire procedure. They cannot type, click, tap, or interact with any computer system. Every piece of critical information — patient labs, CT imaging, drug safety checks, phase checklists — requires them to either break scrub or call out to circulating staff. Both are slow, disruptive, and potentially dangerous at the wrong moment.
@@ -432,7 +438,3 @@ orion/
 
 
 ---
-
-## Disclaimer
-
-This project is designed to demonstrate the capabilities of the Gemini Live API and Google Agent Development Kit (ADK). It may contain clinical inaccuracies and has not been reviewed by medical domain experts. **Not intended for use in actual clinical settings.**
