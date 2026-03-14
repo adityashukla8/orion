@@ -3,10 +3,11 @@
 > **Voice-directed surgical co-pilot for the da Vinci robotic surgery platform.**
 > A real-time, hands-free AI agent that gives surgeons instant access to patient data, CT imaging, 3D anatomy, drug safety checks, and operative documentation — all through natural speech, without ever breaking scrub.
 
-**Hackathon Category:** Live Agents
+**Built for:** Gemini Live Agent Challenge
+**Hackathon Category:** Live Agents + UI Navigation
 **Built with:** Google ADK · Gemini Live API · Vertex AI · Cloud Run · GCS
 **Demo:** [YouTube link — add before submission]
-**Live deployment:** [Cloud Run URL — add before submission]
+**Live deployment:** https://orion-518946358970.us-central1.run.app/
 
 ---
 
