@@ -184,7 +184,7 @@ Handles all voice input, applies wake-word filtering, and either calls direct to
 
 ---
 
-## GCP Backend & Logs
+## GCP Backend & Logs Demo (for Hackathon)
 
 ![GCP Backend & Logs](/orion/Orion_GCP_Backend.mp4)
 
