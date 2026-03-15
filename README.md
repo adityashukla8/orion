@@ -15,6 +15,34 @@
 
 ---
 
+## Table of Contents
+
+- [Disclaimer](#disclaimer)
+- [The Problem](#the-problem-five-unsolved-challenges-in-robotic-surgery)
+- [The Solution](#the-solution-what-orion-does)
+- [Architecture](#architecture)
+  - [System Overview](#system-overview)
+  - [Agentic Workflow](#agentic-workflow)
+- [Agent System](#agent-system)
+  - [Root Orchestrator](#root-orchestrator--orion_orchestrator)
+  - [Specialist Sub-Agents](#8-specialist-sub-agents)
+  - [Tool Registry](#tool-registry-22-tools)
+- [Gemini & ADK Features Used](#gemini--adk-features-used)
+  - [Gemini Live API](#gemini-live-api)
+  - [Google ADK](#google-adk-v1260)
+  - [Grounding & Safety](#grounding--safety)
+- [Tech Stack](#tech-stack)
+- [GCP Backend & Logs](#gcp-backend--logs)
+- [Local Setup](#local-setup)
+- [Assets Setup](#assets-setup)
+- [Cloud Deployment](#cloud-deployment)
+- [Project Structure](#project-structure)
+- [Data Sources](#data-sources)
+- [Key Voice Commands](#key-voice-commands)
+- [Hackathon](#hackathon)
+
+---
+
 ## Disclaimer
 
 This project is designed to demonstrate the capabilities of the Gemini Live API and Google Agent Development Kit (ADK). It may contain clinical inaccuracies and has not been reviewed by medical domain experts.
