@@ -4,9 +4,13 @@
 > A real-time, hands-free AI agent that gives surgeons instant access to patient data, CT imaging, 3D anatomy, drug safety checks, and operative documentation — all through natural speech, without ever breaking scrub.
 
 **Built for:** Gemini Live Agent Challenge
+
 **Hackathon Category:** Live Agents + UI Navigation
+
 **Built with:** Google ADK · Gemini Live API · Vertex AI · Cloud Run · GCS
-**Demo:** [YouTube link — add before submission]
+
+**Demo:** https://vimeo.com/1173625793?fl=ip&fe=ec
+
 **Live deployment:** https://orion-518946358970.us-central1.run.app/
 
 ---
@@ -205,7 +209,7 @@ GOOGLE_CLOUD_LOCATION=us-central1
 
 # Verify current model ID at:
 # https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models
-DEMO_AGENT_MODEL=gemini-2.5-flash-preview-native-audio-dialog
+DEMO_AGENT_MODEL=gemini-live-2.5-flash-native-audio
 
 GCS_BUCKET=your-gcs-bucket-name
 PATIENT_ID=case_demo_001
@@ -326,7 +330,7 @@ gcloud run deploy orion \
 # Set secret env vars separately (not in cloudbuild.yaml)
 gcloud run services update orion \
   --region=us-central1 \
-  --update-env-vars="DEMO_AGENT_MODEL=gemini-2.5-flash-preview-native-audio-dialog,GCS_BUCKET=your-bucket,PATIENT_ID=case_demo_001"
+  --update-env-vars="DEMO_AGENT_MODEL=gemini-live-2.5-flash-native-audio,GCS_BUCKET=your-bucket,PATIENT_ID=case_demo_001"
 ```
 
 ### Automated CI/CD (Cloud Build)
