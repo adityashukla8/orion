@@ -31,6 +31,7 @@
   - [Gemini Live API](#gemini-live-api)
   - [Google ADK](#google-adk-v1260)
   - [Grounding & Safety / Hallucination Handling Layer](#grounding--safety)
+- [Features](#features)
 - [Tech Stack](#tech-stack)
 - [GCP Backend & Logs Demo (for Hackathon)](#gcp-backend--logs)
 - [Local Setup](#local-setup)
@@ -164,6 +165,19 @@ Handles all voice input, applies wake-word filtering, and either calls direct to
 - **Argument whitelisting** — field names, landmark names, phase names, structure names, event types all validated against hardcoded whitelists before any tool executes
 - **Hallucination prevention** — root agent instructed never to state patient data from memory; always calls the tool
 - **Error recovery** — `ValueError/KeyError/TypeError` caught mid-stream; session continues and surgeon is notified
+
+---
+
+## Features
+
+| ✅ Feature List | ✅ Feature List |
+|-----------|-----------|
+| **Live Agents** audio interaction | **Barge-in** handled naturally |
+| **Context-aware** Native audio dialog | **UI Navigation**: Visual UI Understanding & Interaction |
+| **Custom voice persona** | **Grounding**: prompt hardening & before/after tool callback |
+| Live **video streaming** & Screen Share (1fps send_realtime) | **Error handling** caught mid-stream |
+| **Multimodal**: simultaneous input | **Automated deployment** |
+| **Transcription**: Input and output audio | **ADK Multi-agent** & multi-tool orchestration |
 
 ---
 
