@@ -200,7 +200,9 @@ Handles all voice input, applies wake-word filtering, and either calls direct to
 
 ## GCP Backend & Logs Demo (for Hackathon)
 
-![GCP Backend & Logs](/orion/Orion_GCP_Backend.mp4)
+[Watch on YouTube](https://youtu.be/LLaFp_8n4k0)
+
+![GCP Backend & Logs](Orion_GCP_Backend.mp4)
 
 ---
 
