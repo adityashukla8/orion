@@ -68,6 +68,18 @@ Beyond the access problem, five specific, evidence-backed failures compound surg
 
 ## The Solution: What ORION Does
 
+| Capability | Details |
+|-----------|---------|
+| **Hands-Free Access** | Fully voice-activated console — labs, vitals, imaging, anatomy on screen, all accessible under a second |
+| **Real-time Decision Support** | Real-time drug safety cross-check · blood loss threshold alerts at 15/25/40% · complication protocol surfaced instantly |
+| **Protocol Enforcement** | WHO Safety Timeout & phase-specific checklists run on voice command — every item timestamped |
+| **Situational & Context Awareness** | Live surgical video + full screen capture streamed to Gemini — ORION sees the operative field and the external console |
+| **Anatomical Guidance** | Phase-aware danger zone alerts · 3D model with structure isolation · CT landmark navigation |
+| **Auto-Documentation** | Every event logged with a timestamp as it happens · operative report generated instantly at case close |
+| **Intelligent Routing** | One Orchestrator, 9 Agents, 24 Tools — the surgeon just talks, ORION takes care of the rest |
+| **Hallucination Prevention** | Prompt hardening · ADK before/after callbacks for argument enforcement |
+
+
 ORION is a **voice-activated surgical co-pilot** that listens to the surgeon continuously throughout the procedure. The surgeon speaks naturally — `"ORION, show hemoglobin"`, `"run the timeout"`, `"I have bleeding"`, `"is cefazolin safe?"` — and ORION responds in under a second with the right information on the console display and a calm, brief spoken confirmation.
 
 The system watches the live surgical video at 1 fps, giving Gemini real-time OR context. Eight specialist agents handle different domains of surgical need: pre-op briefing, safety timeout, blood loss tracking, drug safety, anatomy guidance, complication protocols, operative documentation, and SBAR handoff — all orchestrated by a root agent that routes intelligently based on intent.
