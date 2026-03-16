@@ -9,7 +9,7 @@
 
 **Built with:** Google ADK · Gemini Live API · Vertex AI · Cloud Run · GCS
 
-**Demo:** https://vimeo.com/1173625793?fl=ip&fe=ec
+**Demo:** https://vimeo.com/1173959084?fl=ip&fe=ec
 
 **Live deployment:** https://orion-518946358970.us-central1.run.app/
 
@@ -18,7 +18,7 @@
 ## Table of Contents
 
 - [Disclaimer](#disclaimer)
-- [The Problem](#the-problem-five-unsolved-challenges-in-robotic-surgery)
+- [The Problem Statement](#the-problem-five-unsolved-challenges-in-robotic-surgery)
 - [The Solution](#the-solution-what-orion-does)
 - [Architecture](#architecture)
   - [System Overview](#system-overview)
@@ -33,7 +33,7 @@
   - [Grounding & Safety / Hallucination Handling Layer](#grounding--safety)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
-- [GCP Backend & Logs Demo (for Hackathon)](#gcp-backend--logs)
+- [GCP Backend & Logs Demo (for Hackathon)](#gcp-backend--logs-demo-for-hackathon)
 - [Local Setup](#local-setup)
 - [Assets Setup](#assets-setup)
 - [Cloud Deployment & Automation](#cloud-deployment)
@@ -50,7 +50,7 @@ This project is designed to demonstrate the capabilities of the Gemini Live API 
 
 ---
 
-## The Problem: Five Unsolved Challenges in Robotic Surgery
+## The Problem: Five Unsolved Challenges in Robotic Surgery + others
 
 During robotic surgery, the operating surgeon's hands are **locked on instrument controls** inside a sterile field for the entire procedure. They cannot type, click, tap, or interact with any computer system. Every piece of critical information — patient labs, CT imaging, drug safety checks, phase checklists — requires them to either break scrub or call out to circulating staff. Both are slow, disruptive, and potentially dangerous at the wrong moment.
 
@@ -200,7 +200,8 @@ Handles all voice input, applies wake-word filtering, and either calls direct to
 
 ## GCP Backend & Logs Demo (for Hackathon)
 
-[Watch on YouTube](https://youtu.be/LLaFp_8n4k0)
+[![Watch the video](https://img.youtube.com/vi/LLaFp_8n4k0/0.jpg
+)](https://youtu.be/LLaFp_8n4k0)
 
 ![GCP Backend & Logs](Orion_GCP_Backend.mp4)
 
